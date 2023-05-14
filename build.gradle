@@ -20,7 +20,8 @@ jastadd {
       imports "java8 backend"
 
       jastadd {
-        basedir "batakjava/semantics"
+        basedir "batakjava"
+        include "**/frontend/*.jrag"
       }
 
       scanner {
@@ -66,8 +67,9 @@ jar {
 }
 
 // Use JavaCompiler if you need bytecode generation.
-jar.manifest.attributes 'Main-Class': 'org.extendj.JavaChecker'
+//jar.manifest.attributes 'Main-Class': 'org.extendj.JavaChecker'
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaCompiler'
+jar.manifest.attributes 'Main-Class': 'org.extendj.BatakjavaChecker'
 jar.destinationDir = projectDir
 
 // Java -source and -target version.
