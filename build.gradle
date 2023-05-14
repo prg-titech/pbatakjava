@@ -15,28 +15,28 @@ jastadd {
   modules {
     include("extendj/jastadd_modules") // Include core ExtendJ modules.
 
-    module "template", {
+    module "pbatakjava", {
       imports "java8 frontend" // ExtendJ dependency for template module.
+      imports "java8 backend"
 
       jastadd {
-        basedir "src/jastadd/"
-        include "**/*.ast"
-        include "**/*.jadd"
-        include "**/*.jrag"
+        basedir "batakjava/semantics"
       }
 
-      //scanner {
-      // List scanner files here.
-      //}
+      scanner {
+        basedir "batakjava/syntax"
+        include "**/*.flex"
+      }
 
-      //parser {
-      // List parser files here.
-      //}
+      parser {
+        basedir "batakjava/syntax"
+        include "**/*.parser"
+      }
     }
   }
 
   // Target module to build:
-  module = 'template'
+  module = 'pbatakjava'
 
   astPackage = 'org.extendj.ast'
   parser.name = 'JavaParser'
@@ -46,10 +46,22 @@ jastadd {
 sourceSets.main {
   java {
     srcDir 'extendj/src/frontend-main'
+    srcDir 'src/frontend-main'
   }
   resources {
     srcDir 'extendj/src/res'
     srcDir jastadd.buildInfoDir
+  }
+}
+
+repositories.mavenLocal()
+dependencies {
+  compile 'com.microsoft:z3:4.8.10'
+}
+
+jar {
+  from {
+    configurations.compile.collect { it.isDirectory() ? it : zipTree(it) }
   }
 }
 
@@ -59,12 +71,12 @@ jar.manifest.attributes 'Main-Class': 'org.extendj.JavaChecker'
 jar.destinationDir = projectDir
 
 // Java -source and -target version.
-sourceCompatibility = targetCompatibility = '1.7'
+sourceCompatibility = targetCompatibility = '1.8'
 
 task sourceZip(type: Zip) {
   description 'Builds a Zip file with the entire repisotory (including the ExtendJ submodule).'
   destinationDir = projectDir
-  archiveName = "template-src.zip"
+  archiveName = "pbatakjava-src.zip"
 
   from (projectDir) {
     exclude '**/.git'
@@ -82,5 +94,5 @@ task sourceZip(type: Zip) {
     exclude '**/*.swp'
   }
 
-  into 'template'
+  into 'pbatakjava'
 }
