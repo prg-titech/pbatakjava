@@ -22,6 +22,7 @@ jastadd {
       jastadd {
         basedir "batakjava"
         include "**/frontend/*.jrag"
+        include "**/syntax/*.ast"
       }
 
       scanner {
