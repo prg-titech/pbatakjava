@@ -1,0 +1,3 @@
+GenericVersionMethodDecl: MethodDecl ::= VersionVariable*;
+
+ParVersionMethodAccess: MethodAccess ::= VersionArgument*;
