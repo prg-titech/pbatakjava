@@ -1,5 +1,8 @@
-public class Test_06 ver 1 >V< {
-  Test_06 m() {
-    return new Test_06#V#();
+public class Test_08 ver 1 {
+  public static void main(String[] args) {
+    new Object().>V<m();
+    super.>V<m();
+    Object.>V<m();
+    Object.super.>V<m(); 
   }
 }
