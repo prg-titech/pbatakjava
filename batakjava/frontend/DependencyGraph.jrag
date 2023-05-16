@@ -2,13 +2,17 @@ aspect DependencyGraph {
 
   public class Node {
 
+    private int id = -1;
     private int index = -1;
     private int lowlink = -1;
     private boolean onStack = false;
 
+    public Node(int i) { id = i; }
+
+    public int getId() { return id; }
     public int getIndex() { return index; }
     public int getLowlink() { return lowlink; }
-    public boolean getOnStack() { return false; }
+    public boolean getOnStack() { return onStack; }
 
     public void setIndex(int i) { index = i; }
     public void setLowlink(int l) { lowlink = l; }
@@ -18,14 +22,14 @@ aspect DependencyGraph {
 
   public class Graph {
     
-    private java.util.List<Node> vertices;
-    private java.util.List<java.util.List<Boolean>> adjacencyMatrix;
+    public java.util.List<Node> vertices;
+    public java.util.List<java.util.List<Boolean>> adjacencyMatrix;
 
     public Graph(int typeNum) {
       vertices = new ArrayList<Node>(typeNum);
       adjacencyMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
       for (int i=0; i<typeNum; i++) {
-        vertices.add(new Node());
+        vertices.add(new Node(i));
         java.util.List<Boolean> row = new ArrayList<Boolean>(typeNum);
         for (int j=0; j<typeNum; j++) {
           row.add(false);
@@ -55,49 +59,65 @@ aspect DependencyGraph {
       }
     }
 
-    public java.util.List<java.util.Set<Integer>> components;
-    private int index = 0;
-    private java.util.Stack<Node> stack = new java.util.Stack<Node>();
+    private class Components {
 
-    public void computeComponents() {
-      for (Node n: vertices) {
-        strongConnect(n);
-      }
-    }
+      public java.util.List<java.util.Set<Integer>> components;
+      private int index;
+      private java.util.Stack<Node> stack;
 
-    public void strongConnect(Node n) {
-      n.setIndex(index);
-      n.setLowlink(index);
-      index++;
-      stack.push(n);
-      n.setOnStack(true);
-      for (Integer edge: getEdges(n.getIndex())) {
-        Node o = vertices.get(edge);
-        if (o.getIndex() == -1) {
-          strongConnect(o);
-          int newLowlink = n.getLowlink() < o.getLowlink() 
-                            ? n.getLowlink() 
-                            : o.getLowlink();
-          n.setLowlink(newLowlink);
-        } else if (o.getOnStack()) {
-          int newLowlink = n.getLowlink() < o.getIndex() 
-                            ? n.getLowlink() 
-                            : o.getIndex();
-          n.setLowlink(newLowlink);
-        }
-      }
-      if (n.getLowlink() == n.getIndex()) {
-        java.util.Set<Integer> component = new HashSet();
-        for (Node o: stack) {
-          o.setOnStack(false);
-          component.add(o.getIndex());
-          if (n.getIndex() == o.getIndex()) {
-            break;
+      public void compute() {
+        components = new ArrayList();
+        index = 0;
+        stack = new java.util.Stack<Node>();
+        for (Node n: vertices) {
+          if (n.getIndex() == -1) {
+            connect(n);
           }
         }
-        components.add(component);
       }
+
+      public void connect(Node n) {
+        n.setIndex(index);
+        n.setLowlink(index);
+        index += 1;
+        stack.push(n);
+        n.setOnStack(true);
+        for (Integer edge: getEdges(n.getId())) {
+          Node o = vertices.get(edge);
+          if (o.getIndex() == -1) {
+            connect(o);
+            int newLowlink = n.getLowlink() < o.getLowlink() 
+                              ? n.getLowlink() 
+                              : o.getLowlink();
+            n.setLowlink(newLowlink);
+          } else if (o.getOnStack()) {
+            int newLowlink = n.getLowlink() < o.getIndex() 
+                              ? n.getLowlink() 
+                              : o.getIndex();
+            n.setLowlink(newLowlink);
+          }
+        }
+        if (n.getLowlink() == n.getIndex()) {
+          java.util.Set<Integer> component = new HashSet();
+          Node o;
+          do {
+            o = stack.pop();
+            o.setOnStack(false);
+            component.add(o.getId());
+          } while (n.getIndex() != o.getIndex());
+          components.add(component);
+        }
+      }
+      
     }
+
+    public java.util.List<java.util.Set<Integer>> getComponents() {
+      Components c = new Components();
+      if (c.components == null) {
+        c.compute();
+      }
+      return c.components;
+    }    
 
   }
 
