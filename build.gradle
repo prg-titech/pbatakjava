@@ -70,7 +70,8 @@ jar {
 // Use JavaCompiler if you need bytecode generation.
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaChecker'
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaCompiler'
-jar.manifest.attributes 'Main-Class': 'org.extendj.BatakjavaChecker'
+jar.manifest.attributes 'Main-Class': 'org.batakjava.BatakjavaChecker'
+jar.manifest.attributes 'Main-Class': 'org.batakjava.DependencyChecker'
 jar.destinationDir = projectDir
 
 // Java -source and -target version.
