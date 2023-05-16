@@ -1,4 +1,4 @@
-package org.extendj;
+package org.batakjava;
 
 import org.extendj.ast.BatakjavaFrontend;
 import org.extendj.ast.Program;
@@ -12,7 +12,7 @@ public class BatakjavaChecker extends BatakjavaFrontend {
     }
   }
 
-  public BatakjavaChecker() { super("Batakjava Checker", "0.1"); }
+  public BatakjavaChecker() { super("Batakjava Checker", "0.0.1"); }
 
   public int run(String args[]) {
     return run(args, Program.defaultBytecodeReader(), Program.defaultJavaParser());
