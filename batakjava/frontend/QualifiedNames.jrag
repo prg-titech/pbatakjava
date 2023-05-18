@@ -1,0 +1,7 @@
+aspect TypeName {
+  
+  syn lazy String TypeDecl.verFullName() = fullName();
+
+  eq VersionClassDecl.verFullName() = fullName() + " v." + getVersion().getID();
+
+}

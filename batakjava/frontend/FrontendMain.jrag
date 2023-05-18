@@ -42,6 +42,13 @@ aspect FrontendMain {
           return EXIT_UNHANDLED_ERROR;
         }
 
+        SimpleSet<TypeDecl> objectSet = program.lookupTypeSet("java.lang", "Object");
+        if (!objectSet.isSingleton()) {
+          System.err.println("Error: java.lang.Object is missing."
+              + " The Java standard library was not found.");
+          return EXIT_UNHANDLED_ERROR;
+        }
+
         int compileResult = EXIT_SUCCESS;
 
         Iterator<CompilationUnit> iter = program.compilationUnitIterator();
@@ -78,6 +85,125 @@ aspect FrontendMain {
       System.out.println("\n"
           + "Usage: java " + name() + " <options> <source files>\n"
           + "  -help                     Print a synopsis of standard options\n");
+    }
+
+  }
+
+  abstract public class DependencyFrontend extends Frontend {
+
+    protected DependencyFrontend(String name, String version) {
+      super(name, version);
+    }
+
+    @Override
+    public int run(String[] args, BytecodeReader reader, JavaParser parser) {
+
+      program.resetStatistics();
+      program.initBytecodeReader(reader);
+      program.initJavaParser(parser);
+
+      initOptions();
+      int argResult = processArgs(args);
+      if (argResult != 0) {
+        return argResult;
+      }
+
+      Collection<String> files = program.options().files();
+
+      if (program.options().hasOption("-help") || files.isEmpty()) {
+        printUsage();
+        return EXIT_SUCCESS;
+      }
+
+      Collection<CompilationUnit> work = new LinkedList<CompilationUnit>();
+
+      try {
+        for (String file : files) {
+          program.addSourceFile(file);
+        }
+
+        TypeDecl object = program.lookupType("java.lang", "Object");
+        if (object.isUnknown()) {
+          // If we try to continue without java.lang.Object, we'll just get a stack overflow
+          // in member lookups because the unknown (Object) type would be treated as circular.
+          System.err.println("Error: java.lang.Object is missing."
+              + " The Java standard library was not found.");
+          return EXIT_UNHANDLED_ERROR;
+        }
+
+        SimpleSet<TypeDecl> objectSet = program.lookupTypeSet("java.lang", "Object");
+        if (!objectSet.isSingleton()) {
+          System.err.println("Error: java.lang.Object is missing."
+              + " The Java standard library was not found.");
+          return EXIT_UNHANDLED_ERROR;
+        }
+
+        int compileResult = EXIT_SUCCESS;
+
+        Iterator<CompilationUnit> iter = program.compilationUnitIterator();
+        while (iter.hasNext()) {
+          CompilationUnit unit = iter.next();
+          int result = processCompilationUnit(unit);
+          switch (result) {
+            case EXIT_SUCCESS:
+              break;
+            case EXIT_UNHANDLED_ERROR:
+              return result;
+            default:
+              compileResult = result;
+          }
+        }
+
+        // Ignore errors for now, focus on building the graph
+        program.initializeGraph();
+        program.setGraphEdges();
+        System.err.println(program.typeMap);
+        System.err.println(program.dependencyGraph.getComponents());
+
+      } catch (AbstractClassfileParser.ClassfileFormatError e) {
+        System.err.println(e.getMessage());
+        return EXIT_UNHANDLED_ERROR;
+      } catch (Throwable t) {
+        System.err.println("Fatal exception:");
+        t.printStackTrace(System.err);
+        return EXIT_UNHANDLED_ERROR;
+      }
+      return EXIT_SUCCESS;
+    }
+
+    @Override
+    protected int processCompilationUnit(CompilationUnit unit) throws Error {
+      if (unit != null && unit.fromSource()) {
+        try {
+          Collection<Problem> errors = unit.parseErrors();
+          Collection<Problem> warnings = Collections.emptyList();
+          // Compute static semantic errors when there are no parse errors
+          // or the recover from parse errors option is specified.
+          if (errors.isEmpty() || program.options().hasOption("-recover")) {
+            long start = System.nanoTime();
+            errors = unit.errors();
+            warnings = unit.warnings();
+            program.errorCheckTime += System.nanoTime() - start;
+          }
+          if (!errors.isEmpty()) {
+            /* TODO: return this to normal after finishing dependency graph */
+            //processErrors(errors, unit);
+            return EXIT_ERROR;
+          } else {
+            if (!warnings.isEmpty() && !program.options().hasOption("-nowarn")) {
+              processWarnings(warnings, unit);
+            }
+          }
+        } catch (Error e) {
+          System.err.println("Encountered error while processing " + unit.pathName());
+          throw e;
+        }
+      }
+      return EXIT_SUCCESS;
+    }
+
+    protected void printUsage() {
+      System.out.println("For debug use");
     }
 
   }

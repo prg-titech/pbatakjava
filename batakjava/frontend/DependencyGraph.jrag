@@ -121,4 +121,37 @@ aspect DependencyGraph {
 
   }
 
+  public Graph Program.dependencyGraph;
+
+  public void Program.addEdge(TypeDecl src, TypeDecl dst) {
+    dependencyGraph.addEdge(src.typeNum(), dst.typeNum());
+  }
+
+  public void Program.initializeGraph() {
+    callInitializeGraph();
+    dependencyGraph = new Graph(typeCount);
+  }
+
+  coll LinkedList<Object> Program.callInitializeGraph() root Program;
+
+  TypeDecl contributes each initializeGraph() to Program.callInitializeGraph();
+
+  syn Collection<Object> TypeDecl.initializeGraph() {
+    typeNum();
+    return Collections.emptyList();
+  }
+
+  coll LinkedList<Object> Program.setGraphEdges() root Program;
+
+  TypeAccess contributes each setGraphEdges() to Program.setGraphEdges();
+
+  syn Collection<Object> TypeAccess.setGraphEdges() {
+    for (TypeDecl type: typeSet()) {
+      if (type.isVersioned()) {
+        program().addEdge(hostType(), type);
+      }
+    }
+    return Collections.emptyList();
+  }
+
 }
