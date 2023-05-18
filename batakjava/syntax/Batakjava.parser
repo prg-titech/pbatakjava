@@ -1,17 +1,17 @@
 ClassDecl class_declaration =
     modifiers.m? CLASS IDENTIFIER VER version_number.v super.s? interfaces.i? class_body.b
       {: return new VersionClassDecl(new Modifiers(m), IDENTIFIER, s, i, b, v); :}
-  | modifiers.m? CLASS IDENTIFIER VER version_number.v GT version_parameters.p LT super.s?
+  | modifiers.m? CLASS IDENTIFIER VER version_number.v LGUI version_parameters.p RGUI super.s?
     interfaces.i? class_body.b
       {: return new GenericVersionClassDecl(new Modifiers(m), IDENTIFIER, s, i, b, v, p); :}
   ;
 
 Access class_or_interface_type =
-    name.n GT version_arguments.v LT
+    name.n LGUI version_arguments.v RGUI
       {: return new ParVersionTypeAccess(n, v); :}
   | name.n SHARP version_arguments.v SHARP
       {: return new VersionTypeAccess(n, v); :}
-  | name.n SHARP version_arguments.va SHARP GT version_arguments.vb LT
+  | name.n SHARP version_arguments.va SHARP LGUI version_arguments.vb RGUI
       {: return new ParVersionTypeAccess(new VersionTypeAccess(n, va), vb); :}
   ;
 
