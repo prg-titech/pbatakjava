@@ -157,16 +157,8 @@ aspect FrontendMain {
         // Ignore errors for now, focus on building the graph
         program.initializeGraph();
         program.setGraphEdges();
-        program.dependencyGraph.setComponents();
-        System.err.println(program.printTypeMap());
-        System.err.println(program.dependencyGraph.adjMatrix);
-        System.err.println(program.dependencyGraph.components);
-        System.err.println();
-        program.dependencyGraph.joinComponents();
-        System.err.println(program.dependencyGraph.idToComponentId);
-        System.err.println(program.dependencyGraph.componentsAdjMatrix);
+        program.sortGraph();
 
-        program.dependencyGraph.sortComponents();
         System.err.println(program.dependencyGraph.sortedComponents);
 
       } catch (AbstractClassfileParser.ClassfileFormatError e) {

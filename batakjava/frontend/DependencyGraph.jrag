@@ -1,41 +1,16 @@
 aspect DependencyGraph {
 
-  public class Node {
-
-    private int id = -1;
-    private int index = -1;
-    private int lowlink = -1;
-    private boolean onStack = false;
-
-    public Node(int i) { id = i; }
-
-    public int getId() { return id; }
-    public int getIndex() { return index; }
-    public int getLowlink() { return lowlink; }
-    public boolean getOnStack() { return onStack; }
-
-    public void setIndex(int i) { index = i; }
-    public void setLowlink(int l) { lowlink = l; }
-    public void setOnStack(boolean b) { onStack = b; }
-
-  }
-
   public class Graph {
     
-    public java.util.List<Node> vertices;
     public java.util.List<java.util.List<Boolean>> adjMatrix;
-    
+    public java.util.List<java.util.List<Boolean>> componentsAdjMatrix;
+    public java.util.Map<Integer,Integer> componentMap;
     public java.util.List<java.util.Set<Integer>> components;
     public java.util.List<Integer> sortedComponents;
 
-    public java.util.Map<Integer,Integer> idToComponentId;
-    public java.util.List<java.util.List<Boolean>> componentsAdjMatrix;
-
     public Graph(int typeNum) {
-      vertices = new ArrayList<Node>(typeNum);
       adjMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
       for (int i=0; i<typeNum; i++) {
-        vertices.add(new Node(i));
         java.util.List<Boolean> row = new ArrayList<Boolean>(typeNum);
         for (int j=0; j<typeNum; j++) {
           row.add(false);
@@ -48,7 +23,7 @@ aspect DependencyGraph {
       adjMatrix.get(src).set(dest, true);
     }
 
-    public java.util.Set<Integer> getConnecteds(int index) {
+    public java.util.Set<Integer> getConnected(int index) {
       java.util.List<Boolean> row = adjMatrix.get(index);
       java.util.Set<Integer> connected = new HashSet();
       for (int i=0; i<row.size(); i++) {
@@ -66,29 +41,30 @@ aspect DependencyGraph {
     }
 
     public void joinComponents() {
-      int size = components.size();
+      int size = adjMatrix.size();
+      int componentsSize = components.size();
 
-      idToComponentId = new HashMap<Integer,Integer>(vertices.size());
+      componentMap = new HashMap<Integer,Integer>(size);
       // Remove self-reference or use conditional?
-      componentsAdjMatrix = new ArrayList<java.util.List<Boolean>>(size);
+      componentsAdjMatrix = new ArrayList<java.util.List<Boolean>>(componentsSize);
 
       int newId = 0;
       for (java.util.Set<Integer> component: components) {
-        java.util.List<Boolean> newRow = new ArrayList(size);
-        for (int i=0; i<size; i++) {
+        java.util.List<Boolean> newRow = new ArrayList(componentsSize);
+        for (int i=0; i<componentsSize; i++) {
           newRow.add(false);
         }
         for (Integer vertex: component) {
-          idToComponentId.put(vertex, newId);
+          componentMap.put(vertex, newId);
         }
         newId++;
         componentsAdjMatrix.add(newRow);
       }
 
-      for (int i=0; i<vertices.size(); i++) {
-        for (Integer connected: getConnecteds(i)) {
-          Integer thisComponent = idToComponentId.get(i);
-          Integer connectedComponent = idToComponentId.get(connected);
+      for (int i=0; i<size; i++) {
+        for (Integer connected: getConnected(i)) {
+          Integer thisComponent = componentMap.get(i);
+          Integer connectedComponent = componentMap.get(connected);
           componentsAdjMatrix.get(thisComponent).set(connectedComponent, true);
         }
       }
@@ -112,56 +88,54 @@ aspect DependencyGraph {
       private java.util.List<Integer> mark;
       private java.util.List<Integer> lowlink;
       private java.util.List<Boolean> onStack;
-      private java.util.Stack<Node> stack;
+      private java.util.Stack<Integer> stack;
 
       public void compute() {
+        int size = adjMatrix.size();
         components = new ArrayList();
         index = 0;
-        stack = new java.util.Stack<Node>();
+        stack = new java.util.Stack<Integer>();
+        mark = new ArrayList(size);
+        lowlink = new ArrayList(size);
+        onStack = new ArrayList(size);
         for (int i=0; i<adjMatrix.size(); i++) {
           mark.add(-1);
           lowlink.add(-1);
-          onStack.add(-1);
+          onStack.add(false);
         } 
-        for (Node n: vertices) {
-          if (n.getIndex() == -1) {
+        for (int n=0; n<adjMatrix.size(); n++) {
+          if (mark.get(n) == -1) {
             connect(n);
           }
         }
       }
 
-      public void connect(Node n) {
-        n.setIndex(index);
-        n.setLowlink(index);
+      public void connect(int n) {
+        mark.set(n, index);
+        lowlink.set(n, index);
         index += 1;
         stack.push(n);
-        n.setOnStack(true);
-        for (Integer otherVertex: getConnecteds(n.getId())) {
-          Node o = vertices.get(otherVertex);
-          if (o.getIndex() == -1) {
+        onStack.set(n, true);
+        for (Integer o: getConnected(n)) {
+          if (mark.get(o) == -1) {
             connect(o);
-            int newLowlink = n.getLowlink() < o.getLowlink() 
-                              ? n.getLowlink() 
-                              : o.getLowlink();
-            n.setLowlink(newLowlink);
-          } else if (o.getOnStack()) {
-            int newLowlink = n.getLowlink() < o.getIndex() 
-                              ? n.getLowlink() 
-                              : o.getIndex();
-            n.setLowlink(newLowlink);
+            int newLowlink = lowlink.get(n) < lowlink.get(o) ? lowlink.get(n) : lowlink.get(o);
+            lowlink.set(n, newLowlink);
+          } else if (onStack.get(o)) {
+            int newLowlink = lowlink.get(n) < mark.get(o) ? lowlink.get(n) : mark.get(o);
+            lowlink.set(n, newLowlink);
           }
         }
-        if (n.getLowlink() == n.getIndex()) {
-          java.util.Set<Integer> component = new HashSet();
-          Node o;
+        if (lowlink.get(n) == mark.get(n)) {
+          java.util.Set<Integer> c = new HashSet();
+          Integer o;
           do {
             o = stack.pop();
-            o.setOnStack(false);
-            component.add(o.getId());
-          } while (n.getIndex() != o.getIndex());
-          components.add(component);
+            onStack.set(o, false);
+            c.add(o);
+          } while (mark.get(n) != mark.get(o));
+          components.add(c);
         }
-
       }
       
     }  
@@ -232,6 +206,12 @@ aspect DependencyGraph {
       }
     }
     return Collections.emptyList();
+  }
+
+  public void Program.sortGraph() {
+    dependencyGraph.setComponents();
+    dependencyGraph.joinComponents();
+    dependencyGraph.sortComponents();
   }
 
 }
