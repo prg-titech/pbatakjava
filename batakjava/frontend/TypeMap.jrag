@@ -12,5 +12,21 @@ aspect TypeMap {
 
   syn lazy Integer TypeDecl.typeNum() = program().getTypeNum(this);
 
+  public String Program.printTypeMap() {
+    StringBuilder s = new StringBuilder();
+    s.append("{");
+    int i = 1;
+    for (Integer key: typeMap.keySet()) {
+      s.append(key);
+      s.append("=");
+      s.append(typeMap.get(key).verFullName());
+      if (i != typeMap.size()) {
+        s.append(", ");
+      }
+      i++;
+    }
+    s.append("}");
+    return s.toString();
+  }
 
 }

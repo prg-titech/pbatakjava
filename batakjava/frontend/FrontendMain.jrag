@@ -157,7 +157,7 @@ aspect FrontendMain {
         // Ignore errors for now, focus on building the graph
         program.initializeGraph();
         program.setGraphEdges();
-        System.err.println(program.typeMap);
+        System.err.println(program.printTypeMap());
         System.err.println(program.dependencyGraph.getComponents());
 
       } catch (AbstractClassfileParser.ClassfileFormatError e) {
