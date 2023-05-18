@@ -23,52 +23,106 @@ aspect DependencyGraph {
   public class Graph {
     
     public java.util.List<Node> vertices;
-    public java.util.List<java.util.List<Boolean>> adjacencyMatrix;
+    public java.util.List<java.util.List<Boolean>> adjMatrix;
+    
+    public java.util.List<java.util.Set<Integer>> components;
+    public java.util.List<Integer> sortedComponents;
+
+    public java.util.Map<Integer,Integer> idToComponentId;
+    public java.util.List<java.util.List<Boolean>> componentsAdjMatrix;
 
     public Graph(int typeNum) {
       vertices = new ArrayList<Node>(typeNum);
-      adjacencyMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
+      adjMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
       for (int i=0; i<typeNum; i++) {
         vertices.add(new Node(i));
         java.util.List<Boolean> row = new ArrayList<Boolean>(typeNum);
         for (int j=0; j<typeNum; j++) {
           row.add(false);
         }
-        adjacencyMatrix.add(row);  
+        adjMatrix.add(row);  
       }
     }
 
     public void addEdge(int src, int dest) {
-      adjacencyMatrix.get(src).set(dest, true);
+      adjMatrix.get(src).set(dest, true);
     }
 
-    public java.util.Set<Integer> getEdges(int index) {
-      java.util.List<Boolean> row = adjacencyMatrix.get(index);
-      java.util.Set<Integer> edges = new HashSet();
+    public java.util.Set<Integer> getConnecteds(int index) {
+      java.util.List<Boolean> row = adjMatrix.get(index);
+      java.util.Set<Integer> connected = new HashSet();
       for (int i=0; i<row.size(); i++) {
         if (row.get(i)) {
-          edges.add(i);
+          connected.add(i);
         }
       }
-      return edges;
+      return connected;
+    }
+
+    public void setComponents() {
+      if (components == null) {
+        new Components().compute();
+      }
+    }
+
+    public void joinComponents() {
+      int size = components.size();
+
+      idToComponentId = new HashMap<Integer,Integer>(vertices.size());
+      // Remove self-reference or use conditional?
+      componentsAdjMatrix = new ArrayList<java.util.List<Boolean>>(size);
+
+      int newId = 0;
+      for (java.util.Set<Integer> component: components) {
+        java.util.List<Boolean> newRow = new ArrayList(size);
+        for (int i=0; i<size; i++) {
+          newRow.add(false);
+        }
+        for (Integer vertex: component) {
+          idToComponentId.put(vertex, newId);
+        }
+        newId++;
+        componentsAdjMatrix.add(newRow);
+      }
+
+      for (int i=0; i<vertices.size(); i++) {
+        for (Integer connected: getConnecteds(i)) {
+          Integer thisComponent = idToComponentId.get(i);
+          Integer connectedComponent = idToComponentId.get(connected);
+          componentsAdjMatrix.get(thisComponent).set(connectedComponent, true);
+        }
+      }
+    }
+
+    public void sortComponents() {
+      if (sortedComponents == null) {
+        new Sorting().compute();
+      }
     }
 
     public void printGraph() {
-      for (java.util.List<Boolean> row: adjacencyMatrix) {
+      for (java.util.List<Boolean> row: adjMatrix) {
         System.out.println(row);
       }
     }
 
     private class Components {
 
-      public java.util.List<java.util.Set<Integer>> components;
       private int index;
+      private java.util.List<Integer> mark;
+      private java.util.List<Integer> lowlink;
+      private java.util.List<Boolean> onStack;
       private java.util.Stack<Node> stack;
 
       public void compute() {
         components = new ArrayList();
         index = 0;
         stack = new java.util.Stack<Node>();
+        for (int i=0; i<adjMatrix.size(); i++) {
+          mark.add(-1);
+          lowlink.add(-1);
+          onStack.add(-1);
+        } 
         for (Node n: vertices) {
           if (n.getIndex() == -1) {
             connect(n);
@@ -82,8 +136,8 @@ aspect DependencyGraph {
         index += 1;
         stack.push(n);
         n.setOnStack(true);
-        for (Integer edge: getEdges(n.getId())) {
-          Node o = vertices.get(edge);
+        for (Integer otherVertex: getConnecteds(n.getId())) {
+          Node o = vertices.get(otherVertex);
           if (o.getIndex() == -1) {
             connect(o);
             int newLowlink = n.getLowlink() < o.getLowlink() 
@@ -107,17 +161,43 @@ aspect DependencyGraph {
           } while (n.getIndex() != o.getIndex());
           components.add(component);
         }
+
       }
       
-    }
+    }  
 
-    public java.util.List<java.util.Set<Integer>> getComponents() {
-      Components c = new Components();
-      if (c.components == null) {
-        c.compute();
+    private class Sorting {
+
+      java.util.List<Integer> mark;
+
+      public void compute() {
+        int size = components.size();
+        sortedComponents = new ArrayList<Integer>(size);
+        mark = new ArrayList(size);
+        for (int i=0; i<size; i++) {
+          mark.add(-1);
+        }
+        for (int i=0; i<size; i++) {
+          sort(i);
+        }
       }
-      return c.components;
-    }    
+
+      public void sort(int n) {
+        if (mark.get(n) == 1) {
+          return;
+        }
+        mark.set(n, 0);
+        java.util.List<Boolean> row = componentsAdjMatrix.get(n);
+        for (int i=0; i<components.size(); i++) {
+          if (row.get(i) && i != n) {
+            sort(i);
+          }
+        }
+        mark.set(n, 1);
+        sortedComponents.add(n);
+      }
+
+    }
 
   }
 
