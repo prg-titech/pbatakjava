@@ -1,5 +1,5 @@
 public class C ver 1 {
-  ColoredPoint m() {
-    return new ColoredPoint();
+  D m() {
+    return new D();
   }
 }
