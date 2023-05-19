@@ -1,0 +1,217 @@
+aspect DependencyGraph {
+
+  public class Graph {
+    
+    public java.util.List<java.util.List<Boolean>> adjMatrix;
+    public java.util.List<java.util.List<Boolean>> componentsAdjMatrix;
+    public java.util.Map<Integer,Integer> componentMap;
+    public java.util.List<java.util.Set<Integer>> components;
+    public java.util.List<Integer> sortedComponents;
+
+    public Graph(int typeNum) {
+      adjMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
+      for (int i=0; i<typeNum; i++) {
+        java.util.List<Boolean> row = new ArrayList<Boolean>(typeNum);
+        for (int j=0; j<typeNum; j++) {
+          row.add(false);
+        }
+        adjMatrix.add(row);  
+      }
+    }
+
+    public void addEdge(int src, int dest) {
+      adjMatrix.get(src).set(dest, true);
+    }
+
+    public java.util.Set<Integer> getConnected(int index) {
+      java.util.List<Boolean> row = adjMatrix.get(index);
+      java.util.Set<Integer> connected = new HashSet();
+      for (int i=0; i<row.size(); i++) {
+        if (row.get(i)) {
+          connected.add(i);
+        }
+      }
+      return connected;
+    }
+
+    public void setComponents() {
+      if (components == null) {
+        new Components().compute();
+      }
+    }
+
+    public void joinComponents() {
+      int size = adjMatrix.size();
+      int componentsSize = components.size();
+
+      componentMap = new HashMap<Integer,Integer>(size);
+      // Remove self-reference or use conditional?
+      componentsAdjMatrix = new ArrayList<java.util.List<Boolean>>(componentsSize);
+
+      int newId = 0;
+      for (java.util.Set<Integer> component: components) {
+        java.util.List<Boolean> newRow = new ArrayList(componentsSize);
+        for (int i=0; i<componentsSize; i++) {
+          newRow.add(false);
+        }
+        for (Integer vertex: component) {
+          componentMap.put(vertex, newId);
+        }
+        newId++;
+        componentsAdjMatrix.add(newRow);
+      }
+
+      for (int i=0; i<size; i++) {
+        for (Integer connected: getConnected(i)) {
+          Integer thisComponent = componentMap.get(i);
+          Integer connectedComponent = componentMap.get(connected);
+          componentsAdjMatrix.get(thisComponent).set(connectedComponent, true);
+        }
+      }
+    }
+
+    public void sortComponents() {
+      if (sortedComponents == null) {
+        new Sorting().compute();
+      }
+    }
+
+    public void printGraph() {
+      for (java.util.List<Boolean> row: adjMatrix) {
+        System.out.println(row);
+      }
+    }
+
+    private class Components {
+
+      private int index;
+      private java.util.List<Integer> mark;
+      private java.util.List<Integer> lowlink;
+      private java.util.List<Boolean> onStack;
+      private java.util.Stack<Integer> stack;
+
+      public void compute() {
+        int size = adjMatrix.size();
+        components = new ArrayList();
+        index = 0;
+        stack = new java.util.Stack<Integer>();
+        mark = new ArrayList(size);
+        lowlink = new ArrayList(size);
+        onStack = new ArrayList(size);
+        for (int i=0; i<adjMatrix.size(); i++) {
+          mark.add(-1);
+          lowlink.add(-1);
+          onStack.add(false);
+        } 
+        for (int n=0; n<adjMatrix.size(); n++) {
+          if (mark.get(n) == -1) {
+            connect(n);
+          }
+        }
+      }
+
+      public void connect(int n) {
+        mark.set(n, index);
+        lowlink.set(n, index);
+        index += 1;
+        stack.push(n);
+        onStack.set(n, true);
+        for (Integer o: getConnected(n)) {
+          if (mark.get(o) == -1) {
+            connect(o);
+            int newLowlink = lowlink.get(n) < lowlink.get(o) ? lowlink.get(n) : lowlink.get(o);
+            lowlink.set(n, newLowlink);
+          } else if (onStack.get(o)) {
+            int newLowlink = lowlink.get(n) < mark.get(o) ? lowlink.get(n) : mark.get(o);
+            lowlink.set(n, newLowlink);
+          }
+        }
+        if (lowlink.get(n) == mark.get(n)) {
+          java.util.Set<Integer> c = new HashSet();
+          Integer o;
+          do {
+            o = stack.pop();
+            onStack.set(o, false);
+            c.add(o);
+          } while (mark.get(n) != mark.get(o));
+          components.add(c);
+        }
+      }
+      
+    }  
+
+    private class Sorting {
+
+      java.util.List<Integer> mark;
+
+      public void compute() {
+        int size = components.size();
+        sortedComponents = new ArrayList<Integer>(size);
+        mark = new ArrayList(size);
+        for (int i=0; i<size; i++) {
+          mark.add(-1);
+        }
+        for (int i=0; i<size; i++) {
+          sort(i);
+        }
+      }
+
+      public void sort(int n) {
+        if (mark.get(n) == 1) {
+          return;
+        }
+        mark.set(n, 0);
+        java.util.List<Boolean> row = componentsAdjMatrix.get(n);
+        for (int i=0; i<components.size(); i++) {
+          if (row.get(i) && i != n) {
+            sort(i);
+          }
+        }
+        mark.set(n, 1);
+        sortedComponents.add(n);
+      }
+
+    }
+
+  }
+
+  public Graph Program.dependencyGraph;
+
+  public void Program.addEdge(TypeDecl src, TypeDecl dst) {
+    dependencyGraph.addEdge(src.typeNum(), dst.typeNum());
+  }
+
+  public void Program.initializeGraph() {
+    callInitializeGraph();
+    dependencyGraph = new Graph(typeCount);
+  }
+
+  coll LinkedList<Object> Program.callInitializeGraph() root Program;
+
+  TypeDecl contributes each initializeGraph() to Program.callInitializeGraph();
+
+  syn Collection<Object> TypeDecl.initializeGraph() {
+    typeNum();
+    return Collections.emptyList();
+  }
+
+  coll LinkedList<Object> Program.setGraphEdges() root Program;
+
+  TypeAccess contributes each setGraphEdges() to Program.setGraphEdges();
+
+  syn Collection<Object> TypeAccess.setGraphEdges() {
+    for (TypeDecl type: typeSet()) {
+      if (type.isVersioned()) {
+        program().addEdge(hostType(), type);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+  public void Program.sortGraph() {
+    dependencyGraph.setComponents();
+    dependencyGraph.joinComponents();
+    dependencyGraph.sortComponents();
+  }
+
+}
