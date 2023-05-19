@@ -1,6 +1,10 @@
 VersionClassDecl: ClassDecl ::= Version;
 GenericVersionClassDecl: VersionClassDecl ::= VersionVariable*;
 
+GenericVersionMethodDecl: MethodDecl ::= VersionVariable*;
+
+ParVersionMethodAccess: MethodAccess ::= VersionArgument*;
+
 VersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
 ParVersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
 
