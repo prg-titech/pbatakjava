@@ -3,10 +3,8 @@ aspect DependencyGraph {
   public class Graph {
     
     public java.util.List<java.util.List<Boolean>> adjMatrix;
-    public java.util.List<java.util.List<Boolean>> componentsAdjMatrix;
-    public java.util.Map<Integer,Integer> componentMap;
+    public java.util.List<java.util.List<Boolean>> compAdjMatrix;
     public java.util.List<java.util.Set<Integer>> components;
-    public java.util.List<Integer> sortedComponents;
 
     public Graph(int typeNum) {
       adjMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
@@ -42,37 +40,29 @@ aspect DependencyGraph {
 
     public void joinComponents() {
       int size = adjMatrix.size();
-      int componentsSize = components.size();
+      int numComponent = components.size();
 
-      componentMap = new HashMap<Integer,Integer>(size);
-      // Remove self-reference or use conditional?
-      componentsAdjMatrix = new ArrayList<java.util.List<Boolean>>(componentsSize);
+      java.util.Map<Integer,Integer> componentMap = new HashMap(size);
+      compAdjMatrix = new ArrayList<java.util.List<Boolean>>(numComponent);
 
-      int newId = 0;
-      for (java.util.Set<Integer> component: components) {
-        java.util.List<Boolean> newRow = new ArrayList(componentsSize);
-        for (int i=0; i<componentsSize; i++) {
-          newRow.add(false);
+      for (int id=0; id<numComponent; id++) {
+        java.util.Set<Integer> component = components.get(id);
+        java.util.List<Boolean> newRow = new ArrayList(numComponent);
+        for (int j=0; j<numComponent; j++) { 
+          newRow.add(false); 
         }
-        for (Integer vertex: component) {
-          componentMap.put(vertex, newId);
+        for (Integer vertex: component) { 
+          componentMap.put(vertex, id); 
         }
-        newId++;
-        componentsAdjMatrix.add(newRow);
+        compAdjMatrix.add(newRow);
       }
 
-      for (int i=0; i<size; i++) {
-        for (Integer connected: getConnected(i)) {
-          Integer thisComponent = componentMap.get(i);
+      for (int vertex=0; vertex<size; vertex++) {
+        for (Integer connected: getConnected(vertex)) {
+          Integer vertexComponent = componentMap.get(vertex);
           Integer connectedComponent = componentMap.get(connected);
-          componentsAdjMatrix.get(thisComponent).set(connectedComponent, true);
+          compAdjMatrix.get(vertexComponent).set(connectedComponent, true);
         }
-      }
-    }
-
-    public void sortComponents() {
-      if (sortedComponents == null) {
-        new Sorting().compute();
       }
     }
 
@@ -140,50 +130,20 @@ aspect DependencyGraph {
       
     }  
 
-    private class Sorting {
-
-      java.util.List<Integer> mark;
-
-      public void compute() {
-        int size = components.size();
-        sortedComponents = new ArrayList<Integer>(size);
-        mark = new ArrayList(size);
-        for (int i=0; i<size; i++) {
-          mark.add(-1);
-        }
-        for (int i=0; i<size; i++) {
-          sort(i);
-        }
-      }
-
-      public void sort(int n) {
-        if (mark.get(n) == 1) {
-          return;
-        }
-        mark.set(n, 0);
-        java.util.List<Boolean> row = componentsAdjMatrix.get(n);
-        for (int i=0; i<components.size(); i++) {
-          if (row.get(i) && i != n) {
-            sort(i);
-          }
-        }
-        mark.set(n, 1);
-        sortedComponents.add(n);
-      }
-
-    }
-
   }
 
-  public Graph Program.dependencyGraph;
+  public Graph Program.graph;
 
   public void Program.addEdge(TypeDecl src, TypeDecl dst) {
-    dependencyGraph.addEdge(src.typeNum(), dst.typeNum());
+    graph.addEdge(src.typeNum(), dst.typeNum());
   }
 
   public void Program.initializeGraph() {
     callInitializeGraph();
-    dependencyGraph = new Graph(typeCount);
+    graph = new Graph(typeCount);
+    setGraphEdges();
+    graph.setComponents();
+    graph.joinComponents();
   }
 
   coll LinkedList<Object> Program.callInitializeGraph() root Program;
@@ -206,12 +166,6 @@ aspect DependencyGraph {
       }
     }
     return Collections.emptyList();
-  }
-
-  public void Program.sortGraph() {
-    dependencyGraph.setComponents();
-    dependencyGraph.joinComponents();
-    dependencyGraph.sortComponents();
   }
 
 }
