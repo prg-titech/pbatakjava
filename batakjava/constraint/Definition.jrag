@@ -1,0 +1,116 @@
+aspect Constraint {
+
+  /**
+   *  Disjunction of clauses
+   */
+   public class Formula {
+    public java.util.List<Clause> clauses;
+
+    public Formula() { this.clauses = new LinkedList<Clause>(); }
+
+    public Formula(Clause c) {
+      this();
+      this.clauses.add(c);
+    }
+
+    public void add(Formula f) {
+      for (Clause fc: f.clauses) {
+        clauses.add(fc);
+      }
+    }
+
+    public void add(Clause c) {
+      this.clauses.add(c);
+    }
+
+    public void multiply(Formula f) {
+      if (clauses.size() == 0) {
+        add(f);
+        return;
+      }
+      if (f.clauses.size() == 0) {
+        return;
+      }
+      for (Clause thisc: clauses) {
+        for (Clause fc: f.clauses) {
+          thisc.add(fc);
+        }
+      }
+    }
+
+    public void multiply(Clause c) {
+      if (clauses.size() == 0) {
+        add(c);
+        return;
+      }
+      for (Clause thisc: clauses) {
+        thisc.add(c);
+      }
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder result = new StringBuilder();
+      result.append("{");
+      for (int i=0; i<clauses.size(); i++) {
+        if (i > 0) result.append(" OR ");
+        result.append(clauses.get(i).toString());
+      }
+      result.append("}");
+      return result.toString();
+    }
+
+  }
+
+  /**
+   *  Conjunction of literals
+   */
+   public class Clause {
+    public java.util.List<Lit> lits;
+
+    public Clause() { this.lits = new LinkedList<Lit>(); }
+
+    public Clause(Lit l) {
+      this();
+      this.lits.add(l);
+    }
+
+    public void add(Clause c) {
+      for (Lit cl: c.lits) {
+        lits.add(cl);
+      }
+    }
+
+    public void add(Lit l) {
+      this.lits.add(l);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder result = new StringBuilder();
+      result.append("(");
+      for (int i = 0; i < lits.size(); i++) {
+        if (i > 0) result.append(" AND ");
+        result.append(lits.get(i).toString());
+      }
+      result.append(")");
+      return result.toString();
+    }
+  }
+
+  public class Lit {
+    public IntExpr varConst;
+    public final Integer typeInt;
+
+    public Lit(IntExpr varConst, Integer typeInt) {
+      this.varConst = varConst;
+      this.typeInt = typeInt;
+    }
+
+    @Override
+    public String toString() {
+      return varConst.toString() + ":" + typeInt.toString();
+    }
+  }
+
+}

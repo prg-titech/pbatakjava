@@ -1,0 +1,54 @@
+import com.microsoft.z3.IntExpr;
+
+aspect ConstraintGeneration {  
+
+  // coll LinkedList<Formula> TypeDecl.constraintList() root TypeDecl;
+
+  syn Collection<Formula> TypeDecl.constraint() = Collections.emptyList();
+
+  public Integer Program.varCount = 0;
+
+  public Map<Integer,Expr> Program.varMap = new HashMap<Integer,Expr>();
+
+  public Integer Program.getVarNum(Expr expr) {
+    Integer count = varCount++;
+    varMap.put(count, expr);
+    return count;
+  }
+
+  syn lazy Integer Expr.varNum() = program().getVarNum(this);
+  
+  eq ClassInstanceExpr.varNum() = getAccess().varNum();
+
+  public String Expr.var() {
+    return varNum().toString();
+  }
+
+  public IntExpr Expr.solverConst;
+
+  coll LinkedList<Object> Program.initConst() root Program;
+
+  Expr contributes each initConst() to Program.initConst();
+
+  syn Collection<Expr> Expr.initConst() {
+    TypeDecl host = hostType();
+    Integer hostTypeNum = host.typeNum();
+    Integer componentNum = -1;
+    for (int i=0; i<program().numComponent(); i++) {
+      java.util.Set<Integer> component = program().getComponent(i);
+      if (component.contains(hostTypeNum)) {
+        componentNum = i;
+      }
+    }
+    if (componentNum != -1) {
+      System.err.println(dumpTree());
+      System.err.println(var());
+      Context ctx = program().contexts.get(componentNum);
+      solverConst = ctx.mkIntConst(var());
+    } else {
+      throw new Error("Host type " + host.verFullName() + " not found in any component.");
+    }
+    return Collections.emptyList();
+  }
+
+}

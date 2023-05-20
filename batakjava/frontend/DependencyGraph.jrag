@@ -146,6 +146,14 @@ aspect DependencyGraph {
     graph.joinComponents();
   }
 
+  public int Program.numComponent() {
+    return graph.components.size();
+  }
+
+  public java.util.Set Program.getComponent(int i) {
+    return graph.components.get(i);
+  }
+
   coll LinkedList<Object> Program.callInitializeGraph() root Program;
 
   TypeDecl contributes each initializeGraph() to Program.callInitializeGraph();

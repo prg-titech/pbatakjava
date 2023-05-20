@@ -1,0 +1,38 @@
+import com.microsoft.z3.Context;
+
+aspect ConstraintSolving {
+
+  /*
+  coll LinkedList<Formula> VersionClassDecl.constraint() root VersionClassDecl;
+
+  // base example
+  TypeAccess contributes each constraintList() to VersionClassDecl.constraint();
+
+  syn Collection<Formula> TypeAccess.constraintList() = constraint().toList();
+  */
+
+  public java.util.List<Context> Program.contexts;
+
+  public int Program.solve() {
+    // Setting up dependency graph
+    initializeGraph();
+
+    contexts = new ArrayList(numComponent());
+
+    // Create a context for each component
+    for (int id=0; id<numComponent(); id++) {
+      HashMap<String,String> cfg = new HashMap<String,String>();
+      cfg.put("model", "true");
+      Context ctx = new Context(cfg);
+      contexts.add(ctx);
+    }
+
+    // Initialize solver constant
+    initConst();
+
+    return 0;
+  }
+
+
+
+}
