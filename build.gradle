@@ -22,6 +22,8 @@ jastadd {
       jastadd {
         basedir "batakjava"
         include "**/frontend/*.jrag"
+        include "**/frontend/*.jadd"
+        include "**/constraint/*.jrag"
         include "**/syntax/*.ast"
       }
 
@@ -71,7 +73,7 @@ jar {
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaChecker'
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaCompiler'
 jar.manifest.attributes 'Main-Class': 'org.batakjava.BatakjavaChecker'
-jar.manifest.attributes 'Main-Class': 'org.batakjava.DependencyChecker'
+//jar.manifest.attributes 'Main-Class': 'org.batakjava.DependencyChecker'
 jar.destinationDir = projectDir
 
 // Java -source and -target version.
