@@ -45,6 +45,79 @@ aspect PrettyPrint {
     out.print("}");
   }
 
+  public void GenericVersionClassDecl.prettyPrint(PrettyPrinter out) {
+    if (hasDocComment()) {
+      out.print(docComment());
+    }
+    if (!out.isNewLine()) {
+      out.println();
+    }
+    out.print(getModifiers());
+    out.print("class ");
+    out.print(getID());
+    out.print(" ver ");
+    out.print(getVersion());
+    out.print("«");
+    out.join(getVersionVariableList(), new PrettyPrinter.Joiner() {
+      @Override
+      public void printSeparator(PrettyPrinter out) {
+        out.print(",");
+      }
+    });
+    out.print("»");
+    if (hasSuperClass()) {
+      out.print(" extends ");
+      out.print(getSuperClass());
+    }
+    if (hasImplements()) {
+      out.print(" implements ");
+      out.join(getImplementss(), new PrettyPrinter.Joiner() {
+        @Override
+        public void printSeparator(PrettyPrinter out) {
+          out.print(", ");
+        }
+      });
+    }
+    out.print(" {");
+    out.println();
+    out.indent(1);
+    out.join(getBodyDecls(), new PrettyPrinter.Joiner() {
+      @Override
+      public void printSeparator(PrettyPrinter out) {
+        out.println();
+        out.println();
+      }
+    });
+    if (!out.isNewLine()) {
+      out.println();
+    }
+    out.print("}");
+  }
+
+  public void VersionVariable.prettyPrint(PrettyPrinter out) {
+    out.print(getID());
+    out.print("~v");
+    out.print(var());
+  }
+
+  public void VersionTypeAccess.prettyPrint(PrettyPrinter out) {
+    out.print(getTypeAccess());
+    out.print("#");
+    out.print(getVersionArgument());
+    out.print("#");
+    out.print("~v");
+    out.print(getVersionArgument().var());
+    out.print("~");
+  }
+
+  public void VersionVarArgument.prettyPrint(PrettyPrinter out) {
+    out.print(getID());
+  }
+
+  public void VersionNumArgument.prettyPrint(PrettyPrinter out) {
+    out.print(getID());
+  }
+
   refine Java4PrettyPrint 
   public void TypeAccess.prettyPrint(PrettyPrinter out) {
     if (hasPackage()) {
@@ -52,9 +125,11 @@ aspect PrettyPrint {
       out.print(".");
     }
     out.print(getID());
-    out.print("~v");
-    out.print(var());
-    out.print("~");
+    if (!(parent instanceof VersionTypeAccess)) {
+      out.print("~v");
+      out.print(var());
+      out.print("~");
+    }
   }
 
   refine Java4PrettyPrint

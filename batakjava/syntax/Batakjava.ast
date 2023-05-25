@@ -5,7 +5,7 @@ GenericVersionMethodDecl: MethodDecl ::= VersionVariable*;
 
 ParVersionMethodAccess: MethodAccess ::= VersionArgument*;
 
-VersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
+VersionTypeAccess: Access ::= TypeAccess:Access VersionArgument;
 ParVersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
 
 VersionVariable: Access ::= <ID:String>;

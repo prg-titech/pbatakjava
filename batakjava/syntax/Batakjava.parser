@@ -28,10 +28,10 @@ Access method_invocation =
 Access class_or_interface_type =
     name.n LGUI version_arguments.v RGUI
       {: return new ParVersionTypeAccess(n, v); :}
-  | name.n SHARP version_arguments.v SHARP
+  | name.n SHARP version_argument.v SHARP
       {: return new VersionTypeAccess(n, v); :}
-  | name.n SHARP version_arguments.va SHARP LGUI version_arguments.vb RGUI
-      {: return new ParVersionTypeAccess(new VersionTypeAccess(n, va), vb); :}
+  | name.n SHARP version_argument.v SHARP LGUI version_arguments.vb RGUI
+      {: return new ParVersionTypeAccess(new VersionTypeAccess(n, v), vb); :}
   ;
 
 List version_parameters = 
