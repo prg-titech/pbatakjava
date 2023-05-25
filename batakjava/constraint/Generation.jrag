@@ -8,17 +8,39 @@ aspect ConstraintGeneration {
 
   public Integer Program.varCount = 0;
 
-  public Map<Integer,Expr> Program.varMap = new HashMap<Integer,Expr>();
+  public Map<Integer,ASTNode> Program.varMap = new HashMap();
 
-  public Integer Program.getVarNum(Expr expr) {
+  public Integer Program.getVarNum(ASTNode node) {
     Integer count = varCount++;
-    varMap.put(count, expr);
+    varMap.put(count, node);
     return count;
   }
 
   syn lazy Integer Expr.varNum() = program().getVarNum(this);
   
+  eq Access.varNum() {
+    if (parent instanceof VersionTypeAccess) {
+      return ((VersionTypeAccess) parent).varNum();
+    }
+    return program().getVarNum(this);
+  }
+
   eq ClassInstanceExpr.varNum() = getAccess().varNum();
+  eq Dot.varNum() = lastAccess().varNum();
+  // TODO: what about polymorphic inheritance?
+  eq VarAccess.varNum() = decl().varNum();
+
+  eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
+  eq VersionVarArgument.varNum() = decl().varNum();
+  eq VersionNumArgument.varNum() = program().getVarNum(this);
+
+  syn lazy Integer Variable.varNum();
+  eq ParameterDeclaration.varNum() = getTypeAccess().varNum();
+  eq Declarator.varNum() = declarationType().varNum();
+
+  eq EnumConstant.varNum() = program().getVarNum(this);
+  eq CatchParameterDeclaration.varNum() = program().getVarNum(this);
+  eq InferredParameterDeclaration.varNum() = program().getVarNum(this);
 
   public String Expr.var() {
     return varNum().toString();
@@ -28,9 +50,10 @@ aspect ConstraintGeneration {
 
   coll LinkedList<Object> Program.initConst() root Program;
 
-  Expr contributes each initConst() to Program.initConst();
+  // TODO: only generate the necessary variables
+  Access contributes each initConst() to Program.initConst();
 
-  syn Collection<Expr> Expr.initConst() {
+  syn Collection<Object> Access.initConst() {
     TypeDecl host = hostType();
     Integer hostTypeNum = host.typeNum();
     Integer componentNum = -1;
@@ -41,8 +64,6 @@ aspect ConstraintGeneration {
       }
     }
     if (componentNum != -1) {
-      System.err.println(dumpTree());
-      System.err.println(var());
       Context ctx = program().contexts.get(componentNum);
       solverConst = ctx.mkIntConst(var());
     } else {

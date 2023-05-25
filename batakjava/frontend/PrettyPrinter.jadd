@@ -125,17 +125,22 @@ aspect PrettyPrint {
       out.print(".");
     }
     out.print(getID());
-    if (!(parent instanceof VersionTypeAccess)) {
-      out.print("~v");
-      out.print(var());
-      out.print("~");
-    }
+    out.print("~v");
+    out.print(var());
+    out.print("~");
   }
 
   refine Java4PrettyPrint
   public void VarAccess.prettyPrint(PrettyPrinter out) {
     out.print(getID());
     out.print("~v");
+    out.print(var());
+    out.print("~");
+  }
+
+  refine Java4PrettyPrint
+  public void ThisAccess.prettyPrint(PrettyPrinter out) {
+    out.print("this~v");
     out.print(var());
     out.print("~");
   }

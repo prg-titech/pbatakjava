@@ -1,17 +1,29 @@
 import com.microsoft.z3.Context;
+import com.microsoft.z3.Optimize;
 
 aspect ConstraintSolving {
 
-  /*
   coll LinkedList<Formula> VersionClassDecl.constraint() root VersionClassDecl;
 
-  // base example
-  TypeAccess contributes each constraintList() to VersionClassDecl.constraint();
-
-  syn Collection<Formula> TypeAccess.constraintList() = constraint().toList();
-  */
-
   public java.util.List<Context> Program.contexts;
+
+  public int Program.solveComponent(int id) {
+    java.util.Set<Integer> component = getComponent(id);
+    Context ctx = contexts.get(id);
+    Optimize s = ctx.mkOptimize();
+    for (Integer c: component) {
+      if (!typeMap.containsKey(c)) {
+        throw new Error(c.toString() + " doesn't represent any type");
+      }
+      TypeDecl type = typeMap.get(c);
+      if (type instanceof VersionClassDecl) {
+        VersionClassDecl cls = (VersionClassDecl) type;
+        System.err.println(cls.prettyPrint());
+        Collection<Formula> constraint = cls.constraint();
+      }
+    }
+    return 0;
+  }
 
   public int Program.solve() {
     // Setting up dependency graph
@@ -29,6 +41,10 @@ aspect ConstraintSolving {
 
     // Initialize solver constant
     initConst();
+
+    for (int id=0; id<numComponent(); id++) {
+      solveComponent(id);
+    }
 
     return 0;
   }
