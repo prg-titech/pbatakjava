@@ -1,10 +1,4 @@
-import com.microsoft.z3.IntExpr;
-
-aspect ConstraintGeneration {  
-
-  // coll LinkedList<Formula> TypeDecl.constraintList() root TypeDecl;
-
-  syn Collection<Formula> TypeDecl.constraint() = Collections.emptyList();
+aspect ConstraintVariable {  
 
   public Integer Program.varCount = 0;
 
@@ -17,7 +11,13 @@ aspect ConstraintGeneration {
   }
 
   syn lazy Integer Expr.varNum() = program().getVarNum(this);
-  
+  eq ClassInstanceExpr.varNum() = getAccess().varNum();
+  eq Dot.varNum() = lastAccess().varNum();
+  eq VarAccess.varNum() = decl().varNum();  // TODO: handle multiple possibilities!
+  eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
+  eq VersionVarArgument.varNum() = decl().varNum();
+  eq VersionNumArgument.varNum() = program().getVarNum(this);
+
   eq Access.varNum() {
     if (parent instanceof VersionTypeAccess) {
       return ((VersionTypeAccess) parent).varNum();
@@ -25,19 +25,9 @@ aspect ConstraintGeneration {
     return program().getVarNum(this);
   }
 
-  eq ClassInstanceExpr.varNum() = getAccess().varNum();
-  eq Dot.varNum() = lastAccess().varNum();
-  // TODO: what about polymorphic inheritance?
-  eq VarAccess.varNum() = decl().varNum();
-
-  eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
-  eq VersionVarArgument.varNum() = decl().varNum();
-  eq VersionNumArgument.varNum() = program().getVarNum(this);
-
   syn lazy Integer Variable.varNum();
   eq ParameterDeclaration.varNum() = getTypeAccess().varNum();
   eq Declarator.varNum() = declarationType().varNum();
-
   eq EnumConstant.varNum() = program().getVarNum(this);
   eq CatchParameterDeclaration.varNum() = program().getVarNum(this);
   eq InferredParameterDeclaration.varNum() = program().getVarNum(this);
@@ -70,6 +60,42 @@ aspect ConstraintGeneration {
       throw new Error("Host type " + host.verFullName() + " not found in any component.");
     }
     return Collections.emptyList();
+  }
+
+}
+
+aspect ConstraintGeneration {
+
+  // TODO: no subtyping for now!
+  coll LinkedList<Formula> VersionClassDecl.constraint() root VersionClassDecl;
+
+  Expr contributes each constraintList() to VersionClassDecl.constraint();
+
+  syn Collection<Formula> Expr.constraintList() = constraint().toList();
+
+  syn Formula Expr.constraint() = new Formula();
+
+  eq TypeAccess.constraint() {
+    Formula f = new Formula();
+    for (TypeDecl type: typeSet()) {
+      f.add(clause(type));
+    }
+    return f;
+  }
+
+  eq AssignExpr.constraint() {
+    Formula f = new Formula();
+    for (TypeDecl source: getSource().typeSet()) {
+      for (TypeDecl dest: getDest().typeSet()) {
+        if (source == dest) {
+          Clause cs = getSource().clause(source);
+          Clause cd = getDest().clause(dest);
+          f.multiply(cs);
+          f.multiply(cd);
+        }
+      }
+    }
+    return f;
   }
 
 }

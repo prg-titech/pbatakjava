@@ -1,27 +1,39 @@
 import com.microsoft.z3.Context;
 import com.microsoft.z3.Optimize;
+import com.microsoft.z3.Status;
+import com.microsoft.z3.Model;
 
 aspect ConstraintSolving {
 
-  coll LinkedList<Formula> VersionClassDecl.constraint() root VersionClassDecl;
-
   public java.util.List<Context> Program.contexts;
+  public java.util.List<Model> Program.models;
 
   public int Program.solveComponent(int id) {
     java.util.Set<Integer> component = getComponent(id);
     Context ctx = contexts.get(id);
     Optimize s = ctx.mkOptimize();
+    java.util.List<BoolExpr> asserts = new LinkedList();
     for (Integer c: component) {
-      if (!typeMap.containsKey(c)) {
-        throw new Error(c.toString() + " doesn't represent any type");
-      }
       TypeDecl type = typeMap.get(c);
       if (type instanceof VersionClassDecl) {
         VersionClassDecl cls = (VersionClassDecl) type;
-        System.err.println(cls.prettyPrint());
+        // System.err.println(cls.prettyPrint());
         Collection<Formula> constraint = cls.constraint();
+        for (Formula f: constraint) {
+          asserts.add(f.convert(ctx));
+        }
       }
     }
+    BoolExpr[] arrayAsserts = new BoolExpr[asserts.size()];
+    asserts.toArray(arrayAsserts);
+    s.Assert(ctx.mkAnd(arrayAsserts));
+
+    if (s.Check() == Status.SATISFIABLE) {
+      models.add(s.getModel());
+    } else {
+      return 4;
+    }
+
     return 0;
   }
 
@@ -30,6 +42,7 @@ aspect ConstraintSolving {
     initializeGraph();
 
     contexts = new ArrayList(numComponent());
+    models = new ArrayList(numComponent());
 
     // Create a context for each component
     for (int id=0; id<numComponent(); id++) {

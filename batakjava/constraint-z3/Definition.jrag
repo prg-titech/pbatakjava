@@ -1,4 +1,11 @@
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.IntExpr;
+
 aspect Constraint {
+
+  public Clause Expr.clause(TypeDecl type) {
+    return new Clause(new Lit(solverConst, type.typeNum()));
+  }
 
   /**
    *  Disjunction of clauses
@@ -48,6 +55,25 @@ aspect Constraint {
       }
     }
 
+    public Collection<Formula> toList() {
+      Collection<Formula> result = new LinkedList();
+      if (clauses.size() > 0) {
+        result.add(this);
+      }
+      return result;
+    }
+
+    public BoolExpr convert(Context ctx) {
+      java.util.List<BoolExpr> ors = new LinkedList<BoolExpr>();
+      for (int i = 0; i < clauses.size(); i++) {
+        Clause c = clauses.get(i);
+        ors.add(c.convert(ctx));
+      }
+      BoolExpr[] arrayOrs = new BoolExpr[ors.size()];
+      ors.toArray(arrayOrs);
+      return ctx.mkOr(arrayOrs);
+    }
+
     @Override
     public String toString() {
       StringBuilder result = new StringBuilder();
@@ -85,6 +111,17 @@ aspect Constraint {
       this.lits.add(l);
     }
 
+    public BoolExpr convert(Context ctx) {
+      java.util.List<BoolExpr> ands = new LinkedList<BoolExpr>();
+      for (int i = 0; i < lits.size(); i++) {
+        Lit c = lits.get(i);
+        ands.add(c.convert(ctx));
+      }
+      BoolExpr[] arrayAnds = new BoolExpr[ands.size()];
+      ands.toArray(arrayAnds);
+      return ctx.mkAnd(arrayAnds);
+    }
+
     @Override
     public String toString() {
       StringBuilder result = new StringBuilder();
@@ -105,6 +142,11 @@ aspect Constraint {
     public Lit(IntExpr varConst, Integer typeInt) {
       this.varConst = varConst;
       this.typeInt = typeInt;
+    }
+
+    public BoolExpr convert(Context ctx) {
+      return ctx.mkEq(varConst, 
+                      ctx.mkInt(typeInt));
     }
 
     @Override
