@@ -94,21 +94,24 @@ aspect ConstraintGeneration {
     return f;
   }
 
+  /*
   eq ClassInstanceExpr.constraint() {
     Formula f = new Formula();
-
     return f;
   }
+  */
 
   eq AssignExpr.constraint() {
     Formula f = new Formula();
     for (TypeDecl source: getSource().typeSet()) {
       for (TypeDecl dest: getDest().typeSet()) {
         if (source == dest) {
+          Clause c = new Clause();
           Clause cs = getSource().clause(source);
           Clause cd = getDest().clause(dest);
-          f.multiply(cs);
-          f.multiply(cd);
+          c.add(cs);
+          c.add(cd);
+          f.add(c);
         }
       }
     }

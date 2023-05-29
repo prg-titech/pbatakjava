@@ -5,29 +5,7 @@ import com.microsoft.z3.Model;
 
 aspect ConstraintSolving {
 
-  /*
-  inh Model Access.model();
-
-  eq Program.getChild().model() {
-    throw new Error("Fails retrieving model");
-  }
-
-  eq TypeDecl.getBodyDecl(int i).model() = model(typeNum());
-
-  eq GenericVersionClassDecl.getVersionVariable(int i).model() = model(typeNum());
-
-  inh Model TypeDecl.model(int typeNum);
-
-  eq Program.getChild().model(int typeNum) {
-    for (int i=0; i<numComponent(); i++) {
-      java.util.Set<Integer> component = getComponent(i);
-      if (component.contains(typeNum)) {
-        return models.get(i);
-      }
-    }
-    throw new Error("Fails retrieving model for " + typeMap.get(typeNum).verFullName());
-  }
-  */
+  // Map from each class to sets of solution
 
   public java.util.List<Context> Program.contexts;
 
@@ -49,14 +27,24 @@ aspect ConstraintSolving {
     BoolExpr[] arrayAsserts = new BoolExpr[asserts.size()];
     asserts.toArray(arrayAsserts);
     s.Assert(ctx.mkAnd(arrayAsserts));
-
     if (s.Check() == Status.SATISFIABLE) {
       models.add(s.getModel());
     } else {
       throw new Error("Component " + id + " was not solved");
     }
-
     return 0;
+  }
+
+  public void Program.getAllSolution(BoolExpr[] asserts, Context ctx, Optimize s) {
+    Model m = s.getModel();
+    while (true) {
+      if (s.Check() == Status.SATISFIABLE) {
+        // Add more assertion for based on the result
+        // Need the list of IntExpr first
+      } else {
+        return;
+      }
+    }
   }
 
   public int Program.solve() {
