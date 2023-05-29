@@ -11,12 +11,6 @@ aspect ConstraintVariable {
   }
 
   syn lazy Integer Expr.varNum() = program().getVarNum(this);
-  eq ClassInstanceExpr.varNum() = getAccess().varNum();
-  eq Dot.varNum() = lastAccess().varNum();
-  eq VarAccess.varNum() = decl().varNum();  // TODO: handle multiple possibilities!
-  eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
-  eq VersionVarArgument.varNum() = decl().varNum();
-  eq VersionNumArgument.varNum() = program().getVarNum(this);
 
   eq Access.varNum() {
     if (parent instanceof VersionTypeAccess) {
@@ -25,11 +19,28 @@ aspect ConstraintVariable {
     return program().getVarNum(this);
   }
 
+  eq ClassInstanceExpr.varNum() = getAccess().varNum();
+
+  eq Dot.varNum() = lastAccess().varNum();
+
+  eq VarAccess.varNum() = decl().varNum();  // TODO: handle multiple possibilities!
+
+  eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
+
+  eq VersionVarArgument.varNum() = decl().varNum();
+
+  eq VersionNumArgument.varNum() = program().getVarNum(this);
+
   syn lazy Integer Variable.varNum();
+
   eq ParameterDeclaration.varNum() = getTypeAccess().varNum();
+
   eq Declarator.varNum() = declarationType().varNum();
+
   eq EnumConstant.varNum() = program().getVarNum(this);
+
   eq CatchParameterDeclaration.varNum() = program().getVarNum(this);
+  
   eq InferredParameterDeclaration.varNum() = program().getVarNum(this);
 
   public String Expr.var() {
@@ -67,9 +78,9 @@ aspect ConstraintVariable {
 aspect ConstraintGeneration {
 
   // TODO: no subtyping for now!
-  coll LinkedList<Formula> VersionClassDecl.constraint() root VersionClassDecl;
+  coll LinkedList<Formula> TypeDecl.constraint() root TypeDecl;
 
-  Expr contributes each constraintList() to VersionClassDecl.constraint();
+  Expr contributes each constraintList() to TypeDecl.constraint();
 
   syn Collection<Formula> Expr.constraintList() = constraint().toList();
 
@@ -80,6 +91,12 @@ aspect ConstraintGeneration {
     for (TypeDecl type: typeSet()) {
       f.add(clause(type));
     }
+    return f;
+  }
+
+  eq ClassInstanceExpr.constraint() {
+    Formula f = new Formula();
+
     return f;
   }
 

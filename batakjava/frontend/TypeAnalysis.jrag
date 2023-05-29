@@ -37,16 +37,27 @@ aspect TypeSet {
   eq VersionClassDecl.isVersioned() = true;
 
   syn lazy SimpleSet<TypeDecl> Expr.typeSet() = this.<TypeDecl>emptySet().add(type());
+
   eq TypeAccess.typeSet() = declSet();
+
+  eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
+
   eq VarAccess.typeSet() = decl().typeSet();  // TODO: handle multiple possibilities!
+
   eq ThisAccess.typeSet() = this.<TypeDecl>emptySet().add(type());
+
   eq Dot.typeSet() = lastAccess().typeSet();
 
   syn lazy SimpleSet<TypeDecl> Variable.typeSet();
+
   eq ParameterDeclaration.typeSet() = getTypeAccess().typeSet();
+
   eq Declarator.typeSet() = getTypeAccess().typeSet();
+
   eq CatchParameterDeclaration.typeSet() = emptySet();
+
   eq EnumConstant.typeSet() = emptySet();
+
   eq InferredParameterDeclaration.typeSet() = emptySet();
 
   syn SimpleSet<TypeDecl> TypeAccess.declSet()

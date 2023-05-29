@@ -5,7 +5,32 @@ import com.microsoft.z3.Model;
 
 aspect ConstraintSolving {
 
+  /*
+  inh Model Access.model();
+
+  eq Program.getChild().model() {
+    throw new Error("Fails retrieving model");
+  }
+
+  eq TypeDecl.getBodyDecl(int i).model() = model(typeNum());
+
+  eq GenericVersionClassDecl.getVersionVariable(int i).model() = model(typeNum());
+
+  inh Model TypeDecl.model(int typeNum);
+
+  eq Program.getChild().model(int typeNum) {
+    for (int i=0; i<numComponent(); i++) {
+      java.util.Set<Integer> component = getComponent(i);
+      if (component.contains(typeNum)) {
+        return models.get(i);
+      }
+    }
+    throw new Error("Fails retrieving model for " + typeMap.get(typeNum).verFullName());
+  }
+  */
+
   public java.util.List<Context> Program.contexts;
+
   public java.util.List<Model> Program.models;
 
   public int Program.solveComponent(int id) {
@@ -15,13 +40,10 @@ aspect ConstraintSolving {
     java.util.List<BoolExpr> asserts = new LinkedList();
     for (Integer c: component) {
       TypeDecl type = typeMap.get(c);
-      if (type instanceof VersionClassDecl) {
-        VersionClassDecl cls = (VersionClassDecl) type;
-        // System.err.println(cls.prettyPrint());
-        Collection<Formula> constraint = cls.constraint();
-        for (Formula f: constraint) {
-          asserts.add(f.convert(ctx));
-        }
+      System.err.println(type.prettyPrint());
+      Collection<Formula> constraint = type.constraint();
+      for (Formula f: constraint) {
+        asserts.add(f.convert(ctx));
       }
     }
     BoolExpr[] arrayAsserts = new BoolExpr[asserts.size()];
@@ -31,7 +53,7 @@ aspect ConstraintSolving {
     if (s.Check() == Status.SATISFIABLE) {
       models.add(s.getModel());
     } else {
-      return 4;
+      throw new Error("Component " + id + " was not solved");
     }
 
     return 0;
@@ -59,9 +81,9 @@ aspect ConstraintSolving {
       solveComponent(id);
     }
 
+    System.err.println(printTypeMap());
+
     return 0;
   }
-
-
 
 }
