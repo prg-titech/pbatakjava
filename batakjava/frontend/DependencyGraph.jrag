@@ -41,26 +41,26 @@ aspect DependencyGraph {
     public void joinComponents() {
       int size = adjMatrix.size();
       int numComponent = components.size();
-
-      java.util.Map<Integer,Integer> componentMap = new HashMap(size);
-      compAdjMatrix = new ArrayList<java.util.List<Boolean>>(numComponent);
+      
+      java.util.Map<Integer,Integer> map = new HashMap(size);
+      compAdjMatrix = new ArrayList(numComponent);
 
       for (int id=0; id<numComponent; id++) {
         java.util.Set<Integer> component = components.get(id);
         java.util.List<Boolean> newRow = new ArrayList(numComponent);
-        for (int j=0; j<numComponent; j++) { 
-          newRow.add(false); 
+        for (int j=0; j<numComponent; j++) {
+          newRow.add(false);
         }
-        for (Integer vertex: component) { 
-          componentMap.put(vertex, id); 
+        for (Integer vertex: component) {
+          map.put(vertex, id);
         }
         compAdjMatrix.add(newRow);
       }
 
       for (int vertex=0; vertex<size; vertex++) {
         for (Integer connected: getConnected(vertex)) {
-          Integer vertexComponent = componentMap.get(vertex);
-          Integer connectedComponent = componentMap.get(connected);
+          Integer vertexComponent = map.get(vertex);
+          Integer connectedComponent = map.get(connected);
           compAdjMatrix.get(vertexComponent).set(connectedComponent, true);
         }
       }
@@ -144,6 +144,14 @@ aspect DependencyGraph {
     setGraphEdges();
     graph.setComponents();
     graph.joinComponents();
+  }
+
+  public int Program.numComponent() {
+    return graph.components.size();
+  }
+
+  public java.util.Set Program.getComponent(int i) {
+    return graph.components.get(i);
   }
 
   coll LinkedList<Object> Program.callInitializeGraph() root Program;

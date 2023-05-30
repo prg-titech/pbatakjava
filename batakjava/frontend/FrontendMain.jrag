@@ -65,6 +65,12 @@ aspect FrontendMain {
           }
         }
 
+        if (program.solve() != EXIT_SUCCESS) {
+          // TODO: Make this better
+          System.err.println("Solution not found.");
+          return EXIT_UNHANDLED_ERROR;
+        }
+
       } catch (AbstractClassfileParser.ClassfileFormatError e) {
         System.err.println(e.getMessage());
         return EXIT_UNHANDLED_ERROR;
@@ -154,9 +160,7 @@ aspect FrontendMain {
           }
         }
 
-        // Ignore errors for now, focus on building the graph
         program.initializeGraph();
-
         System.err.println(program.graph.components);
 
       } catch (AbstractClassfileParser.ClassfileFormatError e) {
@@ -166,37 +170,6 @@ aspect FrontendMain {
         System.err.println("Fatal exception:");
         t.printStackTrace(System.err);
         return EXIT_UNHANDLED_ERROR;
-      }
-      return EXIT_SUCCESS;
-    }
-
-    @Override
-    protected int processCompilationUnit(CompilationUnit unit) throws Error {
-      if (unit != null && unit.fromSource()) {
-        try {
-          Collection<Problem> errors = unit.parseErrors();
-          Collection<Problem> warnings = Collections.emptyList();
-          // Compute static semantic errors when there are no parse errors
-          // or the recover from parse errors option is specified.
-          if (errors.isEmpty() || program.options().hasOption("-recover")) {
-            long start = System.nanoTime();
-            errors = unit.errors();
-            warnings = unit.warnings();
-            program.errorCheckTime += System.nanoTime() - start;
-          }
-          if (!errors.isEmpty()) {
-            /* TODO: return this to normal after finishing dependency graph */
-            //processErrors(errors, unit);
-            return EXIT_ERROR;
-          } else {
-            if (!warnings.isEmpty() && !program.options().hasOption("-nowarn")) {
-              processWarnings(warnings, unit);
-            }
-          }
-        } catch (Error e) {
-          System.err.println("Encountered error while processing " + unit.pathName());
-          throw e;
-        }
       }
       return EXIT_SUCCESS;
     }
