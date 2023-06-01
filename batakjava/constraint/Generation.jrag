@@ -55,22 +55,17 @@ aspect ConstraintVariable {
   Access contributes each initConst() to Program.initConst();
 
   syn Collection<Object> Access.initConst() {
-    TypeDecl host = hostType();
-    Integer hostTypeNum = host.typeNum();
-    Integer componentNum = -1;
-    for (int i=0; i<program().numComponent(); i++) {
-      java.util.Set<Integer> component = program().getComponent(i);
-      if (component.contains(hostTypeNum)) {
-        componentNum = i;
-      }
-    }
-    if (componentNum != -1) {
-      Context ctx = program().contexts.get(componentNum);
-      solverConst = ctx.mkIntConst(var());
-    } else {
-      throw new Error("Host type " + host.verFullName() + " not found in any component.");
-    }
+    Context ctx = context();
+    solverConst = ctx.mkIntConst(var());
     return Collections.emptyList();
+  }
+
+  coll HashSet<IntExpr> TypeDecl.getTerms() root TypeDecl;
+
+  Access contributes each getTerm() to TypeDecl.getTerms();
+
+  syn Collection<IntExpr> Access.getTerm() {
+    return Collections.singleton(solverConst);
   }
 
 }
@@ -86,6 +81,8 @@ aspect ConstraintGeneration {
 
   syn Formula Expr.constraint() = new Formula();
 
+  eq ThisAccess.constraint() = new Formula(new Clause(new Lit(solverConst, type().typeNum())));
+
   eq TypeAccess.constraint() {
     Formula f = new Formula();
     for (TypeDecl type: typeSet()) {
@@ -93,13 +90,6 @@ aspect ConstraintGeneration {
     }
     return f;
   }
-
-  /*
-  eq ClassInstanceExpr.constraint() {
-    Formula f = new Formula();
-    return f;
-  }
-  */
 
   eq AssignExpr.constraint() {
     Formula f = new Formula();

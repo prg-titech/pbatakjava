@@ -146,12 +146,27 @@ aspect DependencyGraph {
     graph.joinComponents();
   }
 
+  public Set<TypeDecl> Program.getComponent(int i) {
+    Set<Integer> idSet = graph.components.get(i);
+    Set<TypeDecl> result = new HashSet();
+    for (Integer id: idSet) {
+      result.add(typeMap.get(id));
+    }
+    return result;
+  }
+
   public int Program.numComponent() {
     return graph.components.size();
   }
 
-  public java.util.Set Program.getComponent(int i) {
-    return graph.components.get(i);
+  public int Expr.numComponent() {
+    for (int i = 0; i < program().numComponent(); i++) {
+      if (program().getComponent(i).contains(hostType())) {
+        return i;
+      }
+    }
+    throw new Error("Host type " + hostType().verFullName() 
+        + " not found in any component.");
   }
 
   coll LinkedList<Object> Program.callInitializeGraph() root Program;
