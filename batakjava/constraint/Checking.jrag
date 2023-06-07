@@ -1,0 +1,55 @@
+aspect VersionChecking {
+
+  public Model ParVersionTypeAccess.solution;
+
+  coll LinkedList<Object> TypeDecl.check() root TypeDecl;
+
+  ParVersionTypeAccess contributes each check() to TypeDecl.check();
+
+  syn Collection<Object> ParVersionTypeAccess.check() {
+    // get type set of the instantiated class
+    SimpleSet<TypeDecl> typeSet = typeSet();
+    for (TypeDecl type: typeSet()) {
+      if (!(type instanceof GenericVersionClassDecl)) {
+        throw new Error("Version arguments can't be passed to a "
+            + "non-generic class declaration.");
+      }
+      GenericVersionClassDecl t = (GenericVersionClassDecl) type;
+      // get a model for that type
+      java.util.List<Model> models = t.models();
+      if (t.getNumVersionVariable() != getNumVersionArgument()) {
+        throw new Error("Number of version parameters and arguments "
+            + "do not match.");
+      }
+      for (Model model: models) {
+        int i;
+        // get the type's parameters and check against arguments
+        for (i = 0; i < t.getNumVersionVariable(); i++) {
+          VersionVariable v = t.getVersionVariable(i);
+          VersionArgument a = getVersionArgument(i);
+          if (!a.check(v, model)) {
+            break;
+          }
+        }
+        if (i == t.getNumVersionVariable()) {
+          solution = model;
+        }
+      }
+    }
+    if (solution == null) {
+      throw new Error(prettyPrint() + " does not match any solution.");
+    }
+    return Collections.emptyList();
+  }
+
+  public boolean VersionArgument.check(VersionVariable v, Model m) {
+    return true;
+  }
+
+  public boolean VersionNumArgument.check(VersionVariable v, Model m) {
+    TypeDecl vType = getType(
+        new Integer(m.evaluate(v.solverConst, false).toString()));
+    return vType.version().equals(version());
+  }
+
+}

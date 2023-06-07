@@ -10,6 +10,10 @@ aspect TypeMap {
     return count;
   }
 
+  public TypeDecl ASTNode.getType(Integer typeNum) {
+    return program().typeMap.get(typeNum);
+  }
+
   syn lazy Integer TypeDecl.typeNum() = program().getTypeNum(this);
 
   public String Program.printTypeMap() {
@@ -41,6 +45,8 @@ aspect TypeSet {
   eq TypeAccess.typeSet() = declSet();
 
   eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
+
+  eq ParVersionTypeAccess.typeSet() = getTypeAccess().typeSet();
 
   eq VarAccess.typeSet() = decl().typeSet();  // TODO: handle multiple possibilities!
 
@@ -205,6 +211,22 @@ aspect TypeSet {
     libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".null", this.<TypeDecl>emptySet().add(unit.typeNull()));
     libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".void", this.<TypeDecl>emptySet().add(unit.typeVoid()));
     libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".Unknown", this.<TypeDecl>emptySet().add(unit.unknownType()));
+  }
+
+}
+
+aspect SuperClasses {
+
+  public SimpleSet<TypeDecl> TypeDecl.superclassSet() { 
+    return emptySet(); 
+  }
+
+  public SimpleSet<TypeDecl> VersionClassDecl.superclassSet() {
+    if (hasSuperClass()) {
+      return getSuperClass().typeSet();
+    } else {
+      return typeObject();
+    }
   }
 
 }

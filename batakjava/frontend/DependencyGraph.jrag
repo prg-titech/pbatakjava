@@ -159,14 +159,24 @@ aspect DependencyGraph {
     return graph.components.size();
   }
 
-  public int Expr.numComponent() {
+  public int TypeDecl.numComponent() {
     for (int i = 0; i < program().numComponent(); i++) {
-      if (program().getComponent(i).contains(hostType())) {
+      if (program().getComponent(i).contains(this)) {
         return i;
       }
     }
-    throw new Error("Host type " + hostType().verFullName() 
+    throw new Error("Type " + verFullName()
         + " not found in any component.");
+  }
+
+  public int Expr.numComponent() {
+    TypeDecl host = hostType();
+    try {
+      return host.numComponent();
+    } catch (Error e) {
+      throw new Error("Host type " + host.verFullName()
+          + " not found in any component.");
+    }
   }
 
   coll LinkedList<Object> Program.callInitializeGraph() root Program;

@@ -1,0 +1,9 @@
+aspect Version {
+
+  syn Integer TypeDecl.version() = -1;
+
+  eq VersionClassDecl.version() = new Integer(getVersion().getID());
+
+  syn Integer VersionNumArgument.version() = new Integer(getID());
+
+}
