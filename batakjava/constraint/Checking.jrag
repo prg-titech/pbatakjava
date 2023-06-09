@@ -19,7 +19,7 @@ aspect VersionChecking {
       java.util.List<Model> models = t.models();
       if (t.getNumVersionVariable() != getNumVersionArgument()) {
         throw new Error("Number of version parameters and arguments "
-            + "do not match.");
+            + "do not match in " + prettyPrint());
       }
       for (Model model: models) {
         int i;

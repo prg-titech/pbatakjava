@@ -100,10 +100,8 @@ aspect ConstraintGeneration {
       for (TypeDecl dest: getDest().typeSet()) {
         if (source == dest) {
           Clause c = new Clause();
-          Clause cs = getSource().clause(source);
-          Clause cd = getDest().clause(dest);
-          c.add(cs);
-          c.add(cd);
+          c.add(getSource().clause(source));
+          c.add(getDest().clause(dest));
           f.add(c);
         }
       }
@@ -141,6 +139,26 @@ aspect ConstraintGeneration {
 
   eq ClassInstanceExpr.constraint() {
     Formula f = new Formula();
+    // get the type set of the instantiated class
+    for (TypeDecl type: typeSet()) {
+      Formula s = new Formula();
+      Map<String,VersionArgument> verMap = getAccess().verMap(type);
+      for (ConstructorDecl constructor: type.constructors()) {
+        Clause c = new Clause();
+        for (int i = 0; i < getNumArg(); i++) {
+          // TODO: type checking arguments
+          SimpleSet<TypeDecl> set 
+            = constructor.getParameter(i).getTypeAccess().map(verMap);
+          if (set.isSingleton()) {
+            c.add(new Lit(getArg(i).solverConst, set.singletonValue().typeNum()));
+          }
+        }
+        s.add(c);
+      } 
+      Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
+      s.multiply(new Clause(lAccess));
+      f.add(s);
+    }
     return f;
   }
 

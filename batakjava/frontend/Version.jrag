@@ -1,9 +1,45 @@
 aspect Version {
 
-  syn Integer TypeDecl.version() = -1;
+  syn String TypeDecl.version() = "-1";
 
-  eq VersionClassDecl.version() = new Integer(getVersion().getID());
+  eq VersionClassDecl.version() = getVersion().getID();
 
-  syn Integer VersionNumArgument.version() = new Integer(getID());
+  syn String VersionArgument.version();
+
+  eq VersionVarArgument.version() = getID();
+
+  eq VersionNumArgument.version() = getID();
+
+  syn Map<String,VersionArgument> Access.verMap(TypeDecl t) = new HashMap();
+
+  eq ParVersionTypeAccess.verMap(TypeDecl t) = t.verMap(this);
+
+  public Map<String,VersionArgument> TypeDecl.verMap(ParVersionTypeAccess access) {
+    return new HashMap();
+  }
+
+  public Map<String,VersionArgument> GenericVersionClassDecl.verMap(ParVersionTypeAccess access) {
+    Map<String,VersionArgument> map = new HashMap();
+    for (int i = 0; i < getNumVersionVariable(); i++) {
+      map.put(getVersionVariable(i).getID(), access.getVersionArgument(i));
+    }
+    return map;
+  }
+
+  // only assuming num argument for now
+  public SimpleSet<TypeDecl> Access.map(Map<String,VersionArgument> verMap) {
+    return emptySet();
+  }
+
+  public SimpleSet<TypeDecl> VersionTypeAccess.map(Map<String,VersionArgument> verMap) {
+    SimpleSet<TypeDecl> set = emptySet();
+    String arg = verMap.get(getVersionArgument().version()).version();
+    for (TypeDecl type: typeSet()) {
+      if (type.version().equals(arg)) {
+        return set.add(type);
+      }
+    }
+    throw new Error("Not supported for " + prettyPrint());
+  }
 
 }

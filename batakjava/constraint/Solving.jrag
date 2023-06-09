@@ -34,6 +34,8 @@ aspect ConstraintSolving {
     if (s.check() == Status.SATISFIABLE) {
       Model m = s.getModel();
       models.add(m);
+      System.err.println(m);
+      System.err.println(printTypeMap());
       java.util.List<IntExpr> terms = getTerms(i);
       for (int j = 0; j < terms.size(); j++) {
         s.push();
@@ -68,7 +70,7 @@ aspect ConstraintSolving {
 
     // Gather initial constraints
     for (TypeDecl t: getComponent(i)) {
-      //System.err.println(t.prettyPrint());
+      System.err.println(t.prettyPrint());
       for (Formula f: t.constraint()) {
         s.add(f.convert(ctx));
       } 

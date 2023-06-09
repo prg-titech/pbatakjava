@@ -48,6 +48,8 @@ aspect TypeSet {
 
   eq ParVersionTypeAccess.typeSet() = getTypeAccess().typeSet();
 
+  eq ClassInstanceExpr.typeSet() = getAccess().typeSet();
+
   eq VarAccess.typeSet() = decl().typeSet();  // TODO: handle multiple possibilities!
 
   eq ThisAccess.typeSet() = this.<TypeDecl>emptySet().add(type());

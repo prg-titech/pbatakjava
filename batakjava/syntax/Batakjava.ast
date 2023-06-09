@@ -10,7 +10,7 @@ ParVersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
 
 VersionVariable: Access ::= <ID:String>;
 
-VersionArgument: Access;
+abstract VersionArgument: Access;
 VersionVarArgument: VersionArgument ::= <ID:String>;
 VersionNumArgument: VersionArgument ::= <ID:String>;
 
