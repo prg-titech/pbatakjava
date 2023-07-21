@@ -1,0 +1,179 @@
+aspect DependencyGraph {
+
+  public class Graph {
+    
+    public java.util.List<java.util.List<Boolean>> adjMatrix;
+    public java.util.List<java.util.List<Boolean>> compAdjMatrix;
+    public java.util.List<java.util.Set<Integer>> components;
+
+    public Graph(int typeNum) {
+      adjMatrix = new ArrayList<java.util.List<Boolean>>(typeNum);
+      for (int i=0; i<typeNum; i++) {
+        java.util.List<Boolean> row = new ArrayList<Boolean>(typeNum);
+        for (int j=0; j<typeNum; j++) {
+          row.add(false);
+        }
+        adjMatrix.add(row);  
+      }
+    }
+
+    public void addEdge(int src, int dest) {
+      adjMatrix.get(src).set(dest, true);
+    }
+
+    public java.util.Set<Integer> getConnected(int index) {
+      java.util.List<Boolean> row = adjMatrix.get(index);
+      java.util.Set<Integer> connected = new HashSet();
+      for (int i=0; i<row.size(); i++) {
+        if (row.get(i)) {
+          connected.add(i);
+        }
+      }
+      return connected;
+    }
+
+    public void setComponents() {
+      if (components == null) {
+        new Components().compute();
+      }
+    }
+
+    public void joinComponents() {
+      int size = adjMatrix.size();
+      int numComponent = components.size();
+      
+      java.util.Map<Integer,Integer> map = new HashMap(size);
+      compAdjMatrix = new ArrayList(numComponent);
+
+      for (int id=0; id<numComponent; id++) {
+        java.util.Set<Integer> component = components.get(id);
+        java.util.List<Boolean> newRow = new ArrayList(numComponent);
+        for (int j=0; j<numComponent; j++) {
+          newRow.add(false);
+        }
+        for (Integer vertex: component) {
+          map.put(vertex, id);
+        }
+        compAdjMatrix.add(newRow);
+      }
+
+      for (int vertex=0; vertex<size; vertex++) {
+        for (Integer connected: getConnected(vertex)) {
+          Integer vertexComponent = map.get(vertex);
+          Integer connectedComponent = map.get(connected);
+          compAdjMatrix.get(vertexComponent).set(connectedComponent, true);
+        }
+      }
+    }
+
+    public void printGraph() {
+      for (java.util.List<Boolean> row: adjMatrix) {
+        System.out.println(row);
+      }
+    }
+
+    private class Components {
+
+      private int index;
+      private java.util.List<Integer> mark;
+      private java.util.List<Integer> lowlink;
+      private java.util.List<Boolean> onStack;
+      private java.util.Stack<Integer> stack;
+
+      public void compute() {
+        int size = adjMatrix.size();
+        components = new ArrayList();
+        index = 0;
+        stack = new java.util.Stack<Integer>();
+        mark = new ArrayList(size);
+        lowlink = new ArrayList(size);
+        onStack = new ArrayList(size);
+        for (int i=0; i<adjMatrix.size(); i++) {
+          mark.add(-1);
+          lowlink.add(-1);
+          onStack.add(false);
+        } 
+        for (int n=0; n<adjMatrix.size(); n++) {
+          if (mark.get(n) == -1) {
+            connect(n);
+          }
+        }
+      }
+
+      public void connect(int n) {
+        mark.set(n, index);
+        lowlink.set(n, index);
+        index += 1;
+        stack.push(n);
+        onStack.set(n, true);
+        for (Integer o: getConnected(n)) {
+          if (mark.get(o) == -1) {
+            connect(o);
+            int newLowlink = lowlink.get(n) < lowlink.get(o) ? lowlink.get(n) : lowlink.get(o);
+            lowlink.set(n, newLowlink);
+          } else if (onStack.get(o)) {
+            int newLowlink = lowlink.get(n) < mark.get(o) ? lowlink.get(n) : mark.get(o);
+            lowlink.set(n, newLowlink);
+          }
+        }
+        if (lowlink.get(n) == mark.get(n)) {
+          java.util.Set<Integer> c = new HashSet();
+          Integer o;
+          do {
+            o = stack.pop();
+            onStack.set(o, false);
+            c.add(o);
+          } while (mark.get(n) != mark.get(o));
+          components.add(c);
+        }
+      }
+      
+    }  
+
+  }
+
+  public Graph Program.graph;
+
+  public void Program.addEdge(TypeDecl src, TypeDecl dst) {
+    graph.addEdge(src.typeNum(), dst.typeNum());
+  }
+
+  public void Program.initializeGraph() {
+    callInitializeGraph();
+    graph = new Graph(typeCount);
+    setGraphEdges();
+    graph.setComponents();
+    graph.joinComponents();
+  }
+
+  public int Program.numComponent() {
+    return graph.components.size();
+  }
+
+  public java.util.Set Program.getComponent(int i) {
+    return graph.components.get(i);
+  }
+
+  coll LinkedList<Object> Program.callInitializeGraph() root Program;
+
+  TypeDecl contributes each initializeGraph() to Program.callInitializeGraph();
+
+  syn Collection<Object> TypeDecl.initializeGraph() {
+    typeNum();
+    return Collections.emptyList();
+  }
+
+  coll LinkedList<Object> Program.setGraphEdges() root Program;
+
+  TypeAccess contributes each setGraphEdges() to Program.setGraphEdges();
+
+  syn Collection<Object> TypeAccess.setGraphEdges() {
+    for (TypeDecl type: typeSet()) {
+      if (type.isVersioned()) {
+        program().addEdge(hostType(), type);
+      }
+    }
+    return Collections.emptyList();
+  }
+
+}

@@ -22,6 +22,8 @@ jastadd {
       jastadd {
         basedir "batakjava"
         include "**/frontend/*.jrag"
+        include "**/frontend/*.jadd"
+        include "**/constraint/*.jrag"
         include "**/syntax/*.ast"
       }
 
@@ -59,6 +61,8 @@ sourceSets.main {
 repositories.mavenLocal()
 dependencies {
   compile 'com.microsoft:z3:4.8.10'
+  compile 'org.choco-solver:choco-solver:4.10.5'
+  compile 'com.google.guava:guava:30.1-jre'
 }
 
 jar {
@@ -70,7 +74,8 @@ jar {
 // Use JavaCompiler if you need bytecode generation.
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaChecker'
 //jar.manifest.attributes 'Main-Class': 'org.extendj.JavaCompiler'
-jar.manifest.attributes 'Main-Class': 'org.extendj.BatakjavaChecker'
+jar.manifest.attributes 'Main-Class': 'org.batakjava.BatakjavaChecker'
+//jar.manifest.attributes 'Main-Class': 'org.batakjava.DependencyChecker'
 jar.destinationDir = projectDir
 
 // Java -source and -target version.

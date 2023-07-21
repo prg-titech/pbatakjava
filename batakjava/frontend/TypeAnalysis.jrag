@@ -1,0 +1,210 @@
+aspect TypeMap {
+
+  public Integer Program.typeCount = 0;
+
+  public Map<Integer,TypeDecl> Program.typeMap = new HashMap<Integer,TypeDecl>();
+
+  public Integer Program.getTypeNum(TypeDecl type) {
+    Integer count = typeCount++;
+    typeMap.put(count, type);
+    return count;
+  }
+
+  syn lazy Integer TypeDecl.typeNum() = program().getTypeNum(this);
+
+  public String Program.printTypeMap() {
+    StringBuilder s = new StringBuilder();
+    s.append("{");
+    int i = 1;
+    for (Integer key: typeMap.keySet()) {
+      s.append(key);
+      s.append("=");
+      s.append(typeMap.get(key).verFullName());
+      if (i != typeMap.size()) {
+        s.append(", ");
+      }
+      i++;
+    }
+    s.append("}");
+    return s.toString();
+  }
+
+}
+
+aspect TypeSet {
+
+  syn lazy boolean TypeDecl.isVersioned() = false;
+  eq VersionClassDecl.isVersioned() = true;
+
+  syn lazy SimpleSet<TypeDecl> Expr.typeSet() = this.<TypeDecl>emptySet().add(type());
+
+  eq TypeAccess.typeSet() = declSet();
+
+  eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
+
+  eq VarAccess.typeSet() = decl().typeSet();  // TODO: handle multiple possibilities!
+
+  eq ThisAccess.typeSet() = this.<TypeDecl>emptySet().add(type());
+
+  eq Dot.typeSet() = lastAccess().typeSet();
+
+  syn lazy SimpleSet<TypeDecl> Variable.typeSet();
+
+  eq ParameterDeclaration.typeSet() = getTypeAccess().typeSet();
+
+  eq Declarator.typeSet() = getTypeAccess().typeSet();
+
+  eq CatchParameterDeclaration.typeSet() = emptySet();
+
+  eq EnumConstant.typeSet() = emptySet();
+
+  eq InferredParameterDeclaration.typeSet() = emptySet();
+
+  syn SimpleSet<TypeDecl> TypeAccess.declSet()
+    = packageName().equals("")
+      ? lookupTypeSet(name())
+      : lookupTypeSet(packageName(), name());
+
+  /* TODO: only TypeAccess for now, but later needs to be abstracted with a more general type */
+  inh SimpleSet<TypeDecl> TypeAccess.lookupTypeSet(String name);
+
+  inh SimpleSet<TypeDecl> CompilationUnit.lookupTypeSet(String name);
+
+  eq Program.getChild().lookupTypeSet(String name) = emptySet();
+
+  eq CompilationUnit.getChild().lookupTypeSet(String name) {
+    SimpleSet<TypeDecl> result = emptySet();
+
+    // Types in the same package
+    SimpleSet<TypeDecl> pkgTypes = lookupTypeSet(packageName(), name);
+    for (TypeDecl pkgType: pkgTypes) {
+      if (pkgType.accessibleFromPackage(packageName())) {
+        result = result.add(pkgType);
+      }
+    }
+
+    if (!result.isEmpty()) {
+      return result;
+    }
+
+    // TODO: imported type set?
+
+    SimpleSet<TypeDecl> primitiveType = lookupTypeSet(PRIMITIVE_PACKAGE_NAME, name);
+    if (!primitiveType.isEmpty()) {
+      return primitiveType;
+    }
+
+    TypeDecl defaultType = lookupType("java.lang", name);
+    if (defaultType.accessibleFromPackage(packageName())) {
+      return this.<TypeDecl>emptySet().add(defaultType);
+    }
+
+    return lookupTypeSet(name);
+  }
+
+  inh SimpleSet<TypeDecl> TypeAccess.lookupTypeSet(String packageName, String typeName);
+
+  inh SimpleSet<TypeDecl> CompilationUnit.lookupTypeSet(String packageName, String typeName);
+
+  eq Program.getChild().lookupTypeSet(String packageName, String typeName)
+    = lookupTypeSet(packageName, typeName);
+
+  syn lazy SimpleSet<TypeDecl> Program.lookupTypeSet(String packageName, String typeName) {
+    SimpleSet<TypeDecl> sourceType = lookupSourceTypeSet(packageName, typeName);
+    if (!sourceType.isEmpty()) {
+      return sourceType;
+    }
+    return lookupLibraryTypeSet(packageName, typeName);
+  }
+
+  protected synchronized SimpleSet<TypeDecl> Program.lookupSourceTypeSet(
+      String packageName, String typeName) {
+    String fullName = packageName.equals("") ? typeName : packageName + "." + typeName;
+
+    if (!sourceTypeSetMapInitialized) {
+      initializeSourceTypeSetMap();
+      sourceTypeSetMapInitialized = true;
+    }
+
+    if (sourceTypeSetMap.containsKey(fullName)) {
+      return sourceTypeSetMap.get(fullName);
+    } else {
+      sourceTypeSetMap.put(fullName, emptySet());
+    }
+
+    return emptySet();
+  }
+
+  protected synchronized SimpleSet<TypeDecl> Program.lookupLibraryTypeSet(
+      String packageName, String typeName) {
+    String fullName = packageName.isEmpty() ? typeName : packageName + "." + typeName;
+
+    if (!libraryTypeSetMapInitialized) {
+      initializeLibraryTypeSetMap();
+      libraryTypeSetMapInitialized = true;
+    }
+
+    if (libraryTypeSetMap.containsKey(fullName)) {
+      return libraryTypeSetMap.get(fullName);
+    }
+
+    CompilationUnit libraryUnit = getLibCompilationUnit(fullName);
+
+    libraryCompilationUnitSet.add(libraryUnit);
+
+    for (int j=0; j<libraryUnit.getNumTypeDecl(); j++) {
+      TypeDecl type = libraryUnit.getTypeDecl(j);
+      if (!libraryTypeSetMap.containsKey(type.fullName())) {
+        libraryTypeSetMap.put(type.fullName(), this.<TypeDecl>emptySet().add(type));
+      }
+    }
+
+    if (libraryTypeSetMap.containsKey(fullName)) {
+      return libraryTypeSetMap.get(fullName);
+    } else {
+      libraryTypeSetMap.put(fullName, emptySet());
+      return emptySet();
+    }
+  }
+
+  private final Map<String,SimpleSet<TypeDecl>> Program.sourceTypeSetMap 
+    = new HashMap<String,SimpleSet<TypeDecl>>();
+
+  private final Map<String,SimpleSet<TypeDecl>> Program.libraryTypeSetMap
+    = new HashMap<String,SimpleSet<TypeDecl>>();
+
+  private boolean Program.sourceTypeSetMapInitialized = false;
+
+  private boolean Program.libraryTypeSetMapInitialized = false;
+
+  private void Program.initializeSourceTypeSetMap() {
+    for (int i=0; i<getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (int j=0; j<unit.getNumTypeDecl(); j++) {
+        TypeDecl type = unit.getTypeDecl(j);
+        if (sourceTypeSetMap.containsKey(type.fullName())) {
+          SimpleSet<TypeDecl> existingMap = sourceTypeSetMap.get(type.fullName());
+          sourceTypeSetMap.put(type.fullName(), existingMap.add(type));
+        } else {
+          sourceTypeSetMap.put(type.fullName(), this.<TypeDecl>emptySet().add(type));
+        }
+      }
+    }
+  }
+
+  private void Program.initializeLibraryTypeSetMap() {
+    PrimitiveCompilationUnit unit = getPrimitiveCompilationUnit();
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".boolean", this.<TypeDecl>emptySet().add(unit.typeBoolean()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".byte", this.<TypeDecl>emptySet().add(unit.typeByte()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".short", this.<TypeDecl>emptySet().add(unit.typeShort()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".char", this.<TypeDecl>emptySet().add(unit.typeChar()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".int", this.<TypeDecl>emptySet().add(unit.typeInt()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".long", this.<TypeDecl>emptySet().add(unit.typeLong()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".float", this.<TypeDecl>emptySet().add(unit.typeFloat()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".double", this.<TypeDecl>emptySet().add(unit.typeDouble()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".null", this.<TypeDecl>emptySet().add(unit.typeNull()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".void", this.<TypeDecl>emptySet().add(unit.typeVoid()));
+    libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".Unknown", this.<TypeDecl>emptySet().add(unit.unknownType()));
+  }
+
+}
