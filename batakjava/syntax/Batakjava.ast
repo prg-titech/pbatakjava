@@ -1,13 +1,19 @@
-VersionClassDecl: ClassDecl ::= Version;
-GenericVersionClassDecl: VersionClassDecl ::= VersionVariable*;
+VersionClassDecl : ClassDecl ::= Version;
+GenericVersionClassDecl : VersionClassDecl ::= VersionVariable*;
 
-VersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
-ParVersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
+VersionTypeAccess : Access ::= TypeAccess:Access VersionArgument*;
+ParVersionTypeAccess : Access ::= TypeAccess:Access VersionArgument*;
 
-VersionVariable: Access ::= <ID:String>;
+VersionVariable : Access ::= <ID:String> VersionRange*;
 
-VersionArgument: Access;
-VersionVarArgument: VersionArgument ::= <ID:String>;
-VersionNumArgument: VersionArgument ::= <ID:String>;
+abstract VersionRange ::= Version;
+VersionLT : VersionRange;
+VersionLE : VersionRange;
+VersionGT : VersionRange;
+VersionGE : VersionRange;
+
+VersionArgument : Access;
+VersionVarArgument : VersionArgument ::= <ID:String>;
+VersionNumArgument : VersionArgument ::= <ID:String>;
 
 Version ::= <ID:String>;

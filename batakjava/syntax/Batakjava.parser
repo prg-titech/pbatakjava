@@ -1,7 +1,7 @@
 ClassDecl class_declaration =
     modifiers.m? CLASS IDENTIFIER VER version_number.v super.s? interfaces.i? class_body.b
       {: return new VersionClassDecl(new Modifiers(m), IDENTIFIER, s, i, b, v); :}
-  | modifiers.m? CLASS IDENTIFIER VER version_number.v LGUI version_parameters.p RGUI super.s?
+  | modifiers.m? CLASS IDENTIFIER VER version_number.v LGUI version_variables.p RGUI super.s?
     interfaces.i? class_body.b
       {: return new GenericVersionClassDecl(new Modifiers(m), IDENTIFIER, s, i, b, v, p); :}
   ;
@@ -15,13 +15,26 @@ Access class_or_interface_type =
       {: return new ParVersionTypeAccess(new VersionTypeAccess(n, va), vb); :}
   ;
 
-List version_parameters = 
-    version_parameter.v                               {: return new List().add(v); :}
-  | version_parameters.vs COMMA version_parameter.v   {: return vs.add(v); :}
+List version_variables =
+    version_variable.v                                {: return new List().add(v); :}
+  | version_variables.vs COMMA version_variable.v     {: return vs.add(v); :}
   ;
 
-VersionVariable version_parameter =
-    IDENTIFIER                                        {: return new VersionVariable(IDENTIFIER); :}
+VersionVariable version_variable =
+    IDENTIFIER                                        {: return new VersionVariable(IDENTIFIER, new List()); :}
+  | version_range
+  ;
+
+VersionVariable version_range =
+    IDENTIFIER LT version_number.n                    {: return new VersionVariable(IDENTIFIER, new List().add(new VersionLT(n))); :}
+  | IDENTIFIER LTEQ version_number.n                  {: return new VersionVariable(IDENTIFIER, new List().add(new VersionLE(n))); :}
+  | left_version_range.r LT version_number.n          {: r.addVersionRange(new VersionLT(n)); return r; :}
+  | left_version_range.r LTEQ version_number.n        {: r.addVersionRange(new VersionLE(n)); return r; :}
+  ;
+
+VersionVariable left_version_range =
+    version_number.n LT IDENTIFIER                    {: return new VersionVariable(IDENTIFIER, new List().add(new VersionGT(n))); :}
+  | version_number.n LTEQ IDENTIFIER                  {: return new VersionVariable(IDENTIFIER, new List().add(new VersionGE(n))); :}
   ;
 
 List version_arguments = 
