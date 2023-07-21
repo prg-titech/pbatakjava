@@ -1,3 +1,3 @@
-public class D ver 1 extends C {
+public class D ver 2 extends C {
   
 }

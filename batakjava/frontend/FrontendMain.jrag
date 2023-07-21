@@ -162,6 +162,7 @@ aspect FrontendMain {
 
         program.initializeGraph();
         System.err.println(program.graph.components);
+        System.err.println(program.printTypeMap());
 
       } catch (AbstractClassfileParser.ClassfileFormatError e) {
         System.err.println(e.getMessage());

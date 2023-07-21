@@ -1,4 +1,4 @@
-public class C ver 1 {
+public class C ver 2 {
   D m() {
     return new D();
   }
