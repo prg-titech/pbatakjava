@@ -1,0 +1,158 @@
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.IntExpr;
+
+aspect Constraint {
+
+  public Clause Expr.clause(TypeDecl type) {
+    return new Clause(new Lit(solverConst, type.typeNum()));
+  }
+
+  /**
+   *  Disjunction of clauses
+   */
+   public class Formula {
+    public java.util.List<Clause> clauses;
+
+    public Formula() { this.clauses = new LinkedList<Clause>(); }
+
+    public Formula(Clause c) {
+      this();
+      this.clauses.add(c);
+    }
+
+    public void add(Formula f) {
+      for (Clause fc: f.clauses) {
+        clauses.add(fc);
+      }
+    }
+
+    public void add(Clause c) {
+      this.clauses.add(c);
+    }
+
+    public void multiply(Formula f) {
+      if (clauses.size() == 0) {
+        add(f);
+        return;
+      }
+      if (f.clauses.size() == 0) {
+        return;
+      }
+      for (Clause thisc: clauses) {
+        for (Clause fc: f.clauses) {
+          thisc.add(fc);
+        }
+      }
+    }
+
+    public void multiply(Clause c) {
+      if (clauses.size() == 0) {
+        add(c);
+        return;
+      }
+      for (Clause thisc: clauses) {
+        thisc.add(c);
+      }
+    }
+
+    public Collection<Formula> toList() {
+      Collection<Formula> result = new LinkedList();
+      if (clauses.size() > 0) {
+        result.add(this);
+      }
+      return result;
+    }
+
+    public BoolExpr convert(Context ctx) {
+      java.util.List<BoolExpr> ors = new LinkedList<BoolExpr>();
+      for (int i = 0; i < clauses.size(); i++) {
+        Clause c = clauses.get(i);
+        ors.add(c.convert(ctx));
+      }
+      BoolExpr[] arrayOrs = new BoolExpr[ors.size()];
+      ors.toArray(arrayOrs);
+      return ctx.mkOr(arrayOrs);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder result = new StringBuilder();
+      result.append("{");
+      for (int i=0; i<clauses.size(); i++) {
+        if (i > 0) result.append(" OR ");
+        result.append(clauses.get(i).toString());
+      }
+      result.append("}");
+      return result.toString();
+    }
+
+  }
+
+  /**
+   *  Conjunction of literals
+   */
+   public class Clause {
+    public java.util.List<Lit> lits;
+
+    public Clause() { this.lits = new LinkedList<Lit>(); }
+
+    public Clause(Lit l) {
+      this();
+      this.lits.add(l);
+    }
+
+    public void add(Clause c) {
+      for (Lit cl: c.lits) {
+        lits.add(cl);
+      }
+    }
+
+    public void add(Lit l) {
+      this.lits.add(l);
+    }
+
+    public BoolExpr convert(Context ctx) {
+      java.util.List<BoolExpr> ands = new LinkedList<BoolExpr>();
+      for (int i = 0; i < lits.size(); i++) {
+        Lit c = lits.get(i);
+        ands.add(c.convert(ctx));
+      }
+      BoolExpr[] arrayAnds = new BoolExpr[ands.size()];
+      ands.toArray(arrayAnds);
+      return ctx.mkAnd(arrayAnds);
+    }
+
+    @Override
+    public String toString() {
+      StringBuilder result = new StringBuilder();
+      result.append("(");
+      for (int i = 0; i < lits.size(); i++) {
+        if (i > 0) result.append(" AND ");
+        result.append(lits.get(i).toString());
+      }
+      result.append(")");
+      return result.toString();
+    }
+  }
+
+  public class Lit {
+    public IntExpr varConst;
+    public final Integer typeInt;
+
+    public Lit(IntExpr varConst, Integer typeInt) {
+      this.varConst = varConst;
+      this.typeInt = typeInt;
+    }
+
+    public BoolExpr convert(Context ctx) {
+      return ctx.mkEq(varConst, 
+                      ctx.mkInt(typeInt));
+    }
+
+    @Override
+    public String toString() {
+      return varConst.toString() + ":" + typeInt.toString();
+    }
+  }
+
+}
