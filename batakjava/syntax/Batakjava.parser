@@ -28,6 +28,7 @@ VersionVariable version_variable =
 VersionVariable version_range =
     IDENTIFIER LT version_number.n                    {: return new VersionVariable(IDENTIFIER, new List().add(new VersionLT(n))); :}
   | IDENTIFIER LTEQ version_number.n                  {: return new VersionVariable(IDENTIFIER, new List().add(new VersionLE(n))); :}
+  | left_version_range.r                              {: return r; :}
   | left_version_range.r LT version_number.n          {: r.addVersionRange(new VersionLT(n)); return r; :}
   | left_version_range.r LTEQ version_number.n        {: r.addVersionRange(new VersionLE(n)); return r; :}
   ;
