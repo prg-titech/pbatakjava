@@ -1,0 +1,7 @@
+aspect Version {
+
+  syn String TypeDecl.version() = null;
+
+  eq VersionClassDecl.version() = getVersion().getID();
+  
+}

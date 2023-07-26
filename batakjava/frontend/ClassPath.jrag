@@ -1,0 +1,13 @@
+aspect ClassPath {
+
+  public CompilationUnit Program.addNewCompilationUnit(CompilationUnit cu) {
+    if (cu != emptyCompilationUnit()) {
+      classPath.addPackage(cu.packageName());
+      synchronized (this) {
+        addCompilationUnit(cu);
+      }
+    }
+    return cu;
+  }
+
+}
