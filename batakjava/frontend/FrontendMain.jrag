@@ -95,6 +95,120 @@ aspect FrontendMain {
 
   }
 
+  public long Program.javaGenTime;
+
+  abstract public class BatakjavaBackend extends BatakjavaFrontend {
+
+    protected Program generated;
+
+    protected BatakjavaBackend(String name, String version) {
+      super(name, version);
+      generated = new Program();
+      generated.state().reset();
+    }
+
+    @Override
+    public int run(String[] args, BytecodeReader reader, JavaParser parser) {
+
+      program.resetStatistics();
+      program.initBytecodeReader(reader);
+      program.initJavaParser(parser);
+
+      initOptions();
+      int argResult = processArgs(args);
+      if (argResult != 0) {
+        return argResult;
+      }
+
+      Collection<String> files = program.options().files();
+
+      if (program.options().hasOption("-version")) {
+        printVersion();
+        return EXIT_SUCCESS;
+      }
+
+      if (program.options().hasOption("-help") || files.isEmpty()) {
+        printUsage();
+        return EXIT_SUCCESS;
+      }
+      
+      Collection<CompilationUnit> work = new LinkedList<CompilationUnit>();
+      
+      try {
+        for (String file: files) {
+          program.addSourceFile(file);
+        }
+
+        TypeDecl object = program.lookupType("java.lang", "Object");
+        if (object.isUnknown()) {
+          System.err.println("Error: java.lang.Object is missing."
+              + " The Java standard library was not found.");
+          return EXIT_UNHANDLED_ERROR;
+        }
+
+        SimpleSet<TypeDecl> objectSet = program.lookupTypeSet("java.lang", "Object");
+        if (!objectSet.isSingleton()) {
+          System.err.println("Error: java.lang.Object is missing."
+              + " The Java standard library was not found.");
+          return EXIT_UNHANDLED_ERROR;
+        }
+
+        int compileResult = EXIT_SUCCESS;
+
+        for (CompilationUnit unit: program.getCompilationUnitList()) {
+          int result = processCompilationUnit(unit);
+          switch (result) {
+            case EXIT_SUCCESS:
+              break;
+            case EXIT_UNHANDLED_ERROR:
+              return result;
+            default:
+              compileResult = result;
+          }
+        }
+
+        Iterator<CompilationUnit> libraryIterator = program.libraryCompilationUnitIterator();
+        while (libraryIterator.hasNext()) {
+          CompilationUnit unit = libraryIterator.next();
+          int result = processCompilationUnit(unit);
+          switch (result) {
+            case EXIT_SUCCESS:
+              break;
+            case EXIT_UNHANDLED_ERROR:
+              return result;
+            default:
+              compileResult = result;
+          }
+        }        
+
+        if (compileResult != EXIT_SUCCESS) {
+          return compileResult;
+        }
+
+        long startGen = System.nanoTime();
+
+        for (CompilationUnit unit: program.getCompilationUnitList()) {
+          CompilationUnit newUnit = unit.compile();
+          generated.addNewCompilationUnit(newUnit);
+        }
+
+        program.javaGenTime += System.nanoTime() - startGen;
+
+      } catch (Throwable t) {
+        System.err.println("Fatal exception:");
+        t.printStackTrace(System.err);
+        return EXIT_UNHANDLED_ERROR;
+      } finally {
+        if (program.options().hasOption("-profile")) {
+          program.printStatistics(System.out);
+        }
+      }
+      
+      return EXIT_SUCCESS;
+
+    }
+  }
+
   abstract public class DependencyFrontend extends Frontend {
 
     protected DependencyFrontend(String name, String version) {
@@ -162,6 +276,7 @@ aspect FrontendMain {
 
         program.initializeGraph();
         System.err.println(program.graph.components);
+        System.err.println(program.printTypeMap());
 
       } catch (AbstractClassfileParser.ClassfileFormatError e) {
         System.err.println(e.getMessage());
