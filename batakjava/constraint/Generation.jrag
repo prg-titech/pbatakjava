@@ -50,7 +50,13 @@ aspect ConstraintVariable {
     return varNum().toString();
   }
 
+  // public IntExpr Expr.solverConst;
+
   public IntExpr Expr.solverConst;
+
+  public IntExpr VersionVariable.versionConst;
+
+  public IntExpr VersionArgument.versionConst;
 
   coll LinkedList<Object> Program.initConst() root Program;
 
@@ -59,8 +65,21 @@ aspect ConstraintVariable {
 
   syn Collection<Object> Access.initConst() {
     Context ctx = context();
+    // solverConst = ctx.mkIntConst(var());
     solverConst = ctx.mkIntConst(var());
     return Collections.emptyList();
+  }
+
+  eq VersionVariable.initConst() {
+    Context ctx = context();
+    versionConst = ctx.mkIntConst(var());
+    return Collections.emptyList();    
+  }
+
+  eq VersionArgument.initConst() {
+    Context ctx = context();
+    versionConst = ctx.mkIntConst(var());
+    return Collections.emptyList();  
   }
 
   coll HashSet<IntExpr> TypeDecl.getTerms() root TypeDecl;
@@ -94,6 +113,7 @@ aspect ConstraintGeneration {
     return f;
   }
 
+  /*
   eq AssignExpr.constraint() {
     Formula f = new Formula();
     for (TypeDecl source: getSource().typeSet()) {
@@ -136,6 +156,7 @@ aspect ConstraintGeneration {
     // System.err.println(f);
     return f;
   }
+  */
 
   eq ClassInstanceExpr.constraint() {
     Formula f = new Formula();

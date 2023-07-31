@@ -15,12 +15,12 @@ aspect VersionChecking {
             + "non-generic class declaration.");
       }
       GenericVersionClassDecl t = (GenericVersionClassDecl) type;
-      // get a model for that type
-      java.util.List<Model> models = t.models();
       if (t.getNumVersionVariable() != getNumVersionArgument()) {
         throw new Error("Number of version parameters and arguments "
             + "do not match in " + prettyPrint());
       }
+      // get a model for that type
+      java.util.List<Model> models = t.models();
       for (Model model: models) {
         int i;
         // get the type's parameters and check against arguments
@@ -32,6 +32,7 @@ aspect VersionChecking {
           }
         }
         if (i == t.getNumVersionVariable()) {
+          // attaches solution to the expression
           solution = model;
         }
       }
@@ -46,10 +47,17 @@ aspect VersionChecking {
     return true;
   }
 
+  /*
   public boolean VersionNumArgument.check(VersionVariable v, Model m) {
     TypeDecl vType = getType(
         new Integer(m.evaluate(v.solverConst, false).toString()));
     return vType.version().equals(version());
+  }
+  */
+
+  public boolean VersionNumArgument.check(VersionVariable v, Model m) {
+    Integer ver = new Integer(m.evaluate(v.versionConst, false).toString());
+    return ver.toString().equals(version());
   }
 
 }
