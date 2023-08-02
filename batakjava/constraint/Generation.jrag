@@ -65,7 +65,6 @@ aspect ConstraintVariable {
 
   syn Collection<Object> Access.initConst() {
     Context ctx = context();
-    // solverConst = ctx.mkIntConst(var());
     solverConst = ctx.mkIntConst(var());
     return Collections.emptyList();
   }
@@ -113,7 +112,6 @@ aspect ConstraintGeneration {
     return f;
   }
 
-  /*
   eq AssignExpr.constraint() {
     Formula f = new Formula();
     for (TypeDecl source: getSource().typeSet()) {
@@ -126,9 +124,11 @@ aspect ConstraintGeneration {
         }
       }
     }
+    // System.err.println(f);
     return f;
   }
 
+  /*
   eq MethodAccess.constraint() {
     Formula f = new Formula();
     Map<TypeDecl, Collection<MethodDecl>> map = verLookupMethod(name());
@@ -180,6 +180,30 @@ aspect ConstraintGeneration {
       s.multiply(new Clause(lAccess));
       f.add(s);
     }
+    // System.err.println(f);
+    return f;
+  }
+
+  Declarator contributes each constraintList() to TypeDecl.constraint();
+
+  syn Collection<Formula> Declarator.constraintList() = constraint().toList();
+
+  syn lazy Formula Declarator.constraint() {
+    Formula f = new Formula();
+    if (!hasInit()) {
+      return f;
+    }
+    for (TypeDecl source: getInit().typeSet()) {
+      for (TypeDecl dest: declarationType().typeSet()) {
+        if (source == dest) {
+          Clause c = new Clause();
+          c.add(getInit().clause(source));
+          c.add(declarationType().clause(dest));
+          f.add(c);
+        }
+      }
+    }
+    // System.err.println(f);
     return f;
   }
 

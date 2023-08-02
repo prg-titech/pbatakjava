@@ -133,6 +133,7 @@ aspect PrettyPrint {
     out.print(getID());
   }
 
+  /*
   refine Java4PrettyPrint 
   public void TypeAccess.prettyPrint(PrettyPrinter out) {
     if (hasPackage()) {
@@ -175,5 +176,6 @@ aspect PrettyPrint {
     });
     out.print(")");
   }
+  */
 
 }

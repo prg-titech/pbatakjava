@@ -103,8 +103,8 @@ aspect FrontendMain {
 
     protected BatakjavaBackend(String name, String version) {
       super(name, version);
-      generated = new Program();
-      generated.state().reset();
+      //generated = new Program();
+      //generated.state().reset();
     }
 
     @Override
@@ -185,14 +185,29 @@ aspect FrontendMain {
           return compileResult;
         }
 
-        long startGen = System.nanoTime();
-
-        for (CompilationUnit unit: program.getCompilationUnitList()) {
-          CompilationUnit newUnit = unit.compile();
-          generated.addNewCompilationUnit(newUnit);
+        if (program.solve() != EXIT_SUCCESS) {
+          // TODO: Make this better
+          System.err.println("Solution not found.");
+          return EXIT_UNHANDLED_ERROR;
         }
 
+        long startGen = System.nanoTime();
+
+        generated = program.compile();
+
         program.javaGenTime += System.nanoTime() - startGen;
+
+        object = generated.lookupType("java.lang", "Object");
+        if (object.isUnknown()) {
+          return EXIT_UNHANDLED_ERROR;
+        }
+
+        Collection<CompilationUnit> newWork = new LinkedList<CompilationUnit>();
+
+        for (CompilationUnit newUnit: generated.getCompilationUnitList()) {
+          System.err.println(newUnit.prettyPrint());
+          newWork.add(newUnit);
+        }
 
       } catch (Throwable t) {
         System.err.println("Fatal exception:");

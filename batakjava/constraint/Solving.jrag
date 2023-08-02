@@ -19,6 +19,16 @@ aspect ConstraintSolving {
 
   public java.util.List<Model> Program.models;
 
+  public java.util.List<Model> Program.getComponentModels(int i) {
+    return componentModels.get(i);
+  }
+
+  public Model CompilationUnit.model;
+
+  public Model Expr.model() {
+    return compilationUnit().model;
+  }
+
   public void Program.blockTerm(Context c, Solver s, Model m, IntExpr t) {
     Integer eval = new Integer(m.evaluate(t, false).toString());
     s.add(c.mkNot(c.mkEq(t, c.mkInt(eval))));
@@ -110,6 +120,8 @@ aspect ConstraintSolving {
       solve(i);
     }
     
+    System.err.println(printTypeMap());
+
     return 0;
   }
 
