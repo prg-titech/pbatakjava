@@ -50,8 +50,6 @@ aspect ConstraintVariable {
     return varNum().toString();
   }
 
-  // public IntExpr Expr.solverConst;
-
   public IntExpr Expr.solverConst;
 
   public IntExpr VersionVariable.versionConst;
@@ -69,6 +67,7 @@ aspect ConstraintVariable {
     return Collections.emptyList();
   }
 
+  /*
   eq VersionVariable.initConst() {
     Context ctx = context();
     versionConst = ctx.mkIntConst(var());
@@ -80,6 +79,7 @@ aspect ConstraintVariable {
     versionConst = ctx.mkIntConst(var());
     return Collections.emptyList();  
   }
+  */
 
   coll HashSet<IntExpr> TypeDecl.getTerms() root TypeDecl;
 
