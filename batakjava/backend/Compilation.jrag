@@ -136,58 +136,6 @@ aspect Generation {
     return types;
   }
 
-  /*
-  eq GenericVersionClassDecl.compileClass() {
-    List<TypeDecl> types = new List();
-
-    List<BodyDecl> bodyList = new List();
-
-    // TODO: handle version variable later
-    for (VersionVariable v: getVersionVariableList()) {
-      TypeDecl type = v.compileType();
-      List<FieldDeclarator> decls = new List().add(new FieldDeclarator(
-        v.getID(), new List(), new Opt()));
-      bodyList = bodyList.add(new FieldDecl(
-        new Modifiers(new List().add(new Modifier("public"))),
-        new TypeAccess(type.packageName(), type.name() + "_Factory"),
-        decls
-      ));
-    }
-
-    for (BodyDecl body: getBodyDeclList()) {
-      bodyList = bodyList.add(body.compile());
-    }
-
-    TypeDecl classClass = new ClassDecl(
-      getModifiers(),
-      getID() + "_v" + version(), 
-      new Opt(),
-      new List().add(new TypeAccess(packageName(), getID())),
-      bodyList
-    );
-    types = types.add(classClass);
-
-    List<BodyDecl> factoryBodyList = new List();
-    for (BodyDecl body: getBodyDeclList()) {
-      if (body instanceof ConstructorDecl) {
-        ConstructorDecl constructor = (ConstructorDecl) body;
-        factoryBodyList = factoryBodyList.add(constructor.compileFactory());
-      }
-    }
-
-    TypeDecl factoryClass = new ClassDecl(
-      new Modifiers(new List().add(new Modifier("public"))),
-      getID() + "_v" + version() + "_Factory",
-      new Opt(),
-      new List().add(new TypeAccess(packageName(), getID() + "_Factory")),
-      factoryBodyList
-    );
-    types = types.add(factoryClass);
-
-    return types;
-  }
-  */
-
   syn nta BodyDecl BodyDecl.compile() = treeCopy();
 
   eq ConstructorDecl.compile() {

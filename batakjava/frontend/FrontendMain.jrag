@@ -103,8 +103,6 @@ aspect FrontendMain {
 
     protected BatakjavaBackend(String name, String version) {
       super(name, version);
-      //generated = new Program();
-      //generated.state().reset();
     }
 
     @Override
@@ -196,6 +194,10 @@ aspect FrontendMain {
 
         program.javaGenTime += System.nanoTime() - startGen;
 
+        Options genOptions = generated.options();
+        genOptions.addKeyValueOption("-d");
+        genOptions.addOptions(args);
+
         object = generated.lookupType("java.lang", "Object");
         if (object.isUnknown()) {
           return EXIT_UNHANDLED_ERROR;
@@ -206,6 +208,23 @@ aspect FrontendMain {
         for (CompilationUnit newUnit: generated.getCompilationUnitList()) {
           System.err.println(newUnit.prettyPrint());
           newWork.add(newUnit);
+          int result = processCompilationUnit(newUnit);
+          switch (result) {
+            case EXIT_SUCCESS:
+              break;
+            case EXIT_UNHANDLED_ERROR:
+              return result;
+            default:
+              compileResult = result;
+          }
+        }
+
+        for (CompilationUnit newUnit: newWork) {
+          if (newUnit != null && newUnit.fromSource()) {
+            long start = System.nanoTime();
+            processNoErrors(newUnit);
+            program.codeGenTime += System.nanoTime() - start;
+          }
         }
 
       } catch (Throwable t) {
