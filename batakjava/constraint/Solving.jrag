@@ -1,60 +1,96 @@
 import com.microsoft.z3.Context;
-import com.microsoft.z3.Optimize;
+import com.microsoft.z3.Solver;
 import com.microsoft.z3.Status;
 import com.microsoft.z3.Model;
 
 aspect ConstraintSolving {
 
-  /*
-  inh Model Access.model();
-
-  eq Program.getChild().model() {
-    throw new Error("Fails retrieving model");
-  }
-
-  eq TypeDecl.getBodyDecl(int i).model() = model(typeNum());
-
-  eq GenericVersionClassDecl.getVersionVariable(int i).model() = model(typeNum());
-
-  inh Model TypeDecl.model(int typeNum);
-
-  eq Program.getChild().model(int typeNum) {
-    for (int i=0; i<numComponent(); i++) {
-      java.util.Set<Integer> component = getComponent(i);
-      if (component.contains(typeNum)) {
-        return models.get(i);
-      }
-    }
-    throw new Error("Fails retrieving model for " + typeMap.get(typeNum).verFullName());
-  }
-  */
-
   public java.util.List<Context> Program.contexts;
+
+  public Context Expr.context() {
+    return program().contexts.get(numComponent());
+  }
+
+  public java.util.List<java.util.List<Model>> Program.componentModels;
+
+  public java.util.List<Model> TypeDecl.models() {
+    return program().componentModels.get(numComponent());
+  }
 
   public java.util.List<Model> Program.models;
 
-  public int Program.solveComponent(int id) {
-    java.util.Set<Integer> component = getComponent(id);
-    Context ctx = contexts.get(id);
-    Optimize s = ctx.mkOptimize();
-    java.util.List<BoolExpr> asserts = new LinkedList();
-    for (Integer c: component) {
-      TypeDecl type = typeMap.get(c);
-      System.err.println(type.prettyPrint());
-      Collection<Formula> constraint = type.constraint();
-      for (Formula f: constraint) {
-        asserts.add(f.convert(ctx));
+  public java.util.List<Model> Program.getComponentModels(int i) {
+    return componentModels.get(i);
+  }
+
+  public Model CompilationUnit.model;
+
+  public Model Expr.model() {
+    return compilationUnit().model;
+  }
+
+  public void Program.blockTerm(Context c, Solver s, Model m, IntExpr t) {
+    Integer eval = new Integer(m.evaluate(t, false).toString());
+    s.add(c.mkNot(c.mkEq(t, c.mkInt(eval))));
+  }
+
+  public void Program.fixTerm(Context c, Solver s, Model m, IntExpr t) {
+    Integer eval = new Integer(m.evaluate(t, false).toString());
+    s.add(c.mkEq(t, c.mkInt(eval)));
+  }
+
+  public void Program.getAllSolutions(Solver s, int i) {
+    Context c = contexts.get(i);
+    if (s.check() == Status.SATISFIABLE) {
+      Model m = s.getModel();
+      models.add(m);
+      java.util.List<IntExpr> terms = getTerms(i);
+      for (int j = 0; j < terms.size(); j++) {
+        s.push();
+        IntExpr tb = terms.get(j);
+        blockTerm(c, s, m, tb);
+        for (int k = 0; k < j; k++) {
+          IntExpr tf = terms.get(k); 
+          fixTerm(c, s, m, tf);
+        }
+        getAllSolutions(s, i);
+        s.pop();
       }
     }
-    BoolExpr[] arrayAsserts = new BoolExpr[asserts.size()];
-    asserts.toArray(arrayAsserts);
-    s.Assert(ctx.mkAnd(arrayAsserts));
+  }
 
-    if (s.Check() == Status.SATISFIABLE) {
-      models.add(s.getModel());
-    } else {
-      throw new Error("Component " + id + " was not solved");
+  public java.util.List<IntExpr> Program.getTerms(int i) {
+    java.util.List<IntExpr> terms = new ArrayList();
+    for (TypeDecl type: getComponent(i)) {
+      terms.addAll(type.getTerms());
     }
+    return terms;
+  }
+
+  public int Program.solve(int i) {
+    Context ctx = contexts.get(i);
+    Solver s = ctx.mkSolver();
+
+    // Version arguments check
+    for (TypeDecl t: getComponent(i)) {
+      // System.err.println(t.prettyPrint());
+      t.check();
+    }
+
+    // Gather initial constraints
+    for (TypeDecl t: getComponent(i)) {
+      for (Formula f: t.constraint()) {
+        s.add(f.convert(ctx));
+      } 
+    }
+
+    // Get all the solutions
+    models = new ArrayList();
+    getAllSolutions(s, i);
+    if (models.size() == 0) {
+      throw new Error("No solution found component " + i);
+    }
+    componentModels.add(models);
 
     return 0;
   }
@@ -64,10 +100,10 @@ aspect ConstraintSolving {
     initializeGraph();
 
     contexts = new ArrayList(numComponent());
-    models = new ArrayList(numComponent());
+    componentModels = new ArrayList(numComponent());
 
     // Create a context for each component
-    for (int id=0; id<numComponent(); id++) {
+    for (int i=0; i<numComponent(); i++) {
       HashMap<String,String> cfg = new HashMap<String,String>();
       cfg.put("model", "true");
       Context ctx = new Context(cfg);
@@ -77,10 +113,14 @@ aspect ConstraintSolving {
     // Initialize solver constant
     initConst();
 
-    for (int id=0; id<numComponent(); id++) {
-      solveComponent(id);
+    for (int i=0; i<numComponent(); i++) {
+      if (getTerms(i).size() == 0) {
+        componentModels.add(new ArrayList());
+        continue;
+      }
+      solve(i);
     }
-
+    
     System.err.println(printTypeMap());
 
     return 0;

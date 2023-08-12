@@ -1,0 +1,382 @@
+aspect Generation {
+
+  public java.util.List<String> Program.newTypes = new ArrayList();
+
+  public Program Program.compile() {
+    Program generated = new Program();
+    generated.state().reset();
+
+    for (int i = 0; i < numComponent(); i++) {
+      // TODO: handling multiple solutions
+      java.util.List<Model> componentModels = getComponentModels(i);
+      // TODO: handling empty class definitions
+      Model componentModel = componentModels.get(0);
+      for (TypeDecl type: getComponent(i)) {
+        CompilationUnit unit = type.compilationUnit();
+        unit.model = componentModel;
+        CompilationUnit newUnit = unit.compile();
+        generated.addNewCompilationUnit(newUnit);
+      }
+    }
+
+    return generated;
+  }
+
+  syn nta CompilationUnit CompilationUnit.compile() {
+    List<TypeDecl> types = new List();
+    for (TypeDecl type: getTypeDeclList()) {
+      for (TypeDecl newType: type.compile()) {
+        String newTypeName = packageName() + "." + newType.name();
+        if (!program().newTypes.contains(newTypeName)) {
+          program().newTypes.add(newTypeName);
+          types = types.add(newType);
+        }
+      }
+    }
+
+    CompilationUnit unit = new CompilationUnit(getPackageDecl(), new List(), types);
+    unit.setFromSource(true);
+    unit.setClassSource(getClassSource());
+
+    return unit;
+  }
+
+  syn nta List<TypeDecl> TypeDecl.compile() = new List().add(treeCopy());
+
+  eq VersionClassDecl.compile() {
+    List<TypeDecl> types = new List();
+
+    types = types.addAll(compileInterface());
+    types = types.addAll(compileClass());
+
+    return types;
+  }
+
+  syn nta List<TypeDecl> VersionClassDecl.compileInterface() {
+    List<TypeDecl> types = new List();
+
+    // build interface for class
+    TypeDecl classInterface = new InterfaceDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID(),
+      new List(),
+      new List()
+    );
+    types = types.add(classInterface);
+    
+    // build interface for factory
+    // TODO: handle different constructors in different versions
+    List<BodyDecl> factoryBodyList = new List();
+    for (BodyDecl body: getBodyDeclList()) {
+      if (body instanceof ConstructorDecl) {
+        ConstructorDecl constructor = (ConstructorDecl) body;
+        factoryBodyList = factoryBodyList.add(constructor.compileInterfaceFactory());      }
+    }
+
+    TypeDecl factoryInterface = new InterfaceDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID() + "_Factory",
+      new List(),
+      factoryBodyList
+    );
+    types = types.add(factoryInterface);
+
+    return types;
+  }
+
+  syn nta List<TypeDecl> VersionClassDecl.compileClass() {
+    List<TypeDecl> types = new List();
+
+    List<BodyDecl> bodyList = new List();
+
+    if (this instanceof GenericVersionClassDecl) {
+      GenericVersionClassDecl thisType = (GenericVersionClassDecl) this;
+      for (VersionVariable v: thisType.getVersionVariableList()) {
+        TypeDecl type = v.compileType();
+        List<FieldDeclarator> decls = new List().add(new FieldDeclarator(
+          v.getID(), new List(), new Opt()));
+        bodyList = bodyList.add(new FieldDecl(
+          new Modifiers(new List().add(new Modifier("public"))),
+          new TypeAccess(type.packageName(), type.name() + "_Factory"),
+          decls
+        ));
+      }
+    }
+
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.add(body.compile());
+    }
+
+    TypeDecl classClass = new ClassDecl(
+      getModifiers(),
+      getID() + "_v" + version(), 
+      new Opt(),
+      new List().add(new TypeAccess(packageName(), getID())),
+      bodyList
+    );
+    types = types.add(classClass);
+
+    List<BodyDecl> factoryBodyList = new List();
+    for (BodyDecl body: getBodyDeclList()) {
+      if (body instanceof ConstructorDecl) {
+        ConstructorDecl constructor = (ConstructorDecl) body;
+        factoryBodyList = factoryBodyList.add(constructor.compileFactory());
+      }
+    } 
+
+    TypeDecl factoryClass = new ClassDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID() + "_v" + version() + "_Factory",
+      new Opt(),
+      new List().add(new TypeAccess(packageName(), getID() + "_Factory")),
+      factoryBodyList
+    );
+    types = types.add(factoryClass);
+
+    return types;
+  }
+
+  syn nta BodyDecl BodyDecl.compile() = treeCopy();
+
+  eq ConstructorDecl.compile() {
+    List<ParameterDeclaration> params = new List();
+    List<Stmt> blockStmtList = new List();
+
+    if (hostType() instanceof GenericVersionClassDecl) {
+      GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
+      for (int i = 0; i < host.getNumVersionVariable(); i++) {
+        VersionVariable v_i = host.getVersionVariable(i);
+        TypeDecl type_i = v_i.compileType();
+        params = params.add(new ParameterDeclaration(
+          new Modifiers(),
+          new TypeAccess(type_i.packageName(), type_i.name() + "_Factory"),
+          v_i.getID()
+        ));
+        blockStmtList = blockStmtList.add(new ExprStmt(
+          new AssignSimpleExpr(
+            new Dot(
+              new ThisAccess(),
+              new VarAccess(v_i.getID())
+            ),
+            new VarAccess(v_i.getID())
+          )
+        ));
+      }
+    }
+
+    for (ParameterDeclaration param: getParameterList()) {
+      params = params.add(param.compileParameter());
+    }
+
+    Opt<Stmt> parsed = hasParsedConstructorInvocation()
+      ? new Opt(getParsedConstructorInvocation().compileStmt())
+      : new Opt();
+
+    Block newBlock = getBlock().compileBlock();
+
+    for (Stmt stmt: newBlock.getStmtList()) {
+      blockStmtList = blockStmtList.add(stmt);
+    }
+
+    return new ConstructorDecl(
+      getModifiers(),
+      ((ClassDecl) hostType()).compileName(),
+      params,
+      getExceptionList(),
+      parsed,
+      new Block(blockStmtList)
+    );
+  }
+
+  eq MethodDecl.compile() {
+    List<ParameterDeclaration> params = new List();
+    for (ParameterDeclaration param: getParameterList()) {
+      params = params.add(param.compileParameter());
+    }
+
+    return new MethodDecl(
+      getModifiers(),
+      getTypeAccess().compileAccess(),
+      getID(),
+      params,
+      new List(),
+      hasBlock() ? new Opt(getBlock().compileBlock()) : new Opt()
+    );
+  }
+
+  eq FieldDecl.compile() {
+    List<FieldDeclarator> decls = new List();
+    for (FieldDeclarator decl: getDeclaratorList()) {
+      decls = decls.add(decl.compileDeclarator());
+    }
+    return new FieldDecl(
+      getModifiers(),
+      getTypeAccess().compileAccess(),
+      decls
+    );
+  }
+
+  syn nta ParameterDeclaration ParameterDeclaration.compileParameter()
+    = new ParameterDeclaration(getModifiers(), getTypeAccess().compileAccess(), getID());
+
+  syn nta Access Access.compileAccess() = treeCopy();
+
+  eq TypeAccess.compileAccess() {
+    TypeDecl type = program().typeMap.get(
+      new Integer(model().evaluate(solverConst, false).toString()));
+    if (type.isVersioned()) {
+      return new TypeAccess(getPackage(), type.getID() + "_v" + type.version());
+    }
+    return treeCopy();
+  }
+  
+  eq VersionTypeAccess.compileAccess() {
+    if (getVersionArgument() instanceof VersionVarArgument) {
+      return getTypeAccess().treeCopy();
+    }
+    return getTypeAccess().compileAccess();
+  }
+
+  eq ParVersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
+
+  syn nta Block Block.compileBlock() {
+    List<Stmt> stmtList = new List();
+    for (Stmt stmt: getStmtList()) {
+      stmtList = stmtList.add(stmt.compileStmt());
+    }
+    return new Block(stmtList);
+  }
+
+  syn nta Stmt Stmt.compileStmt() = treeCopy();
+
+  eq VarDeclStmt.compileStmt() {
+    List<VariableDeclarator> decls = new List();
+    for (VariableDeclarator decl: getDeclaratorList()) {
+      decls = decls.add(decl.compileDeclarator());
+    }
+    return new VarDeclStmt(
+      getModifiers(),
+      getTypeAccess().compileAccess(),
+      decls
+    );
+  }
+
+  syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
+    = new VariableDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
+
+  syn nta FieldDeclarator FieldDeclarator.compileDeclarator()
+    = new FieldDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
+
+  syn nta Expr Expr.compileExpr() = treeCopy();
+
+  eq ClassInstanceExpr.compileExpr() {
+    List<Expr> argList = new List();
+    if (getAccess() instanceof ParVersionTypeAccess) {
+      ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) getAccess();
+
+      TypeDecl compileType = program().typeMap.get(new Integer(model().evaluate(getAccess().solverConst, false).toString()));
+      assert compileType instanceof GenericVersionClassDecl;
+      GenericVersionClassDecl compileClass = (GenericVersionClassDecl) compileType;
+
+      for (int i = 0; i < typeAccess.getNumVersionArgument(); i++) {
+        VersionArgument va = typeAccess.getVersionArgument(i);
+        VersionVariable vv = compileClass.getVersionVariable(i);
+        // TODO: version var argument
+        if (va instanceof VersionNumArgument) {
+          TypeAccess compileAccess = vv.typeAccess();
+          argList = argList.add(new ClassInstanceExpr(
+            new TypeAccess(compileAccess.getPackage(),
+                           compileAccess.getID() + "_v" + ((VersionNumArgument) va).getID() + "_Factory"),
+            new List()
+          ));
+        }
+      }
+    }
+    Access access = getAccess().compileAccess();
+    for (Expr arg: getArgList()) {
+      argList = argList.add(arg.compileExpr());
+    }
+    return new ClassInstanceExpr(access, argList);
+  }
+  
+  syn nta Access VersionArgument.compileVersionArgument() = treeCopy();
+
+  syn String TypeDecl.compileName() = name();
+
+  eq VersionClassDecl.compileName() = getID() + "_v" + version();
+
+  public TypeDecl Access.compileType() {
+    return program().typeMap.get(new Integer(model().evaluate(solverConst, false).toString()));
+  }
+
+  syn nta BodyDecl ConstructorDecl.compileFactory() {
+    List<ParameterDeclaration> params = new List();
+    List<Expr> argList = new List();
+
+    if (hostType() instanceof GenericVersionClassDecl) {
+      GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
+      for (int i = 0; i < host.getNumVersionVariable(); i++) {
+        VersionVariable v_i = host.getVersionVariable(i);
+        TypeDecl type_i = v_i.compileType();
+        params = params.add(new ParameterDeclaration(
+          new Modifiers(),
+          new TypeAccess(type_i.packageName(), type_i.name() + "_Factory"),
+          v_i.getID()
+        ));
+        argList = argList.add(new VarAccess(v_i.getID()));
+      }
+    }
+
+    for (ParameterDeclaration param: getParameterList()) {
+      params = params.add(param.compileParameter());
+      argList = argList.add(new VarAccess(param.getID()));
+    }
+    
+    List<Stmt> stmtList = new List().add(new ReturnStmt(
+      new Opt(new ClassInstanceExpr(
+        new TypeAccess(hostType().packageName(), hostType().compileName()),
+        argList,
+        new Opt()
+      ))
+    ));
+
+    return new MethodDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      new TypeAccess(hostType().packageName(), hostType().name()),
+      "make",
+      params,
+      new List(),
+      new Opt(new Block(stmtList))
+    );
+  }
+
+  syn nta BodyDecl ConstructorDecl.compileInterfaceFactory() {
+    List<ParameterDeclaration> params = new List();
+
+    if (hostType() instanceof GenericVersionClassDecl) {
+      GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
+      for (int i = 0; i < host.getNumVersionVariable(); i++) {
+        VersionVariable v_i = host.getVersionVariable(i);
+        TypeDecl type_i = v_i.compileType();
+        params = params.add(new ParameterDeclaration(
+          new Modifiers(),
+          new TypeAccess(type_i.packageName(), type_i.name() + "_Factory"),
+          v_i.getID()
+        ));
+      }
+    }
+
+    for (ParameterDeclaration param: getParameterList()) {
+      params = params.add(param.compileParameter());
+    }
+
+    return new MethodDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      new TypeAccess(hostType().packageName(), hostType().name()),
+      "make",
+      params,
+      new List(),
+      new Opt()
+    );
+  }
+}

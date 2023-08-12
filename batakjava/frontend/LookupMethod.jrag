@@ -1,0 +1,16 @@
+aspect LookupMethod {
+
+  inh Map<TypeDecl,Collection<MethodDecl>> Expr.verLookupMethod(String name);
+
+  eq Program.getChild().verLookupMethod(String name) = new HashMap();
+  
+  eq Dot.getRight().verLookupMethod(String name) {
+    Map<TypeDecl,Collection<MethodDecl>> map = new HashMap();
+    for (TypeDecl type: getLeft().typeSet()) {
+      map.put(type, type.memberMethods(name));
+    }
+    return map;
+  }
+
+}
+

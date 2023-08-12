@@ -14,6 +14,9 @@
 /src/gen-res/
 /*.jar
 /*.zip
+/tests/constraint_01/class
+/tests/constraint_02/class
+/tests/constraint_03/class
 
 # Vim swap files.
 *.swp

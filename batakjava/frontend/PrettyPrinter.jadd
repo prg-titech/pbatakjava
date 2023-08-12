@@ -110,6 +110,21 @@ aspect PrettyPrint {
     out.print("~");
   }
 
+  public void ParVersionTypeAccess.prettyPrint(PrettyPrinter out) {
+    out.print(getTypeAccess());
+    out.print("«");
+    out.join(getVersionArgumentList(), new PrettyPrinter.Joiner() {
+      @Override
+      public void printSeparator(PrettyPrinter out) {
+        out.print(",");
+      }
+    });
+    out.print("»");
+    out.print("~v");
+    out.print(var());
+    out.print("~");
+  }
+
   public void VersionVarArgument.prettyPrint(PrettyPrinter out) {
     out.print(getID());
   }
@@ -118,6 +133,7 @@ aspect PrettyPrint {
     out.print(getID());
   }
 
+  /*
   refine Java4PrettyPrint 
   public void TypeAccess.prettyPrint(PrettyPrinter out) {
     if (hasPackage()) {
@@ -144,5 +160,22 @@ aspect PrettyPrint {
     out.print(var());
     out.print("~");
   }
+
+  refine Java4PrettyPrint
+  public void MethodAccess.prettyPrint(PrettyPrinter out) {
+    out.print(getID());
+    out.print("~v");
+    out.print(var());
+    out.print("~");
+    out.print("(");
+    out.join(getArgList(), new PrettyPrinter.Joiner() {
+      @Override
+      public void printSeparator(PrettyPrinter out) {
+        out.print(", ");
+      }
+    });
+    out.print(")");
+  }
+  */
 
 }

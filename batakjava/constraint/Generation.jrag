@@ -16,6 +16,9 @@ aspect ConstraintVariable {
     if (parent instanceof VersionTypeAccess) {
       return ((VersionTypeAccess) parent).varNum();
     }
+    if (parent instanceof ParVersionTypeAccess) {
+      return ((ParVersionTypeAccess) parent).varNum();
+    }
     return program().getVarNum(this);
   }
 
@@ -26,7 +29,7 @@ aspect ConstraintVariable {
   eq VarAccess.varNum() = decl().varNum();  // TODO: handle multiple possibilities!
 
   eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
-
+  
   eq VersionVarArgument.varNum() = decl().varNum();
 
   eq VersionNumArgument.varNum() = program().getVarNum(this);
@@ -49,29 +52,32 @@ aspect ConstraintVariable {
 
   public IntExpr Expr.solverConst;
 
+  public IntExpr VersionVariable.versionConst;
+
+  public IntExpr VersionArgument.versionConst;
+
   coll LinkedList<Object> Program.initConst() root Program;
 
   // TODO: only generate the necessary variables
   Access contributes each initConst() to Program.initConst();
 
   syn Collection<Object> Access.initConst() {
-    TypeDecl host = hostType();
-    Integer hostTypeNum = host.typeNum();
-    Integer componentNum = -1;
-    for (int i=0; i<program().numComponent(); i++) {
-      java.util.Set<Integer> component = program().getComponent(i);
-      if (component.contains(hostTypeNum)) {
-        componentNum = i;
-      }
-    }
-    if (componentNum != -1) {
-      Context ctx = program().contexts.get(componentNum);
-      solverConst = ctx.mkIntConst(var());
-    } else {
-      throw new Error("Host type " + host.verFullName() + " not found in any component.");
-    }
+    Context ctx = context();
+    solverConst = ctx.mkIntConst(var());
     return Collections.emptyList();
   }
+
+  eq VersionNumArgument.initConst() = Collections.emptyList();
+
+  coll HashSet<IntExpr> TypeDecl.getTerms() root TypeDecl;
+
+  Access contributes each getTerm() to TypeDecl.getTerms();
+
+  syn Collection<IntExpr> Access.getTerm() {
+    return Collections.singleton(solverConst);
+  }
+
+  eq VersionNumArgument.getTerm() = Collections.emptyList();
 
 }
 
@@ -86,6 +92,8 @@ aspect ConstraintGeneration {
 
   syn Formula Expr.constraint() = new Formula();
 
+  eq ThisAccess.constraint() = new Formula(new Clause(new Lit(solverConst, type().typeNum())));
+
   eq TypeAccess.constraint() {
     Formula f = new Formula();
     for (TypeDecl type: typeSet()) {
@@ -94,24 +102,98 @@ aspect ConstraintGeneration {
     return f;
   }
 
-  eq ClassInstanceExpr.constraint() {
-    Formula f = new Formula();
-
-    return f;
-  }
-
   eq AssignExpr.constraint() {
     Formula f = new Formula();
     for (TypeDecl source: getSource().typeSet()) {
       for (TypeDecl dest: getDest().typeSet()) {
         if (source == dest) {
-          Clause cs = getSource().clause(source);
-          Clause cd = getDest().clause(dest);
-          f.multiply(cs);
-          f.multiply(cd);
+          Clause c = new Clause();
+          c.add(getSource().clause(source));
+          c.add(getDest().clause(dest));
+          f.add(c);
         }
       }
     }
+    // System.err.println(f);
+    return f;
+  }
+
+  /*
+  eq MethodAccess.constraint() {
+    Formula f = new Formula();
+    Map<TypeDecl, Collection<MethodDecl>> map = verLookupMethod(name());
+    for (TypeDecl qualifierType: map.keySet()) {
+      Lit lQualifier = new Lit(qualifier().solverConst, qualifierType.typeNum());
+      for (MethodDecl method: map.get(qualifierType)) {
+        Formula s = new Formula();
+
+        // TODO: check inheritance
+
+        // TODO: check arguments
+        
+        // return type constraint
+        for (TypeDecl returnType: method.getTypeAccess().typeSet()) {
+          // TODO: constraint on the method (depends on condition)
+
+          // constraint on the access itself
+          Lit lReturn = new Lit(solverConst, returnType.typeNum());
+          s.add(new Clause(lReturn));
+        }
+        s.multiply(new Clause(lQualifier));
+        f.add(s);
+      }
+    }
+    // System.err.println(f);
+    return f;
+  }
+  */
+
+  eq ClassInstanceExpr.constraint() {
+    Formula f = new Formula();
+    // get the type set of the instantiated class
+    for (TypeDecl type: typeSet()) {
+      Formula s = new Formula();
+      Map<String,VersionArgument> verMap = getAccess().verMap(type);
+      for (ConstructorDecl constructor: type.constructors()) {
+        Clause c = new Clause();
+        for (int i = 0; i < getNumArg(); i++) {
+          // TODO: type checking arguments
+          SimpleSet<TypeDecl> set 
+            = constructor.getParameter(i).getTypeAccess().map(verMap);
+          if (set.isSingleton()) {
+            c.add(new Lit(getArg(i).solverConst, set.singletonValue().typeNum()));
+          }
+        }
+        s.add(c);
+      } 
+      Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
+      s.multiply(new Clause(lAccess));
+      f.add(s);
+    }
+    // System.err.println(f);
+    return f;
+  }
+
+  Declarator contributes each constraintList() to TypeDecl.constraint();
+
+  syn Collection<Formula> Declarator.constraintList() = constraint().toList();
+
+  syn lazy Formula Declarator.constraint() {
+    Formula f = new Formula();
+    if (!hasInit()) {
+      return f;
+    }
+    for (TypeDecl source: getInit().typeSet()) {
+      for (TypeDecl dest: declarationType().typeSet()) {
+        if (source == dest) {
+          Clause c = new Clause();
+          c.add(getInit().clause(source));
+          c.add(declarationType().clause(dest));
+          f.add(c);
+        }
+      }
+    }
+    // System.err.println(f);
     return f;
   }
 
