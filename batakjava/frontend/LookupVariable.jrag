@@ -1,5 +1,49 @@
 aspect VersionVariableScope {
 
+  // C#V# associates V with C
+  // TODO: C<<V>> associates V with something inside C
+  inh SimpleSet<Access> VersionVariable.accessSet();
+
+  eq Program.getChild().accessSet() = emptySet();
+
+  eq GenericVersionClassDecl.getVersionVariable(int i).accessSet() {
+    SimpleSet<Access> result = emptySet();
+    VersionVariable v = getVersionVariable(i);
+    for (BodyDecl body: getBodyDeclList()) {
+      for (Access bodyAccess: body.accessSet(v)) {
+        result = result.add(bodyAccess);
+      }
+    }
+    return result;
+  }
+
+  syn SimpleSet<Access> BodyDecl.accessSet(VersionVariable v) = this.<Access>emptySet();
+
+  eq FieldDecl.accessSet(VersionVariable v) = getTypeAccess().isBound(v) ? 
+    this.<Access>emptySet().add(getTypeAccess()) : this.<Access>emptySet();
+
+  eq ConstructorDecl.accessSet(VersionVariable v) {
+    SimpleSet<Access> result = emptySet();
+    for (ParameterDeclaration param: getParameterList()) {
+      if (param.getTypeAccess().isBound(v)) {
+        result = result.add(param.getTypeAccess());
+      }
+    }
+
+    // LATER: constructor body
+
+    return result;
+  }
+
+  // TODO: handle C«V» next
+  syn boolean Access.isBound(VersionVariable v) = false;
+
+  eq VersionTypeAccess.isBound(VersionVariable v) = getVersionArgument().isBoundArg(v);
+
+  syn boolean VersionArgument.isBoundArg(VersionVariable v) = false;
+
+  eq VersionVarArgument.isBoundArg(VersionVariable v) = getID().equals(v.getID());
+
   syn lazy Access VersionVarArgument.decl() {
     SimpleSet<Access> decls = lookupVersionVariable(getID());
     if (decls.isSingleton()) {
