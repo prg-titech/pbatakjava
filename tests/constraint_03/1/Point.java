@@ -1,6 +1,7 @@
 public class Point ver 1 {
-  boolean c;
-  public Point(boolean c) {
-    this.c = c;
+  public int x;
+  public int y;
+  public Point(int x, int y) {
+    this.x = x; this.y = y;
   }
 }

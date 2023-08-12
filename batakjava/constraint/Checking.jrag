@@ -47,17 +47,17 @@ aspect VersionChecking {
     return true;
   }
 
-  /*
   public boolean VersionNumArgument.check(VersionVariable v, Model m) {
     TypeDecl vType = getType(
         new Integer(m.evaluate(v.solverConst, false).toString()));
     return vType.version().equals(version());
   }
-  */
 
+  /*
   public boolean VersionNumArgument.check(VersionVariable v, Model m) {
-    Integer ver = new Integer(m.evaluate(v.versionConst, false).toString());
+    Integer ver = new Integer(m.evaluate(v.solverConst, false).toString());
     return ver.toString().equals(version());
   }
+  */
 
 }

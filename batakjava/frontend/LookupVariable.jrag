@@ -1,6 +1,23 @@
 aspect VersionVariableScope {
 
-  // C#V# associates V with C
+  syn TypeAccess VersionVariable.typeAccess() {
+    SimpleSet<TypeAccess> accessSet = emptySet();
+    java.util.Set<String> nameSet = new HashSet();
+    for (Access access: accessSet()) {
+      TypeAccess typeAccess = access.takeTypeAccess();
+      assert typeAccess != null;
+      String name = typeAccess.getPackage() + "." + typeAccess.getID();
+      if (!nameSet.contains(name)) {
+        accessSet = accessSet.add(typeAccess);
+        nameSet.add(name);
+      }
+    }
+    if (accessSet.isSingleton()) {
+      return accessSet.singletonValue();
+    }
+    throw new Error("Version variables can only be associated with a single class (for now).");
+  }
+
   // TODO: C<<V>> associates V with something inside C
   inh SimpleSet<Access> VersionVariable.accessSet();
 
@@ -34,6 +51,14 @@ aspect VersionVariableScope {
 
     return result;
   }
+
+  syn TypeAccess Access.takeTypeAccess() = null;
+
+  eq TypeAccess.takeTypeAccess() = this;
+
+  eq VersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
+
+  eq ParVersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
 
   // TODO: handle C«V» next
   syn boolean Access.isBound(VersionVariable v) = false;

@@ -229,10 +229,15 @@ aspect Generation {
     }
     return treeCopy();
   }
-
+  
   eq VersionTypeAccess.compileAccess() {
-    return getTypeAccess().treeCopy();
+    if (getVersionArgument() instanceof VersionVarArgument) {
+      return getTypeAccess().treeCopy();
+    }
+    return getTypeAccess().compileAccess();
   }
+
+  eq ParVersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
 
   syn nta Block Block.compileBlock() {
     List<Stmt> stmtList = new List();
@@ -265,13 +270,36 @@ aspect Generation {
   syn nta Expr Expr.compileExpr() = treeCopy();
 
   eq ClassInstanceExpr.compileExpr() {
-    Access access = getAccess().compileAccess();
     List<Expr> argList = new List();
+    if (getAccess() instanceof ParVersionTypeAccess) {
+      ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) getAccess();
+
+      TypeDecl compileType = program().typeMap.get(new Integer(model().evaluate(getAccess().solverConst, false).toString()));
+      assert compileType instanceof GenericVersionClassDecl;
+      GenericVersionClassDecl compileClass = (GenericVersionClassDecl) compileType;
+
+      for (int i = 0; i < typeAccess.getNumVersionArgument(); i++) {
+        VersionArgument va = typeAccess.getVersionArgument(i);
+        VersionVariable vv = compileClass.getVersionVariable(i);
+        // TODO: version var argument
+        if (va instanceof VersionNumArgument) {
+          TypeAccess compileAccess = vv.typeAccess();
+          argList = argList.add(new ClassInstanceExpr(
+            new TypeAccess(compileAccess.getPackage(),
+                           compileAccess.getID() + "_v" + ((VersionNumArgument) va).getID() + "_Factory"),
+            new List()
+          ));
+        }
+      }
+    }
+    Access access = getAccess().compileAccess();
     for (Expr arg: getArgList()) {
       argList = argList.add(arg.compileExpr());
     }
     return new ClassInstanceExpr(access, argList);
   }
+  
+  syn nta Access VersionArgument.compileVersionArgument() = treeCopy();
 
   syn String TypeDecl.compileName() = name();
 

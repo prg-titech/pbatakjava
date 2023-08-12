@@ -1,6 +1,7 @@
-public class Point ver 2 «V» {
-  public Color#V# c;
-  public Point(Color#V# c) {
-    this.c = c;
+public class Point ver 2 {
+  public int x;
+  public int y;
+  public Point(int x, int y) {
+    this.x = x; this.y = y;
   }
 }

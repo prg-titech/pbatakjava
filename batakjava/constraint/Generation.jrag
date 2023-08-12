@@ -29,7 +29,7 @@ aspect ConstraintVariable {
   eq VarAccess.varNum() = decl().varNum();  // TODO: handle multiple possibilities!
 
   eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
-
+  
   eq VersionVarArgument.varNum() = decl().varNum();
 
   eq VersionNumArgument.varNum() = program().getVarNum(this);
@@ -67,19 +67,7 @@ aspect ConstraintVariable {
     return Collections.emptyList();
   }
 
-  /*
-  eq VersionVariable.initConst() {
-    Context ctx = context();
-    versionConst = ctx.mkIntConst(var());
-    return Collections.emptyList();    
-  }
-
-  eq VersionArgument.initConst() {
-    Context ctx = context();
-    versionConst = ctx.mkIntConst(var());
-    return Collections.emptyList();  
-  }
-  */
+  eq VersionNumArgument.initConst() = Collections.emptyList();
 
   coll HashSet<IntExpr> TypeDecl.getTerms() root TypeDecl;
 
@@ -88,6 +76,8 @@ aspect ConstraintVariable {
   syn Collection<IntExpr> Access.getTerm() {
     return Collections.singleton(solverConst);
   }
+
+  eq VersionNumArgument.getTerm() = Collections.emptyList();
 
 }
 

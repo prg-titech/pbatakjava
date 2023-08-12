@@ -73,6 +73,7 @@ aspect ConstraintSolving {
 
     // Version arguments check
     for (TypeDecl t: getComponent(i)) {
+      // System.err.println(t.prettyPrint());
       t.check();
     }
 
