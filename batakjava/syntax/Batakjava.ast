@@ -8,7 +8,7 @@ ParVersionMethodAccess: MethodAccess ::= VersionArgument*;
 VersionTypeAccess: Access ::= TypeAccess:Access VersionArgument;
 ParVersionTypeAccess: Access ::= TypeAccess:Access VersionArgument*;
 
-VersionVariable : Access ::= <ID:String> VersionRange*;
+VersionVariable ::= <ID:String> VersionRange*;
 
 abstract VersionRange ::= Version;
 VersionLT : VersionRange;
@@ -16,7 +16,8 @@ VersionLE : VersionRange;
 VersionGT : VersionRange;
 VersionGE : VersionRange;
 
-abstract VersionArgument : Access;
+// abstract VersionArgument : Access;
+abstract VersionArgument;
 VersionVarArgument : VersionArgument ::= <ID:String>;
 VersionNumArgument : VersionArgument ::= <ID:String>;
 

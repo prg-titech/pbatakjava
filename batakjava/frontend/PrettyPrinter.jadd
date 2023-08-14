@@ -96,8 +96,6 @@ aspect PrettyPrint {
 
   public void VersionVariable.prettyPrint(PrettyPrinter out) {
     out.print(getID());
-    out.print("~v");
-    out.print(var());
   }
 
   public void VersionTypeAccess.prettyPrint(PrettyPrinter out) {
@@ -105,9 +103,11 @@ aspect PrettyPrint {
     out.print("#");
     out.print(getVersionArgument());
     out.print("#");
+    /*
     out.print("~v");
-    out.print(getVersionArgument().var());
+    out.print(var());
     out.print("~");
+    */
   }
 
   public void ParVersionTypeAccess.prettyPrint(PrettyPrinter out) {
@@ -120,9 +120,11 @@ aspect PrettyPrint {
       }
     });
     out.print("»");
+    /*
     out.print("~v");
     out.print(var());
     out.print("~");
+    */
   }
 
   public void VersionVarArgument.prettyPrint(PrettyPrinter out) {
