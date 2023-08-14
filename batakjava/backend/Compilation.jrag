@@ -92,7 +92,8 @@ aspect Generation {
     if (this instanceof GenericVersionClassDecl) {
       GenericVersionClassDecl thisType = (GenericVersionClassDecl) this;
       for (VersionVariable v: thisType.getVersionVariableList()) {
-        TypeDecl type = v.compileType();
+        TypeAccess typeAccess = v.typeAccess();
+        TypeDecl type = typeAccess.compileType();
         List<FieldDeclarator> decls = new List().add(new FieldDeclarator(
           v.getID(), new List(), new Opt()));
         bodyList = bodyList.add(new FieldDecl(
@@ -146,7 +147,8 @@ aspect Generation {
       GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
       for (int i = 0; i < host.getNumVersionVariable(); i++) {
         VersionVariable v_i = host.getVersionVariable(i);
-        TypeDecl type_i = v_i.compileType();
+        TypeAccess typeAccess_i = v_i.typeAccess();
+        TypeDecl type_i = typeAccess_i.compileType();
         params = params.add(new ParameterDeclaration(
           new Modifiers(),
           new TypeAccess(type_i.packageName(), type_i.name() + "_Factory"),
@@ -299,8 +301,6 @@ aspect Generation {
     return new ClassInstanceExpr(access, argList);
   }
   
-  syn nta Access VersionArgument.compileVersionArgument() = treeCopy();
-
   syn String TypeDecl.compileName() = name();
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();
@@ -317,7 +317,8 @@ aspect Generation {
       GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
       for (int i = 0; i < host.getNumVersionVariable(); i++) {
         VersionVariable v_i = host.getVersionVariable(i);
-        TypeDecl type_i = v_i.compileType();
+        TypeAccess typeAccess_i = v_i.typeAccess();
+        TypeDecl type_i = typeAccess_i.compileType();
         params = params.add(new ParameterDeclaration(
           new Modifiers(),
           new TypeAccess(type_i.packageName(), type_i.name() + "_Factory"),
@@ -357,7 +358,8 @@ aspect Generation {
       GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
       for (int i = 0; i < host.getNumVersionVariable(); i++) {
         VersionVariable v_i = host.getVersionVariable(i);
-        TypeDecl type_i = v_i.compileType();
+        TypeAccess typeAccess_i = v_i.typeAccess();
+        TypeDecl type_i = typeAccess_i.compileType();
         params = params.add(new ParameterDeclaration(
           new Modifiers(),
           new TypeAccess(type_i.packageName(), type_i.name() + "_Factory"),

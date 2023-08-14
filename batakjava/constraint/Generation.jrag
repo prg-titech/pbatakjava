@@ -12,27 +12,17 @@ aspect ConstraintVariable {
 
   syn lazy Integer Expr.varNum() = program().getVarNum(this);
 
-  eq Access.varNum() {
-    if (parent instanceof VersionTypeAccess) {
-      return ((VersionTypeAccess) parent).varNum();
-    }
-    if (parent instanceof ParVersionTypeAccess) {
-      return ((ParVersionTypeAccess) parent).varNum();
-    }
-    return program().getVarNum(this);
-  }
+  eq Access.varNum() = program().getVarNum(this);
 
   eq ClassInstanceExpr.varNum() = getAccess().varNum();
 
   eq Dot.varNum() = lastAccess().varNum();
 
-  eq VarAccess.varNum() = decl().varNum();  // TODO: handle multiple possibilities!
+  eq VarAccess.varNum() = decl().varNum();
 
-  eq VersionTypeAccess.varNum() = getVersionArgument().varNum();
-  
-  eq VersionVarArgument.varNum() = decl().varNum();
+  eq VersionTypeAccess.varNum() = getTypeAccess().varNum();
 
-  eq VersionNumArgument.varNum() = program().getVarNum(this);
+  eq ParVersionTypeAccess.varNum() = getTypeAccess().varNum();
 
   syn lazy Integer Variable.varNum();
 
@@ -52,10 +42,6 @@ aspect ConstraintVariable {
 
   public IntExpr Expr.solverConst;
 
-  public IntExpr VersionVariable.versionConst;
-
-  public IntExpr VersionArgument.versionConst;
-
   coll LinkedList<Object> Program.initConst() root Program;
 
   // TODO: only generate the necessary variables
@@ -67,8 +53,6 @@ aspect ConstraintVariable {
     return Collections.emptyList();
   }
 
-  eq VersionNumArgument.initConst() = Collections.emptyList();
-
   coll HashSet<IntExpr> TypeDecl.getTerms() root TypeDecl;
 
   Access contributes each getTerm() to TypeDecl.getTerms();
@@ -76,9 +60,7 @@ aspect ConstraintVariable {
   syn Collection<IntExpr> Access.getTerm() {
     return Collections.singleton(solverConst);
   }
-
-  eq VersionNumArgument.getTerm() = Collections.emptyList();
-
+  
 }
 
 aspect ConstraintGeneration {

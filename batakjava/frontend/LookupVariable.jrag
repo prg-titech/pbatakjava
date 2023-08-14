@@ -69,21 +69,13 @@ aspect VersionVariableScope {
 
   eq VersionVarArgument.isBoundArg(VersionVariable v) = getID().equals(v.getID());
 
-  syn lazy Access VersionVarArgument.decl() {
-    SimpleSet<Access> decls = lookupVersionVariable(getID());
-    if (decls.isSingleton()) {
-      return decls.singletonValue();
-    }
-    throw new Error("Multiple version variables found for " + getID());
-  }
-
-  inh SimpleSet<Access> VersionVarArgument.lookupVersionVariable(String name);
-  inh SimpleSet<Access> GenericVersionMethodDecl.lookupVersionVariable(String name);
+  inh SimpleSet<VersionVariable> VersionVarArgument.lookupVersionVariable(String name);
+  inh SimpleSet<VersionVariable> GenericVersionMethodDecl.lookupVersionVariable(String name);
 
   eq Program.getChild().lookupVersionVariable(String name) = emptySet();
 
   eq GenericVersionClassDecl.getBodyDecl(int i).lookupVersionVariable(String name) {
-    SimpleSet<Access> list = emptySet();
+    SimpleSet<VersionVariable> list = emptySet();
     for (VersionVariable verVar: getVersionVariableList()) {
       if (verVar.getID().equals(name)) {
         list = list.add(verVar);
@@ -93,7 +85,7 @@ aspect VersionVariableScope {
   }
 
   eq GenericVersionMethodDecl.getBlock().lookupVersionVariable(String name) {
-    SimpleSet<Access> list = emptySet();
+    SimpleSet<VersionVariable> list = emptySet();
     for (VersionVariable verVar: getVersionVariableList()) {
       if (verVar.getID().equals(name)) {
         list.add(verVar);
