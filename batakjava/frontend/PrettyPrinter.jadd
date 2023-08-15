@@ -135,7 +135,6 @@ aspect PrettyPrint {
     out.print(getID());
   }
 
-  /*
   refine Java4PrettyPrint 
   public void TypeAccess.prettyPrint(PrettyPrinter out) {
     if (hasPackage()) {
@@ -143,11 +142,14 @@ aspect PrettyPrint {
       out.print(".");
     }
     out.print(getID());
+    /*
     out.print("~v");
     out.print(var());
     out.print("~");
+    */
   }
 
+  /*
   refine Java4PrettyPrint
   public void VarAccess.prettyPrint(PrettyPrinter out) {
     out.print(getID());
