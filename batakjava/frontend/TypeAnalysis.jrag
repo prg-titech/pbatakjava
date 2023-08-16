@@ -46,7 +46,15 @@ aspect TypeSet {
 
   eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
 
-  eq ParVersionTypeAccess.typeSet() = getTypeAccess().typeSet();
+  eq ParVersionTypeAccess.typeSet() {
+    SimpleSet<TypeDecl> typeSet = emptySet();
+    for (TypeDecl type: getTypeAccess().typeSet()) {
+      if (type.numVersionVariable() == getNumVersionArgument()) {
+        typeSet = typeSet.add(type);
+      }
+    }
+    return typeSet;
+  }
 
   eq ClassInstanceExpr.typeSet() = getAccess().typeSet();
 
