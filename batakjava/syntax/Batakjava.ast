@@ -17,8 +17,8 @@ VersionGT : VersionRange;
 VersionGE : VersionRange;
 
 // abstract VersionArgument : Access;
-abstract VersionArgument;
-VersionVarArgument : VersionArgument ::= <ID:String>;
-VersionNumArgument : VersionArgument ::= <ID:String>;
+abstract VersionArgument ::= <ID:String>;
+VersionVarArgument : VersionArgument;
+VersionNumArgument : VersionArgument;
 
 Version ::= <ID:String>;

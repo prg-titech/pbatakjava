@@ -34,6 +34,9 @@ aspect VersionVariableScope {
     return result;
   }
 
+  eq GenericVersionMethodDecl.getVersionVariable(int i).accessSet() 
+    = accessSet(getVersionVariable(i));
+
   syn SimpleSet<Access> BodyDecl.accessSet(VersionVariable v) = this.<Access>emptySet();
 
   eq FieldDecl.accessSet(VersionVariable v) = getTypeAccess().isBound(v) ? 
@@ -48,6 +51,19 @@ aspect VersionVariableScope {
     }
 
     // LATER: constructor body
+
+    return result;
+  }
+
+  eq MethodDecl.accessSet(VersionVariable v) {
+    SimpleSet<Access> result = emptySet();
+    for (ParameterDeclaration param: getParameterList()) {
+      if (param.getTypeAccess().isBound(v)) {
+        result = result.add(param.getTypeAccess());
+      }
+    }
+
+    // LATER: method body
 
     return result;
   }
