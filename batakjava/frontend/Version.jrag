@@ -33,13 +33,18 @@ aspect Version {
 
   public SimpleSet<TypeDecl> VersionTypeAccess.map(Map<String,VersionArgument> verMap) {
     SimpleSet<TypeDecl> set = emptySet();
-    String arg = verMap.get(getVersionArgument().version()).version();
-    for (TypeDecl type: typeSet()) {
-      if (type.version().equals(arg)) {
-        return set.add(type);
+    VersionArgument verArg = verMap.get(getVersionArgument().version());
+    if (verArg instanceof VersionNumArgument) {
+      String arg = verArg.version();
+      for (TypeDecl type: typeSet()) {
+        if (type.version().equals(arg)) {
+          return set.add(type);
+        }
       }
+      throw new Error("Not supported for " + prettyPrint());
     }
-    throw new Error("Not supported for " + prettyPrint());
+    // TODO: handle version var argument
+    return set;
   }
 
   syn Integer TypeDecl.numVersionVariable() = 0;

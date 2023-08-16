@@ -9,8 +9,9 @@ aspect Generation {
     for (int i = 0; i < numComponent(); i++) {
       // TODO: handling multiple solutions
       java.util.List<Model> componentModels = getComponentModels(i);
-      // TODO: handling empty class definitions
-      Model componentModel = componentModels.get(0);
+      // DONE: handling empty class definitions
+      Model componentModel = getTerms(i).size() == 0
+        ? null : componentModels.get(0);
       for (TypeDecl type: getComponent(i)) {
         CompilationUnit unit = type.compilationUnit();
         unit.model = componentModel;

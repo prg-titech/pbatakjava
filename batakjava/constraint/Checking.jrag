@@ -6,7 +6,12 @@ aspect VersionChecking {
 
   ParVersionTypeAccess contributes each check() to TypeDecl.check();
 
-  // TODO: fix this
+  // TODO: fix this, handle version var argument
+  syn Collection<Problem> ParVersionTypeAccess.check() {
+    return Collections.emptyList();
+  }
+
+  /*
   syn Collection<Problem> ParVersionTypeAccess.check() {
     // get type set of the instantiated class
     SimpleSet<TypeDecl> typeSet = typeSet();
@@ -43,6 +48,7 @@ aspect VersionChecking {
     }
     return Collections.emptyList();
   }
+  */
 
   public boolean VersionArgument.check(VersionVariable v, Model m) {
     return true;

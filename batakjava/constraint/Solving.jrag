@@ -93,7 +93,7 @@ aspect ConstraintSolving {
     for (TypeDecl t: getComponent(i)) {
       for (Formula f: t.constraint()) {
         s.add(f.convert(ctx));
-      } 
+      }
     }
 
     // Get all the solutions
