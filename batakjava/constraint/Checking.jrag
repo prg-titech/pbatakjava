@@ -2,11 +2,12 @@ aspect VersionChecking {
 
   public Model ParVersionTypeAccess.solution;
 
-  coll LinkedList<Object> TypeDecl.check() root TypeDecl;
+  coll LinkedList<Problem> TypeDecl.check() root TypeDecl;
 
   ParVersionTypeAccess contributes each check() to TypeDecl.check();
 
-  syn Collection<Object> ParVersionTypeAccess.check() {
+  // TODO: fix this
+  syn Collection<Problem> ParVersionTypeAccess.check() {
     // get type set of the instantiated class
     SimpleSet<TypeDecl> typeSet = typeSet();
     for (TypeDecl type: typeSet()) {
@@ -45,6 +46,28 @@ aspect VersionChecking {
 
   public boolean VersionArgument.check(VersionVariable v, Model m) {
     return true;
+  }
+
+  ClassInstanceExpr contributes each check() to TypeDecl.check();
+
+  syn Collection<Problem> ClassInstanceExpr.check() {
+    boolean applicable = false;
+    Iterator<TypeDecl> typeIterator = typeSet().iterator();
+    while (typeIterator.hasNext() && !applicable) {
+      TypeDecl type = typeIterator.next();
+      for (ConstructorDecl constructor: type.constructors()) {
+        Optional<Formula> optS = verApplicableAndAccessible(constructor);
+        if (optS.isPresent()) {
+          applicable = true;
+          break;
+        }
+      }
+    }
+    if (!applicable) {
+      return Collections.<Problem>singletonList(
+        errorf("no applicable constructor for %s", prettyPrint()));
+    }
+    return Collections.emptyList();
   }
 
   /*

@@ -7,6 +7,10 @@ aspect Constraint {
     return new Clause(new Lit(solverConst, type.typeNum()));
   }
 
+  public Clause Literal.clause(TypeDecl type) {
+    return new Clause();
+  }
+
   /**
    *  Disjunction of clauses
    */
@@ -15,44 +19,67 @@ aspect Constraint {
 
     public Formula() { this.clauses = new LinkedList<Clause>(); }
 
+    public Formula(java.util.List<Clause> clauses) { this.clauses = clauses; }
+
     public Formula(Clause c) {
       this();
       this.clauses.add(c);
     }
 
-    public void add(Formula f) {
+    public Formula add(Formula f) {
+      java.util.List<Clause> newClauses = new LinkedList();
+      for (Clause c: clauses) {
+        newClauses.add(c);
+      }
       for (Clause fc: f.clauses) {
-        clauses.add(fc);
-      }
-    }
-
-    public void add(Clause c) {
-      this.clauses.add(c);
-    }
-
-    public void multiply(Formula f) {
-      if (clauses.size() == 0) {
-        add(f);
-        return;
-      }
-      if (f.clauses.size() == 0) {
-        return;
-      }
-      for (Clause thisc: clauses) {
-        for (Clause fc: f.clauses) {
-          thisc.add(fc);
+        if (!fc.isEmpty()) {
+          newClauses.add(fc);
         }
       }
+      return new Formula(newClauses);
     }
 
-    public void multiply(Clause c) {
-      if (clauses.size() == 0) {
-        add(c);
-        return;
+    public Formula add(Clause oc) {
+      java.util.List<Clause> newClauses = new LinkedList();
+      for (Clause c: clauses) {
+        newClauses.add(c);
       }
-      for (Clause thisc: clauses) {
-        thisc.add(c);
+      if (!oc.isEmpty()) {
+        newClauses.add(oc);
       }
+      return new Formula(newClauses);
+    }
+
+    public Formula multiply(Formula f) {
+      if (isEmpty()) {
+        return add(f);
+      }
+      java.util.List<Clause> newClauses = new LinkedList();
+      for (Clause c: clauses) {
+        if (f.isEmpty()) {
+          newClauses.add(c);
+        } else {
+          for (Clause fc: f.clauses) {
+            newClauses.add(c.add(fc));
+          }
+        }
+      }
+      return new Formula(newClauses);
+    }
+
+    public Formula multiply(Clause oc) {
+      if (isEmpty()) {
+        return add(oc);
+      }
+      java.util.List<Clause> newClauses = new LinkedList();
+      for (Clause c: clauses) {
+        newClauses.add(c.add(oc));
+      }
+      return new Formula(newClauses);
+    } 
+
+    public boolean isEmpty() {
+      return clauses.isEmpty();
     }
 
     public Collection<Formula> toList() {
@@ -96,19 +123,31 @@ aspect Constraint {
 
     public Clause() { this.lits = new LinkedList<Lit>(); }
 
+    public Clause(java.util.List<Lit> lits) { this.lits = lits; }
+
     public Clause(Lit l) {
       this();
       this.lits.add(l);
     }
 
-    public void add(Clause c) {
-      for (Lit cl: c.lits) {
-        lits.add(cl);
+    public Clause add(Clause c) {
+      java.util.List<Lit> newLits = new LinkedList();
+      for (Lit l: lits) {
+        newLits.add(l);
       }
+      for (Lit cl: c.lits) {
+        newLits.add(cl);
+      }
+      return new Clause(newLits);
     }
 
-    public void add(Lit l) {
-      this.lits.add(l);
+    public Clause add(Lit ol) {
+      java.util.List<Lit> newLits = new LinkedList();
+      for (Lit l: lits) {
+        newLits.add(l);
+      }
+      newLits.add(ol);
+      return new Clause(newLits);
     }
 
     public BoolExpr convert(Context ctx) {
@@ -120,6 +159,10 @@ aspect Constraint {
       BoolExpr[] arrayAnds = new BoolExpr[ands.size()];
       ands.toArray(arrayAnds);
       return ctx.mkAnd(arrayAnds);
+    }
+
+    public boolean isEmpty() {
+      return lits.isEmpty();
     }
 
     @Override
