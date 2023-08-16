@@ -42,4 +42,8 @@ aspect Version {
     throw new Error("Not supported for " + prettyPrint());
   }
 
+  syn Integer TypeDecl.numVersionVariable() = 0;
+
+  eq GenericVersionClassDecl.numVersionVariable() = getNumVersionVariable();
+
 }
