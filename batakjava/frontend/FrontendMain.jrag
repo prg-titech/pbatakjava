@@ -86,23 +86,6 @@ aspect FrontendMain {
       return EXIT_SUCCESS;
     }
 
-    protected int processCompilationUnit(CompilationUnit unit) throws Error {
-      if (unit != null && unit.fromSource()) {
-        try {
-          // remove type error check on this phase, leaving only parse check
-          Collection<Problem> errors = unit.parseErrors();
-          if (!errors.isEmpty()) {
-            processErrors(errors, unit);
-            return 1;
-          }
-        } catch (Error e) {
-          System.err.println("Encountered error while processing " + unit.pathName());
-          throw e;
-        }
-      }
-      return 0;
-    }
-
     protected void printUsage() {
       System.out.println(name() + " " + version());
       System.out.println("\n"
