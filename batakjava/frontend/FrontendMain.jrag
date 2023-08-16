@@ -54,7 +54,7 @@ aspect FrontendMain {
         Iterator<CompilationUnit> iter = program.compilationUnitIterator();
         while (iter.hasNext()) {
           CompilationUnit unit = iter.next();
-          int result = processCompilationUnit(unit);
+          int result = processBatakCompilationUnit(unit);
           switch (result) {
             case EXIT_SUCCESS:
               break;
@@ -86,8 +86,7 @@ aspect FrontendMain {
       return EXIT_SUCCESS;
     }
 
-    @Override
-    protected int processCompilationUnit(CompilationUnit unit) throws Error {
+    protected int processBatakCompilationUnit(CompilationUnit unit) throws Error {
       if (unit != null && unit.fromSource()) {
         try {
           // only handle parse errors
@@ -172,7 +171,7 @@ aspect FrontendMain {
         int compileResult = EXIT_SUCCESS;
 
         for (CompilationUnit unit: program.getCompilationUnitList()) {
-          int result = processCompilationUnit(unit);
+          int result = processBatakCompilationUnit(unit);
           switch (result) {
             case EXIT_SUCCESS:
               break;
