@@ -79,7 +79,7 @@ aspect ConstraintGeneration {
   eq TypeAccess.constraint() {
     Formula f = new Formula();
     for (TypeDecl type: typeSet()) {
-      f.add(clause(type));
+      f = f.add(clause(type));
     }
     return f;
   }
@@ -90,9 +90,9 @@ aspect ConstraintGeneration {
       for (TypeDecl dest: getDest().typeSet()) {
         if (source == dest) {
           Clause c = new Clause();
-          c.add(getSource().clause(source));
-          c.add(getDest().clause(dest));
-          f.add(c);
+          c = c.add(getSource().clause(source));
+          c = c.add(getDest().clause(dest));
+          f = f.add(c);
         }
       }
     }
@@ -119,43 +119,42 @@ aspect ConstraintGeneration {
 
           // constraint on the method invocation itself
           Lit lReturn = new Lit(solverConst, returnType.typeNum());
-          s.add(new Clause(lReturn));
+          s = s.add(new Clause(lReturn));
         }
 
         if (isQualified()) {
-          s.multiply(new Clause(lQualifier));
+          s = s.multiply(new Clause(lQualifier));
         }
 
-        f.add(s);
+        f = f.add(s);
       }
     }
-    System.err.println(f);
+    // System.err.println(f);
     return f;
   }
 
   eq ClassInstanceExpr.constraint() {
     Formula f = new Formula();
-    // get the type set of the instantiated class
     for (TypeDecl type: typeSet()) {
-      Formula s = new Formula();
       Map<String,VersionArgument> verMap = getAccess().verMap(type);
       for (ConstructorDecl constructor: type.constructors()) {
-        Clause c = new Clause();
-        for (int i = 0; i < getNumArg(); i++) {
-          // TODO: type checking arguments
-          SimpleSet<TypeDecl> set 
-            = constructor.getParameter(i).getTypeAccess().map(verMap);
-          if (set.isSingleton()) {
-            c.add(new Lit(getArg(i).solverConst, set.singletonValue().typeNum()));
+        Optional<Formula> optS = verApplicableAndAccessible(constructor);
+        if (optS.isPresent()) {
+          Formula s = optS.get();
+          for (int i = 0; i < getNumArg(); i++) {
+            SimpleSet<TypeDecl> set
+              = constructor.getParameter(i).getTypeAccess().map(verMap);
+            if (set.isSingleton()) {
+              Lit lArg = new Lit(getArg(i).solverConst, set.singletonValue().typeNum());
+              s = s.multiply(new Clause(lArg));
+            }
           }
+          Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
+          s = s.multiply(new Clause(lAccess));
+          f = f.add(s);
         }
-        s.add(c);
-      } 
-      Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
-      s.multiply(new Clause(lAccess));
-      f.add(s);
+      }
     }
-    // System.err.println(f);
     return f;
   }
 
@@ -164,22 +163,30 @@ aspect ConstraintGeneration {
   syn Collection<Formula> Declarator.constraintList() = constraint().toList();
 
   syn lazy Formula Declarator.constraint() {
-    Formula f = new Formula();
     if (!hasInit()) {
-      return f;
+      return new Formula();
     }
-    for (TypeDecl source: getInit().typeSet()) {
-      for (TypeDecl dest: declarationType().typeSet()) {
-        if (source == dest) {
+    Optional<Formula> f = getInit().typeEquality(declarationType());
+    return f.isPresent() ? f.get() : new Formula();
+  }
+
+  // TODO: equality -> subtype check
+  public Optional<Formula> Expr.typeEquality(Access dest) {
+    Formula f = new Formula();
+    boolean equal = false;
+    for (TypeDecl sourceType: typeSet()) {
+      for (TypeDecl destType: dest.typeSet()) {
+        if (sourceType == destType || sourceType.assignConversionTo(destType, this)) {
           Clause c = new Clause();
-          c.add(getInit().clause(source));
-          c.add(declarationType().clause(dest));
-          f.add(c);
+          c = c.add(clause(sourceType));
+          if (context() == dest.context()) {
+            c = c.add(dest.clause(destType));
+          }
+          f = f.add(c);
+          equal = true;
         }
       }
     }
-    // System.err.println(f);
-    return f;
+    return equal ? Optional.of(f) : Optional.empty();
   }
-
 }

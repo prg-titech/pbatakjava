@@ -71,10 +71,22 @@ aspect ConstraintSolving {
     Context ctx = contexts.get(i);
     Solver s = ctx.mkSolver();
 
+    int result = 0;
+
     // Version arguments check
     for (TypeDecl t: getComponent(i)) {
       // System.err.println(t.prettyPrint());
-      t.check();
+      Collection<Problem> errors = t.check();
+      if (!errors.isEmpty()) {
+        for (Problem error: errors) {
+          System.err.println(error);
+        }
+        result = 1;
+      }
+    }
+
+    if (result != 0) {
+      return result;
     }
 
     // Gather initial constraints
@@ -88,7 +100,8 @@ aspect ConstraintSolving {
     models = new ArrayList();
     getAllSolutions(s, i);
     if (models.size() == 0) {
-      throw new Error("No solution found component in " + i);
+      System.err.println(printTypeMap());
+      throw new Error("no solution found component in " + i);
     }
     componentModels.add(models);
 
