@@ -9,8 +9,9 @@ aspect Generation {
     for (int i = 0; i < numComponent(); i++) {
       // TODO: handling multiple solutions
       java.util.List<Model> componentModels = getComponentModels(i);
-      // TODO: handling empty class definitions
-      Model componentModel = componentModels.get(0);
+      // DONE: handling empty class definitions
+      Model componentModel = getTerms(i).size() == 0
+        ? null : componentModels.get(0);
       for (TypeDecl type: getComponent(i)) {
         CompilationUnit unit = type.compilationUnit();
         unit.model = componentModel;
@@ -206,6 +207,33 @@ aspect Generation {
     );
   }
 
+  eq GenericVersionMethodDecl.compile() {
+    List<ParameterDeclaration> params = new List();
+
+    for (VersionVariable v: getVersionVariableList()) {
+      TypeAccess typeAccess = v.typeAccess();
+      TypeDecl type = typeAccess.compileType();
+      params = params.add(new ParameterDeclaration(
+        new Modifiers(),
+        new TypeAccess(type.packageName(), type.name() + "_Factory"),
+        v.getID()
+      ));
+    }
+
+    for (ParameterDeclaration param: getParameterList()) {
+      params = params.add(param.compileParameter());
+    }
+
+    return new MethodDecl(
+      getModifiers(),
+      getTypeAccess().compileAccess(),
+      getID(),
+      params,
+      new List(),
+      hasBlock() ? new Opt(getBlock().compileBlock()) : new Opt()      
+    );
+  }
+
   eq FieldDecl.compile() {
     List<FieldDeclarator> decls = new List();
     for (FieldDeclarator decl: getDeclaratorList()) {
@@ -222,6 +250,8 @@ aspect Generation {
     = new ParameterDeclaration(getModifiers(), getTypeAccess().compileAccess(), getID());
 
   syn nta Access Access.compileAccess() = treeCopy();
+
+  eq Dot.compileAccess() = new Dot(getLeft().compileExpr(), getRight().compileAccess());
 
   eq TypeAccess.compileAccess() {
     TypeDecl type = program().typeMap.get(
@@ -240,6 +270,43 @@ aspect Generation {
   }
 
   eq ParVersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
+
+  eq ParVersionMethodAccess.compileAccess() {
+    TypeDecl qualifierType = isQualified() ? qualifier().compileType() : hostType();
+    Map<TypeDecl,Collection<MethodDecl>> methodMap = verLookupMethod(name());
+    Collection<MethodDecl> methods = new ArrayList();
+    for (TypeDecl keyType: methodMap.keySet()) {
+      if (keyType == qualifierType) {
+        methods = methodMap.get(keyType);
+      }
+    }
+
+    List<Expr> argList = new List();
+
+    if (methods.size() == 1) {
+      MethodDecl m = methods.iterator().next();
+      int i = 0;
+      for (VersionVariable vv: m.versionVariableList()) {
+        VersionArgument va = getVersionArgument(i);
+        TypeAccess compileAccess = vv.typeAccess();
+        // TODO: handle version variable argument
+        if (va instanceof VersionNumArgument) {
+          argList = argList.add(new ClassInstanceExpr(
+            new TypeAccess(compileAccess.getPackage(),
+                           compileAccess.getID() + "_v" + va.getID() + "_Factory"),
+            new List()
+          ));
+        }
+        i++;
+      }
+    }
+
+    for (Expr expr: getArgList()) {
+      argList = argList.add(expr.compileExpr());
+    }
+
+    return new MethodAccess(getID(), argList);
+  }
 
   syn nta Block Block.compileBlock() {
     List<Stmt> stmtList = new List();
@@ -263,6 +330,8 @@ aspect Generation {
     );
   }
 
+  eq ReturnStmt.compileStmt() = new ReturnStmt(getResult().compileExpr());
+
   syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
     = new VariableDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
 
@@ -270,6 +339,8 @@ aspect Generation {
     = new FieldDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
 
   syn nta Expr Expr.compileExpr() = treeCopy();
+
+  eq Access.compileExpr() = compileAccess();
 
   eq ClassInstanceExpr.compileExpr() {
     List<Expr> argList = new List();
@@ -283,14 +354,15 @@ aspect Generation {
       for (int i = 0; i < typeAccess.getNumVersionArgument(); i++) {
         VersionArgument va = typeAccess.getVersionArgument(i);
         VersionVariable vv = compileClass.getVersionVariable(i);
-        // TODO: version var argument
+        TypeAccess compileAccess = vv.typeAccess();
         if (va instanceof VersionNumArgument) {
-          TypeAccess compileAccess = vv.typeAccess();
           argList = argList.add(new ClassInstanceExpr(
             new TypeAccess(compileAccess.getPackage(),
-                           compileAccess.getID() + "_v" + ((VersionNumArgument) va).getID() + "_Factory"),
+                           compileAccess.getID() + "_v" + va.getID() + "_Factory"),
             new List()
           ));
+        } else if (va instanceof VersionVarArgument) {
+          argList = argList.add(new VarAccess(va.getID()));
         }
       }
     }
@@ -305,7 +377,7 @@ aspect Generation {
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();
 
-  public TypeDecl Access.compileType() {
+  public TypeDecl Expr.compileType() {
     return program().typeMap.get(new Integer(model().evaluate(solverConst, false).toString()));
   }
 
