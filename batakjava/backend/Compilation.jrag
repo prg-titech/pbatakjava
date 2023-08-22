@@ -251,6 +251,8 @@ aspect Generation {
 
   syn nta Access Access.compileAccess() = treeCopy();
 
+  eq Dot.compileAccess() = new Dot(getLeft().compileExpr(), getRight().compileAccess());
+
   eq TypeAccess.compileAccess() {
     TypeDecl type = program().typeMap.get(
       new Integer(model().evaluate(solverConst, false).toString()));
@@ -268,6 +270,43 @@ aspect Generation {
   }
 
   eq ParVersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
+
+  eq ParVersionMethodAccess.compileAccess() {
+    TypeDecl qualifierType = isQualified() ? qualifier().compileType() : hostType();
+    Map<TypeDecl,Collection<MethodDecl>> methodMap = verLookupMethod(name());
+    Collection<MethodDecl> methods = new ArrayList();
+    for (TypeDecl keyType: methodMap.keySet()) {
+      if (keyType == qualifierType) {
+        methods = methodMap.get(keyType);
+      }
+    }
+
+    List<Expr> argList = new List();
+
+    if (methods.size() == 1) {
+      MethodDecl m = methods.iterator().next();
+      int i = 0;
+      for (VersionVariable vv: m.versionVariableList()) {
+        VersionArgument va = getVersionArgument(i);
+        TypeAccess compileAccess = vv.typeAccess();
+        // TODO: handle version variable argument
+        if (va instanceof VersionNumArgument) {
+          argList = argList.add(new ClassInstanceExpr(
+            new TypeAccess(compileAccess.getPackage(),
+                           compileAccess.getID() + "_v" + va.getID() + "_Factory"),
+            new List()
+          ));
+        }
+        i++;
+      }
+    }
+
+    for (Expr expr: getArgList()) {
+      argList = argList.add(expr.compileExpr());
+    }
+
+    return new MethodAccess(getID(), argList);
+  }
 
   syn nta Block Block.compileBlock() {
     List<Stmt> stmtList = new List();
@@ -301,6 +340,8 @@ aspect Generation {
 
   syn nta Expr Expr.compileExpr() = treeCopy();
 
+  eq Access.compileExpr() = compileAccess();
+
   eq ClassInstanceExpr.compileExpr() {
     List<Expr> argList = new List();
     if (getAccess() instanceof ParVersionTypeAccess) {
@@ -314,7 +355,6 @@ aspect Generation {
         VersionArgument va = typeAccess.getVersionArgument(i);
         VersionVariable vv = compileClass.getVersionVariable(i);
         TypeAccess compileAccess = vv.typeAccess();
-        // TODO: version var argument
         if (va instanceof VersionNumArgument) {
           argList = argList.add(new ClassInstanceExpr(
             new TypeAccess(compileAccess.getPackage(),
@@ -337,7 +377,7 @@ aspect Generation {
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();
 
-  public TypeDecl Access.compileType() {
+  public TypeDecl Expr.compileType() {
     return program().typeMap.get(new Integer(model().evaluate(solverConst, false).toString()));
   }
 
