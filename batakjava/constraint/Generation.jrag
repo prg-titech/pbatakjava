@@ -106,20 +106,35 @@ aspect ConstraintGeneration {
     for (TypeDecl qualifierType: map.keySet()) {
       Lit lQualifier = new Lit(qualifier().solverConst, qualifierType.typeNum());
       for (MethodDecl method: map.get(qualifierType)) {
-        Formula s = new Formula();
+        Map<String,VersionArgument> verMap = verMap(method);
         // TODO: check inheritance
 
-        // TODO: check arguments
+        // check arguments
+        Optional<Formula> optS = verApplicableAndAccessible(method);
+        
+        if (!optS.isPresent()) {
+          continue;
+        }
+
+        Formula s = optS.get();
+
+        for (int i = 0; i < getNumArg(); i++) {
+          SimpleSet<TypeDecl> set = method.getParameter(i).getTypeAccess().map(verMap);
+          if (set.isSingleton()) {
+            Lit lArg = new Lit(getArg(i).solverConst, set.singletonValue().typeNum());
+            s = s.multiply(new Clause(lArg));
+          }
+        }
 
         for (TypeDecl returnType: method.getTypeAccess().typeSet()) {
           /**
-           *  TODO: constraint on the method declaration's return type
-           *        that depends on the existence of version arguments
-           */
+          *  TODO: constraint on the method declaration's return type
+          *        that depends on the existence of version arguments
+          */
 
           // constraint on the method invocation itself
           Lit lReturn = new Lit(solverConst, returnType.typeNum());
-          s = s.add(new Clause(lReturn));
+          s = s.multiply(new Clause(lReturn));
         }
 
         if (isQualified()) {

@@ -14,3 +14,28 @@ aspect LookupMethod {
 
 }
 
+aspect MethodDecl {
+
+  syn Optional<Formula> MethodAccess.verApplicableAndAccessible(MethodDecl m) {
+    if (m.getNumParameter() != getNumArg()) {
+      return Optional.empty();
+    }
+
+    if (!accessible(m)) {
+      return Optional.empty();
+    }
+
+    Formula f = new Formula();
+    for (int i = 0; i < m.getNumParameter(); i++) {
+      Optional<Formula> fArg = getArg(i).typeEquality(m.getParameter(i).getTypeAccess());
+      if (fArg.isPresent()) {
+        f = f.multiply(fArg.get());
+      } else {
+        return Optional.empty();
+      }
+    }
+    
+    return Optional.of(f);
+  }
+
+}
