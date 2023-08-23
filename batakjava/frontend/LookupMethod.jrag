@@ -38,4 +38,12 @@ aspect MethodDecl {
     return Optional.of(f);
   }
 
+  eq ParVersionMethodAccess.verApplicableAndAccessible(MethodDecl m) {
+    if (m.numVersionVariable() != getNumVersionArgument()) {
+      return Optional.empty();
+    }
+    
+    return super.verApplicableAndAccessible(m);
+  }
+
 }

@@ -159,23 +159,30 @@ aspect ConstraintGeneration {
       Map<String,VersionArgument> verMap = getAccess().verMap(type);
       for (ConstructorDecl constructor: type.constructors()) {
         Optional<Formula> optS = verApplicableAndAccessible(constructor);
-        if (optS.isPresent()) {
-          Formula s = optS.get();
-          for (int i = 0; i < getNumArg(); i++) {
-            // TODO: handle version var argument
-            SimpleSet<TypeDecl> set
-              = constructor.getParameter(i).getTypeAccess().map(verMap);
-            if (set.isSingleton()) {
-              Lit lArg = new Lit(getArg(i).solverConst, set.singletonValue().typeNum());
-              s = s.multiply(new Clause(lArg));
-            }
-          }
-          Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
-          s = s.multiply(new Clause(lAccess));
-          f = f.add(s);
+
+        if (!optS.isPresent()) {
+          continue;
         }
+
+        Formula s = optS.get();
+
+        for (int i = 0; i < getNumArg(); i++) {
+          // TODO: handle version var argument
+          SimpleSet<TypeDecl> set
+            = constructor.getParameter(i).getTypeAccess().map(verMap);
+          if (set.isSingleton()) {
+            Lit lArg = new Lit(getArg(i).solverConst, set.singletonValue().typeNum());
+            s = s.multiply(new Clause(lArg));
+          }
+        }
+
+        Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
+        s = s.multiply(new Clause(lAccess));
+
+        f = f.add(s);
       }
     }
+    // System.err.println(f);
     return f;
   }
 

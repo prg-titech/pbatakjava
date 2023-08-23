@@ -67,6 +67,10 @@ aspect Version {
 
   eq GenericVersionClassDecl.numVersionVariable() = getNumVersionVariable();
 
+  syn Integer MethodDecl.numVersionVariable() = 0;
+  
+  eq GenericVersionMethodDecl.numVersionVariable() = getNumVersionVariable();
+
   syn List<VersionVariable> MethodDecl.versionVariableList() = new List();
 
   eq GenericVersionMethodDecl.versionVariableList() = getVersionVariableList();
