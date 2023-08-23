@@ -65,6 +65,10 @@ aspect FrontendMain {
           }
         }
 
+        if (compileResult != EXIT_SUCCESS) {
+          return compileResult;
+        }
+
         if (program.solve() != EXIT_SUCCESS) {
           // TODO: Make this better
           System.err.println("Solution not found.");

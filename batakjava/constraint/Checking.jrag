@@ -57,13 +57,43 @@ aspect VersionChecking {
   ClassInstanceExpr contributes each check() to TypeDecl.check();
 
   syn Collection<Problem> ClassInstanceExpr.check() {
+    Collection<Problem> err = new LinkedList();
+
+    // check constructor applicability
     boolean applicable = false;
     Iterator<TypeDecl> typeIterator = typeSet().iterator();
     while (typeIterator.hasNext() && !applicable) {
       TypeDecl type = typeIterator.next();
       for (ConstructorDecl constructor: type.constructors()) {
-        Optional<Formula> optS = verApplicableAndAccessible(constructor);
-        if (optS.isPresent()) {
+        if (verApplicableAndAccessible(constructor).isPresent()) {
+          applicable = true;
+          break;
+        }
+      }
+    }
+    if (!applicable) {
+      err.add(errorf("no applicable constructor for %s", prettyPrint()));
+    }
+
+    return err;
+  }
+
+  MethodAccess contributes each check() to TypeDecl.check();
+
+  syn Collection<Problem> MethodAccess.check() {
+    Map<TypeDecl,Collection<MethodDecl>> map = verLookupMethod(name());
+    if (map.size() == 0) {
+      return Collections.<Problem>singletonList(
+        errorf("no applicable method for %s", prettyPrint()));
+    }
+
+    // TODO: make an example for this
+    boolean applicable = false;
+    Iterator<TypeDecl> typeIterator = map.keySet().iterator();
+    while (typeIterator.hasNext() && !applicable) {
+      TypeDecl type = typeIterator.next();
+      for (MethodDecl m: map.get(type)) {
+        if (verApplicableAndAccessible(m).isPresent()) {
           applicable = true;
           break;
         }
@@ -71,8 +101,9 @@ aspect VersionChecking {
     }
     if (!applicable) {
       return Collections.<Problem>singletonList(
-        errorf("no applicable constructor for %s", prettyPrint()));
+        errorf("no applicable method for %s", prettyPrint()));
     }
+
     return Collections.emptyList();
   }
 

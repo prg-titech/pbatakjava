@@ -13,12 +13,28 @@ aspect Version {
   syn Map<String,VersionArgument> Access.verMap(TypeDecl t) = new HashMap();
 
   eq ParVersionTypeAccess.verMap(TypeDecl t) = t.verMap(this);
+  
+  syn Map<String,VersionArgument> MethodAccess.verMap(MethodDecl m) = new HashMap();
+
+  eq ParVersionMethodAccess.verMap(MethodDecl m) = m.verMap(this);
 
   public Map<String,VersionArgument> TypeDecl.verMap(ParVersionTypeAccess access) {
     return new HashMap();
   }
 
   public Map<String,VersionArgument> GenericVersionClassDecl.verMap(ParVersionTypeAccess access) {
+    Map<String,VersionArgument> map = new HashMap();
+    for (int i = 0; i < getNumVersionVariable(); i++) {
+      map.put(getVersionVariable(i).getID(), access.getVersionArgument(i));
+    }
+    return map;
+  }
+
+  public Map<String,VersionArgument> MethodDecl.verMap(ParVersionMethodAccess access) {
+    return new HashMap();
+  }
+
+  public Map<String,VersionArgument> GenericVersionMethodDecl.verMap(ParVersionMethodAccess access) {
     Map<String,VersionArgument> map = new HashMap();
     for (int i = 0; i < getNumVersionVariable(); i++) {
       map.put(getVersionVariable(i).getID(), access.getVersionArgument(i));
@@ -50,6 +66,10 @@ aspect Version {
   syn Integer TypeDecl.numVersionVariable() = 0;
 
   eq GenericVersionClassDecl.numVersionVariable() = getNumVersionVariable();
+
+  syn Integer MethodDecl.numVersionVariable() = 0;
+  
+  eq GenericVersionMethodDecl.numVersionVariable() = getNumVersionVariable();
 
   syn List<VersionVariable> MethodDecl.versionVariableList() = new List();
 

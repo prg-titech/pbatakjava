@@ -126,12 +126,17 @@ aspect ConstraintSolving {
     // Initialize solver constant
     initConst();
 
+    int result = 0;
+
     for (int i=0; i<numComponent(); i++) {
       if (getTerms(i).size() == 0) {
         componentModels.add(new ArrayList());
         continue;
       }
-      solve(i);
+      result = solve(i);
+      if (result != 0) {
+        return result;
+      }
     }
     
     System.err.println(printTypeMap());
