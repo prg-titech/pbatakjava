@@ -296,6 +296,8 @@ aspect Generation {
                            compileAccess.getID() + "_v" + va.getID() + "_Factory"),
             new List()
           ));
+        } else if (va instanceof VersionVarArgument) {
+          argList = argList.add(new VarAccess(va.getID()));
         }
         i++;
       }

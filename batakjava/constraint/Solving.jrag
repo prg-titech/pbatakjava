@@ -101,7 +101,7 @@ aspect ConstraintSolving {
     getAllSolutions(s, i);
     if (models.size() == 0) {
       System.err.println(printTypeMap());
-      throw new Error("no solution found component in " + i);
+      throw new Error("no solution found in component " + i);
     }
     componentModels.add(models);
 
