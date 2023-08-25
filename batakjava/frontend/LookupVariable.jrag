@@ -1,9 +1,17 @@
 aspect VersionVariableScope {
 
+  syn TypeAccess Access.takeTypeAccess() = null;
+
+  eq TypeAccess.takeTypeAccess() = this;
+
+  eq VersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
+
+  eq ParVersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
+
   syn TypeAccess VersionVariable.typeAccess() {
     SimpleSet<TypeAccess> accessSet = emptySet();
     java.util.Set<String> nameSet = new HashSet();
-    for (Access access: accessSet()) {
+    for (Access access: boundSet()) {
       TypeAccess typeAccess = access.takeTypeAccess();
       assert typeAccess != null;
       String name = typeAccess.getPackage() + "." + typeAccess.getID();
@@ -18,74 +26,117 @@ aspect VersionVariableScope {
     throw new Error("Version variables can only be associated with a single class (for now).");
   }
 
-  // TODO: C<<V>> associates V with something inside C
-  inh SimpleSet<Access> VersionVariable.accessSet();
+  inh SimpleSet<Access> VersionVariable.boundSet();
 
-  eq Program.getChild().accessSet() = emptySet();
+  eq Program.getChild().boundSet() = emptySet();
 
-  eq GenericVersionClassDecl.getVersionVariable(int i).accessSet() {
+  eq GenericVersionClassDecl.getVersionVariable(int i).boundSet()
+    = boundSet(getVersionVariable(i),
+               this.<TypeDecl>emptySet().add(this));
+
+  eq GenericVersionMethodDecl.getVersionVariable(int i).boundSet() 
+    = boundSet(getVersionVariable(i),
+               this.<TypeDecl>emptySet());
+
+  syn SimpleSet<Access> TypeDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
+    = this.<Access>emptySet();
+
+  eq GenericVersionClassDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
     SimpleSet<Access> result = emptySet();
-    VersionVariable v = getVersionVariable(i);
-    for (BodyDecl body: getBodyDeclList()) {
-      for (Access bodyAccess: body.accessSet(v)) {
+    for (BodyDecl b: getBodyDeclList()) {
+      for (Access bodyAccess: b.boundSet(v, visited)) {
         result = result.add(bodyAccess);
       }
     }
     return result;
   }
 
-  eq GenericVersionMethodDecl.getVersionVariable(int i).accessSet() 
-    = accessSet(getVersionVariable(i));
+  syn SimpleSet<Access> BodyDecl.boundSet(
+      VersionVariable v, SimpleSet<TypeDecl> visited) 
+    = this.<Access>emptySet();
 
-  syn SimpleSet<Access> BodyDecl.accessSet(VersionVariable v) = this.<Access>emptySet();
+  eq FieldDecl.boundSet(
+      VersionVariable v, SimpleSet<TypeDecl> visited) 
+    = getTypeAccess().boundSet(v, visited);
 
-  eq FieldDecl.accessSet(VersionVariable v) = getTypeAccess().isBound(v) ? 
-    this.<Access>emptySet().add(getTypeAccess()) : this.<Access>emptySet();
-
-  eq ConstructorDecl.accessSet(VersionVariable v) {
-    SimpleSet<Access> result = emptySet();
+  eq ConstructorDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
     for (ParameterDeclaration param: getParameterList()) {
-      if (param.getTypeAccess().isBound(v)) {
-        result = result.add(param.getTypeAccess());
+      for (Access a: param.getTypeAccess().boundSet(v, visited)) {
+        set = set.add(a); 
       }
     }
 
     // LATER: constructor body
 
-    return result;
+    return set;
   }
 
-  eq MethodDecl.accessSet(VersionVariable v) {
-    SimpleSet<Access> result = emptySet();
+  eq MethodDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
     for (ParameterDeclaration param: getParameterList()) {
-      if (param.getTypeAccess().isBound(v)) {
-        result = result.add(param.getTypeAccess());
+      for (Access a: param.getTypeAccess().boundSet(v, visited)) {
+        set = set.add(a);
       }
+    }
+
+    for (Access a: getTypeAccess().boundSet(v, visited)) {
+      set = set.add(a);
     }
 
     // LATER: method body
 
-    return result;
+    return set;
   }
 
-  syn TypeAccess Access.takeTypeAccess() = null;
+  syn SimpleSet<Access> Access.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
+    = this.<Access>emptySet();
 
-  eq TypeAccess.takeTypeAccess() = this;
+  eq VersionTypeAccess.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
+    = getVersionArgument().isBound(v) ? this.<Access>emptySet().add(this) : emptySet();
 
-  eq VersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
+  eq ParVersionTypeAccess.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
+    for (int i = 0; i < getNumVersionArgument(); i++) {
+      if (getVersionArgument(i).isBound(v)) {
+        for (TypeDecl type: typeSet()) {
+          if (visited.contains(type)) {
+            continue;
+          }
+          GenericVersionClassDecl cls = (GenericVersionClassDecl) type;
+          for (Access a: type.boundSet(cls.getVersionVariable(i), visited.add(type))) {
+            set = set.add(a);
+          }
+        }
+      }
+    }
+    return set;
+  }
 
-  eq ParVersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
+  /*
+  // ??: Recursion
+  eq ParVersionTypeAccess.getBoundSet(VersionVariable v) {
+    SimpleSet<Access> result = emptySet();
+    System.err.println(prettyPrint());
+    for (int i = 0; i < getNumVersionArgument(); i++) {
+      if (getVersionArgument(i).isBoundArg(v)) {
+        for (TypeDecl type: typeSet()) {
+          GenericVersionClassDecl cls = (GenericVersionClassDecl) type;
+          VersionVariable vv = cls.getVersionVariable(i);
+          System.err.println(vv.prettyPrint());
+        }
+      }
+    }
+    return result;
+  }
+  */
 
-  // TODO: handle C«V» next
-  syn boolean Access.isBound(VersionVariable v) = false;
+  syn boolean VersionArgument.isBound(VersionVariable v) = false;
 
-  eq VersionTypeAccess.isBound(VersionVariable v) = getVersionArgument().isBoundArg(v);
-
-  syn boolean VersionArgument.isBoundArg(VersionVariable v) = false;
-
-  eq VersionVarArgument.isBoundArg(VersionVariable v) = getID().equals(v.getID());
+  eq VersionVarArgument.isBound(VersionVariable v) = getID().equals(v.getID());
 
   inh SimpleSet<VersionVariable> VersionVarArgument.lookupVersionVariable(String name);
+  
   inh SimpleSet<VersionVariable> GenericVersionMethodDecl.lookupVersionVariable(String name);
 
   eq Program.getChild().lookupVersionVariable(String name) = emptySet();

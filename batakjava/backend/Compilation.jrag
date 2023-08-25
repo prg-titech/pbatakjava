@@ -330,7 +330,7 @@ aspect Generation {
     );
   }
 
-  eq ReturnStmt.compileStmt() = new ReturnStmt(getResult().compileExpr());
+  eq ReturnStmt.compileStmt() = hasResult() ? new ReturnStmt(getResult().compileExpr()) : new ReturnStmt(new Opt());
 
   syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
     = new VariableDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
@@ -366,10 +366,22 @@ aspect Generation {
         }
       }
     }
+
     Access access = getAccess().compileAccess();
     for (Expr arg: getArgList()) {
       argList = argList.add(arg.compileExpr());
     }
+
+    if (getAccess() instanceof VersionTypeAccess) {
+      VersionTypeAccess typeAccess = (VersionTypeAccess) getAccess();
+      VersionArgument va = typeAccess.getVersionArgument();
+
+      Access makeCall = new MethodAccess("make", argList);
+      return new Dot(
+        new VarAccess(va.getID()),
+        makeCall);
+    }
+
     return new ClassInstanceExpr(access, argList);
   }
   
