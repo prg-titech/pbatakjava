@@ -62,6 +62,19 @@ aspect TypeSet {
 
   eq ThisAccess.typeSet() = this.<TypeDecl>emptySet().add(type());
 
+  eq MethodAccess.typeSet() {
+    SimpleSet<TypeDecl> typeSet = emptySet();
+    Map<TypeDecl,Collection<MethodDecl>> map = verLookupMethod(name());
+    for (TypeDecl qualifierType: map.keySet()) {
+      for (MethodDecl method: map.get(qualifierType)) {
+        for (TypeDecl returnType: method.getTypeAccess().typeSet()) {
+          typeSet = typeSet.add(returnType);
+        }
+      }
+    }
+    return typeSet;
+  }
+
   eq Dot.typeSet() = lastAccess().typeSet();
 
   syn lazy SimpleSet<TypeDecl> Variable.typeSet();
