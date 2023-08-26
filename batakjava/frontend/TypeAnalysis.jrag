@@ -246,19 +246,6 @@ aspect TypeSet {
     libraryTypeSetMap.put(PRIMITIVE_PACKAGE_NAME + ".Unknown", this.<TypeDecl>emptySet().add(unit.unknownType()));
   }
 
-  public TypeDecl Program.findInterface(String packageName, String name) {
-    for (int i = 0; i < getNumCompilationUnit(); i++) {
-      CompilationUnit unit = getCompilationUnit(i);
-      for (TypeDecl t: unit.getTypeDeclList()) {
-        if (t.packageName().equals(packageName) && t.name().equals(name) && t.isInterfaceDecl()) {
-          return t;
-        }
-      }
-    }
-    return null;
-  }
-
-
 }
 
 aspect SuperClasses {
@@ -274,5 +261,39 @@ aspect SuperClasses {
       return typeObject();
     }
   }
+
+}
+
+aspect TypeMap {
+
+  // Only used for the generated program
+  public TypeDecl Program.findInterface(String packageName, String name) {
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        if (t.packageName().equals(packageName) && t.name().equals(name) && t.isInterfaceDecl()) {
+          return t;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Only used for the generated program
+  public SimpleSet<TypeDecl> Program.findClassSet(String packageName, String name) {
+    SimpleSet<TypeDecl> set = emptySet();
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        String[] splitName = t.name().split("_");
+        if (splitName.length == 2 && splitName[1].charAt(0) == 'v'
+            && splitName[0].equals(name) && t.packageName().equals(packageName)) {
+          set = set.add(t);
+        }
+      }
+    }
+    return set;
+  }
+
 
 }

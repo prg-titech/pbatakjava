@@ -27,6 +27,12 @@ aspect Generation {
           TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
           for (BodyDecl newBody: newInterface.getBodyDeclList()) {
             oldInterface.addBodyDecl(newBody);
+            BodyDecl newBodyWithReturn = newBody.addReturnStmt();
+            SimpleSet<TypeDecl> existingClassSet
+              = generated.findClassSet(newInterface.packageName(), newInterface.name());
+            for (TypeDecl existingClass: existingClassSet) {
+              existingClass.addBodyDecl(newBodyWithReturn);
+            }
           }
         } else {
           CompilationUnit interfaceUnit = unit.compile(is);
@@ -488,5 +494,25 @@ aspect Generation {
       new List(),
       new Opt())
     );
+  }
+
+  syn nta BodyDecl BodyDecl.addReturnStmt() = treeCopy();
+
+  eq MethodDecl.addReturnStmt() {
+    List<ParameterDeclaration> ps = new List();
+
+    for (ParameterDeclaration p: getParameterList()) {
+      ps = ps.add(p.treeCopy());
+    }
+
+    List<Stmt> stmtList = new List().add(new ReturnStmt(new NullLiteral("null")));
+
+    return new MethodDecl(
+      getModifiers(),
+      getTypeAccess().treeCopy(),
+      getID(),
+      ps,
+      new List(),
+      new Opt(new Block(stmtList)));
   }
 }
