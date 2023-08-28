@@ -62,6 +62,19 @@ aspect TypeSet {
 
   eq ThisAccess.typeSet() = this.<TypeDecl>emptySet().add(type());
 
+  eq MethodAccess.typeSet() {
+    SimpleSet<TypeDecl> typeSet = emptySet();
+    Map<TypeDecl,Collection<MethodDecl>> map = verLookupMethod(name());
+    for (TypeDecl qualifierType: map.keySet()) {
+      for (MethodDecl method: map.get(qualifierType)) {
+        for (TypeDecl returnType: method.getTypeAccess().typeSet()) {
+          typeSet = typeSet.add(returnType);
+        }
+      }
+    }
+    return typeSet;
+  }
+
   eq Dot.typeSet() = lastAccess().typeSet();
 
   syn lazy SimpleSet<TypeDecl> Variable.typeSet();
@@ -76,15 +89,23 @@ aspect TypeSet {
 
   eq InferredParameterDeclaration.typeSet() = emptySet();
 
+  syn lazy SimpleSet<TypeDecl> TypeDecl.typeSet() = this.<TypeDecl>emptySet().add(this);
+
+  eq VersionClassDecl.typeSet()
+    = packageName().equals("")
+      ? lookupTypeSet(name())
+      : lookupTypeSet(packageName(), name());
+
   syn SimpleSet<TypeDecl> TypeAccess.declSet()
     = packageName().equals("")
       ? lookupTypeSet(name())
       : lookupTypeSet(packageName(), name());
 
-  /* TODO: only TypeAccess for now, but later needs to be abstracted with a more general type */
   inh SimpleSet<TypeDecl> TypeAccess.lookupTypeSet(String name);
 
   inh SimpleSet<TypeDecl> CompilationUnit.lookupTypeSet(String name);
+
+  inh SimpleSet<TypeDecl> TypeDecl.lookupTypeSet(String name);
 
   eq Program.getChild().lookupTypeSet(String name) = emptySet();
 
@@ -121,6 +142,8 @@ aspect TypeSet {
   inh SimpleSet<TypeDecl> TypeAccess.lookupTypeSet(String packageName, String typeName);
 
   inh SimpleSet<TypeDecl> CompilationUnit.lookupTypeSet(String packageName, String typeName);
+
+  inh SimpleSet<TypeDecl> TypeDecl.lookupTypeSet(String packageName, String typeName);
 
   eq Program.getChild().lookupTypeSet(String packageName, String typeName)
     = lookupTypeSet(packageName, typeName);
@@ -238,5 +261,39 @@ aspect SuperClasses {
       return typeObject();
     }
   }
+
+}
+
+aspect TypeMap {
+
+  // Only used for the generated program
+  public TypeDecl Program.findInterface(String packageName, String name) {
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        if (t.packageName().equals(packageName) && t.name().equals(name) && t.isInterfaceDecl()) {
+          return t;
+        }
+      }
+    }
+    return null;
+  }
+
+  // Only used for the generated program
+  public SimpleSet<TypeDecl> Program.findClassSet(String packageName, String name) {
+    SimpleSet<TypeDecl> set = emptySet();
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        String[] splitName = t.name().split("_");
+        if (splitName.length == 2 && splitName[1].charAt(0) == 'v'
+            && splitName[0].equals(name) && t.packageName().equals(packageName)) {
+          set = set.add(t);
+        }
+      }
+    }
+    return set;
+  }
+
 
 }

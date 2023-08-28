@@ -126,6 +126,10 @@ aspect ConstraintGeneration {
           }
         }
 
+        if (isQualified()) {
+          s = s.multiply(new Clause(lQualifier));
+        }
+
         for (TypeDecl returnType: method.getTypeAccess().typeSet()) {
           /**
           *  TODO: constraint on the method declaration's return type
@@ -134,16 +138,11 @@ aspect ConstraintGeneration {
 
           // constraint on the method invocation itself
           Lit lReturn = new Lit(solverConst, returnType.typeNum());
-          s = s.multiply(new Clause(lReturn));
+          f = f.add(s.multiply(new Clause(lReturn)));
         }
-
-        if (isQualified()) {
-          s = s.multiply(new Clause(lQualifier));
-        }
-
-        f = f.add(s);
       }
     }
+    // System.err.println(prettyPrint());
     // System.err.println(f);
     return f;
   }
@@ -182,6 +181,7 @@ aspect ConstraintGeneration {
         f = f.add(s);
       }
     }
+    // System.err.println(prettyPrint());
     // System.err.println(f);
     return f;
   }
