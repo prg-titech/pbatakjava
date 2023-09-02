@@ -65,6 +65,8 @@ aspect ConstraintVariable {
 
 aspect ConstraintGeneration {
 
+  public Map<TypeDecl,Model> ParVersionTypeAccess.solutionMap = new HashMap();
+
   // TODO: no subtyping for now!
   coll LinkedList<Formula> TypeDecl.constraint() root TypeDecl;
 
@@ -84,6 +86,25 @@ aspect ConstraintGeneration {
     return f;
   }
 
+  eq ParVersionTypeAccess.constraint() {
+    Formula f = new Formula();
+
+    for (TypeDecl t: typeSet()) {
+      if (t.numComponent() < numComponent()) {
+        for (Model m: t.models()) {
+          if (applicable(t, m)) {
+            solutionMap.put(t, m);
+            f = f.add(clause(t));
+          }
+        }
+      } else {
+        f = f.add(clause(t));
+      }
+    }
+
+    return f;
+  }
+
   eq AssignExpr.constraint() {
     Formula f = new Formula();
     for (TypeDecl source: getSource().typeSet()) {
@@ -96,7 +117,6 @@ aspect ConstraintGeneration {
         }
       }
     }
-    // System.err.println(f);
     return f;
   }
 
@@ -142,8 +162,8 @@ aspect ConstraintGeneration {
         }
       }
     }
-    // System.err.println(prettyPrint());
-    // System.err.println(f);
+    System.err.println(prettyPrint());
+    System.err.println(f);
     return f;
   }
 
@@ -195,6 +215,8 @@ aspect ConstraintGeneration {
       return new Formula();
     }
     Optional<Formula> f = getInit().typeEquality(declarationType());
+    System.err.println(prettyPrint());
+    System.err.println(f);
     return f.isPresent() ? f.get() : new Formula();
   }
 
@@ -217,4 +239,6 @@ aspect ConstraintGeneration {
     }
     return equal ? Optional.of(f) : Optional.empty();
   }
+
+  // TODO: return stmt
 }

@@ -67,6 +67,10 @@ aspect Version {
 
   eq GenericVersionClassDecl.numVersionVariable() = getNumVersionVariable();
 
+  syn List<VersionVariable> TypeDecl.versionVariableList() = new List();
+
+  eq GenericVersionClassDecl.versionVariableList() = getVersionVariableList();
+
   syn Integer MethodDecl.numVersionVariable() = 0;
   
   eq GenericVersionMethodDecl.numVersionVariable() = getNumVersionVariable();
@@ -74,5 +78,18 @@ aspect Version {
   syn List<VersionVariable> MethodDecl.versionVariableList() = new List();
 
   eq GenericVersionMethodDecl.versionVariableList() = getVersionVariableList();
+
+  syn lazy boolean VersionArgument.isVersionNumArgument() = false;
+
+  eq VersionNumArgument.isVersionNumArgument() = true;
+
+  syn lazy boolean ParVersionTypeAccess.hasVersionNumArgument() {
+    for (int i = 0; i < getNumVersionArgument(); i++) {
+      if (getVersionArgument(i).isVersionNumArgument()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
 }
