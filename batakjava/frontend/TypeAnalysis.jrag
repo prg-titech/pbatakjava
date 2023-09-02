@@ -10,8 +10,15 @@ aspect TypeMap {
     return count;
   }
 
+  /*
   public TypeDecl ASTNode.getType(Integer typeNum) {
     return program().typeMap.get(typeNum);
+  }
+  */
+
+  public TypeDecl Expr.getType(Model m) {
+    return program().typeMap.get(
+      new Integer(m.evaluate(solverConst, false).toString()));
   }
 
   syn lazy Integer TypeDecl.typeNum() = program().getTypeNum(this);
@@ -36,8 +43,9 @@ aspect TypeMap {
 }
 
 aspect TypeSet {
-
+  
   syn lazy boolean TypeDecl.isVersioned() = false;
+
   eq VersionClassDecl.isVersioned() = true;
 
   syn lazy SimpleSet<TypeDecl> Expr.typeSet() = this.<TypeDecl>emptySet().add(type());

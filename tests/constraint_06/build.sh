@@ -1,5 +1,5 @@
 #/bin/sh
 
-rm -rf tests/error_04/class
-mkdir tests/error_04/class
-java -jar pbatakjava.jar tests/error_04/1/*.java tests/error_04/2/*.java tests/error_04/*.java -d tests/error_04/class
+rm -rf tests/constraint_06/class
+mkdir tests/constraint_06/class
+java -jar pbatakjava.jar tests/constraint_06/1/*.java tests/constraint_06/2/*.java tests/constraint_06/*.java -d tests/constraint_06/class
