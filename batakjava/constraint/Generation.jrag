@@ -106,18 +106,8 @@ aspect ConstraintGeneration {
   }
 
   eq AssignExpr.constraint() {
-    Formula f = new Formula();
-    for (TypeDecl source: getSource().typeSet()) {
-      for (TypeDecl dest: getDest().typeSet()) {
-        if (source == dest) {
-          Clause c = new Clause();
-          c = c.add(getSource().clause(source));
-          c = c.add(getDest().clause(dest));
-          f = f.add(c);
-        }
-      }
-    }
-    return f;
+    Optional<Formula> f = getSource().typeEquality(getDest());
+    return f.isPresent() ? f.get() : new Formula();
   }
 
   eq MethodAccess.constraint() {
@@ -162,8 +152,8 @@ aspect ConstraintGeneration {
         }
       }
     }
-    System.err.println(prettyPrint());
-    System.err.println(f);
+    // System.err.println(prettyPrint());
+    // System.err.println(f);
     return f;
   }
 
@@ -215,13 +205,13 @@ aspect ConstraintGeneration {
       return new Formula();
     }
     Optional<Formula> f = getInit().typeEquality(declarationType());
-    System.err.println(prettyPrint());
-    System.err.println(f);
+    // System.err.println(prettyPrint());
+    // System.err.println(f);
     return f.isPresent() ? f.get() : new Formula();
   }
 
   // TODO: equality -> subtype check
-  public Optional<Formula> Expr.typeEquality(Access dest) {
+  public Optional<Formula> Expr.typeEquality(Expr dest) {
     Formula f = new Formula();
     boolean equal = false;
     for (TypeDecl sourceType: typeSet()) {
@@ -240,5 +230,15 @@ aspect ConstraintGeneration {
     return equal ? Optional.of(f) : Optional.empty();
   }
 
-  // TODO: return stmt
+  Stmt contributes each constraintList() to TypeDecl.constraint();
+
+  syn Collection<Formula> Stmt.constraintList() = constraint().toList();
+
+  syn lazy Formula Stmt.constraint() = new Formula();
+
+  eq ReturnStmt.constraint() {
+    Optional<Formula> f = getResult().typeEquality(returnTypeAccess());
+    return f.isPresent() ? f.get() : new Formula();
+  }
+
 }
