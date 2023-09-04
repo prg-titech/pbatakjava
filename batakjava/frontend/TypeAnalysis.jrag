@@ -303,5 +303,68 @@ aspect TypeMap {
     return set;
   }
 
+}
+
+aspect TypeWideningAndIdentity {
+
+  syn lazy Optional<Formula> TypeDecl.versionInstanceOf(TypeDecl destType,
+      Expr source, Expr dest);
+
+  eq TypeDecl.versionInstanceOf(TypeDecl destType, Expr source, Expr dest) {
+    if (instanceOf(destType)) {
+      // abstract this into a method?
+      Clause c = new Clause();
+      c = c.add(source.clause(this));
+      if (source.context() == dest.context()) {
+        c = c.add(dest.clause(destType));
+      }
+      return Optional.of(new Formula(c));
+    }
+    return Optional.empty();
+  }
+
+  eq VersionClassDecl.versionInstanceOf(TypeDecl destType, Expr source, Expr dest)
+    = destType.isSupertypeOfVersionClassDecl(this, source, dest);
+
+  syn Optional<Formula> TypeDecl.isSupertypeOfVersionClassDecl(VersionClassDecl sourceType,
+      Expr source, Expr dest) {
+    if (sourceType == this || sourceType.assignConversionTo(this, source)) {
+      Clause c = new Clause();
+      c = c.add(source.clause(sourceType));
+      if (source.context() == dest.context()) {
+        c = c.add(dest.clause(this));
+      }
+      return Optional.of(new Formula(c));
+    }
+    return Optional.empty();
+  }
+
+  eq VersionClassDecl.isSupertypeOfVersionClassDecl(VersionClassDecl sourceType,
+      Expr source, Expr dest) {
+    if (sourceType == this) {
+      Clause c = new Clause();
+      c = c.add(source.clause(sourceType));
+      if (source.context() == dest.context()) {
+        c = c.add(dest.clause(this));
+      }
+      return Optional.of(new Formula(c));
+    }
+
+    boolean applicable = false;
+    Formula f = new Formula();
+
+    for (TypeDecl sourceParent: sourceType.superclassSet()) {
+      Formula s = new Formula();
+      Optional<Formula> parentConstraint = sourceParent.versionInstanceOf(this, source, dest);
+      if (parentConstraint.isPresent()) {
+        s = s.multiply(sourceType.getSuperClass().clause(sourceParent));
+        s = s.multiply(parentConstraint.get());
+        f = f.add(s);
+        applicable = true;
+      }
+    }
+
+    return applicable ? Optional.of(f) : Optional.empty();
+  }
 
 }

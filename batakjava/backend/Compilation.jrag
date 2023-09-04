@@ -98,6 +98,26 @@ aspect Generation {
 
   syn nta List<TypeDecl> TypeDecl.compileClass() = new List().add(treeCopy());
 
+  eq ClassDecl.compileClass() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> bodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.add(body.compile());
+    }
+
+    Opt<Access> superAccess = hasSuperClass() ? new Opt(getSuperClass().compileAccess()) : new Opt();
+
+    types = types.add(new ClassDecl(
+      getModifiers(),
+      getID(),
+      superAccess,
+      new List(),
+      bodyList));
+
+    return types;
+  }
+
   eq VersionClassDecl.compileClass() {
     List<TypeDecl> types = new List();
     List<BodyDecl> bodyList = new List();
