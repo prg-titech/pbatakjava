@@ -6,6 +6,6 @@ public class Line ver 1 «V» {
   }
   public void call(int newX) {
     p1.update(newX);
-    // p2.modify(newX);
+    p2.modify(newX);
   }
 }
