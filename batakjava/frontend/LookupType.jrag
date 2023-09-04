@@ -1,0 +1,9 @@
+aspect TypeScopePropagation {
+
+  inh Access ReturnStmt.returnTypeAccess();
+
+  eq Program.getChild().returnTypeAccess() = null;
+
+  eq MethodDecl.getBlock().returnTypeAccess() = !isVoid() ? getTypeAccess() : null;
+
+}

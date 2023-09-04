@@ -4,7 +4,11 @@ import com.microsoft.z3.IntExpr;
 aspect Constraint {
 
   public Clause Expr.clause(TypeDecl type) {
-    return new Clause(new Lit(solverConst, type.typeNum()));
+    return new Clause(new TypeLit(solverConst, type.typeNum()));
+  }
+
+  public Clause Expr.clause(Expr other) {
+    return new Clause(new VarLit(solverConst, other.solverConst));
   }
 
   public Clause Literal.clause(TypeDecl type) {
@@ -178,11 +182,15 @@ aspect Constraint {
     }
   }
 
-  public class Lit {
+  public interface Lit {
+    public BoolExpr convert(Context ctx);
+  }
+
+  public class TypeLit implements Lit {
     public IntExpr varConst;
     public final Integer typeInt;
 
-    public Lit(IntExpr varConst, Integer typeInt) {
+    public TypeLit(IntExpr varConst, Integer typeInt) {
       this.varConst = varConst;
       this.typeInt = typeInt;
     }
@@ -195,6 +203,25 @@ aspect Constraint {
     @Override
     public String toString() {
       return varConst.toString() + ":" + typeInt.toString();
+    }
+  }
+
+  public class VarLit implements Lit {
+    public IntExpr constA;
+    public IntExpr constB;
+
+    public VarLit(IntExpr constA, IntExpr constB) {
+      this.constA = constA;
+      this.constB = constB;
+    }
+
+    public BoolExpr convert(Context ctx) {
+      return ctx.mkEq(constA, constB);
+    }
+
+    @Override
+    public String toString() {
+      return constA.toString() + "=" + constB.toString();
     }
   }
 
