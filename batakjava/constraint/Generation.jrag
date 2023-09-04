@@ -76,7 +76,7 @@ aspect ConstraintGeneration {
 
   syn Formula Expr.constraint() = new Formula();
 
-  eq ThisAccess.constraint() = new Formula(new Clause(new Lit(solverConst, type().typeNum())));
+  eq ThisAccess.constraint() = new Formula(new Clause(new TypeLit(solverConst, type().typeNum())));
 
   eq TypeAccess.constraint() {
     Formula f = new Formula();
@@ -114,7 +114,7 @@ aspect ConstraintGeneration {
     Formula f = new Formula();
     Map<TypeDecl,Collection<MethodDecl>> map = verLookupMethod(name());
     for (TypeDecl qualifierType: map.keySet()) {
-      Lit lQualifier = new Lit(qualifier().solverConst, qualifierType.typeNum());
+      Lit lQualifier = new TypeLit(qualifier().solverConst, qualifierType.typeNum());
       for (MethodDecl method: map.get(qualifierType)) {
         Map<String,VersionArgument> verMap = verMap(method);
         // TODO: check inheritance
@@ -131,7 +131,7 @@ aspect ConstraintGeneration {
         for (int i = 0; i < getNumArg(); i++) {
           SimpleSet<TypeDecl> set = method.getParameter(i).getTypeAccess().map(verMap);
           if (set.isSingleton()) {
-            Lit lArg = new Lit(getArg(i).solverConst, set.singletonValue().typeNum());
+            Lit lArg = new TypeLit(getArg(i).solverConst, set.singletonValue().typeNum());
             s = s.multiply(new Clause(lArg));
           }
         }
@@ -147,11 +147,12 @@ aspect ConstraintGeneration {
           */
 
           // constraint on the method invocation itself
-          Lit lReturn = new Lit(solverConst, returnType.typeNum());
+          Lit lReturn = new TypeLit(solverConst, returnType.typeNum());
           f = f.add(s.multiply(new Clause(lReturn)));
         }
       }
     }
+    // System.err.println(qualifier().solverConst);
     // System.err.println(prettyPrint());
     // System.err.println(f);
     return f;
@@ -180,12 +181,12 @@ aspect ConstraintGeneration {
           SimpleSet<TypeDecl> set
             = constructor.getParameter(i).getTypeAccess().map(verMap);
           if (set.isSingleton()) {
-            Lit lArg = new Lit(getArg(i).solverConst, set.singletonValue().typeNum());
+            Lit lArg = new TypeLit(getArg(i).solverConst, set.singletonValue().typeNum());
             s = s.multiply(new Clause(lArg));
           }
         }
 
-        Lit lAccess = new Lit(getAccess().solverConst, type.typeNum());
+        Lit lAccess = new TypeLit(getAccess().solverConst, type.typeNum());
         s = s.multiply(new Clause(lAccess));
 
         f = f.add(s);
@@ -239,6 +240,26 @@ aspect ConstraintGeneration {
   eq ReturnStmt.constraint() {
     Optional<Formula> f = getResult().typeEquality(returnTypeAccess());
     return f.isPresent() ? f.get() : new Formula();
+  }
+
+  VersionVariable contributes each constraintList() to TypeDecl.constraint();
+
+  syn Collection<Formula> VersionVariable.constraintList() = constraint().toList();
+
+  syn lazy Formula VersionVariable.constraint() {
+    Formula f = new Formula();
+
+    SimpleSet<Access> boundSet = boundSet();
+    if (boundSet.size() > 1) {
+      Iterator<Access> iterator = boundSet.iterator();
+      Access access = iterator.next();
+      while (iterator.hasNext()) {
+        Access otherAccess = iterator.next();
+        f = f.multiply(access.clause(otherAccess));
+      }
+    }
+
+    return f;
   }
 
 }

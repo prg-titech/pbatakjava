@@ -8,6 +8,7 @@ aspect VersionVariableScope {
 
   eq ParVersionTypeAccess.takeTypeAccess() = (TypeAccess) getTypeAccess().takeTypeAccess();
 
+  // TODO: allow a version variable to be assoicated with multiple types
   syn TypeAccess VersionVariable.typeAccess() {
     SimpleSet<TypeAccess> accessSet = emptySet();
     java.util.Set<String> nameSet = new HashSet();
@@ -112,24 +113,6 @@ aspect VersionVariableScope {
     }
     return set;
   }
-
-  /*
-  // ??: Recursion
-  eq ParVersionTypeAccess.getBoundSet(VersionVariable v) {
-    SimpleSet<Access> result = emptySet();
-    System.err.println(prettyPrint());
-    for (int i = 0; i < getNumVersionArgument(); i++) {
-      if (getVersionArgument(i).isBoundArg(v)) {
-        for (TypeDecl type: typeSet()) {
-          GenericVersionClassDecl cls = (GenericVersionClassDecl) type;
-          VersionVariable vv = cls.getVersionVariable(i);
-          System.err.println(vv.prettyPrint());
-        }
-      }
-    }
-    return result;
-  }
-  */
 
   syn boolean VersionArgument.isBound(VersionVariable v) = false;
 
