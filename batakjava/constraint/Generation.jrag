@@ -238,7 +238,8 @@ aspect ConstraintGeneration {
       Access access = iterator.next();
       while (iterator.hasNext()) {
         Access otherAccess = iterator.next();
-        if (access.context() == otherAccess.context()) {
+        if (hostType().context() == access.context() 
+            && hostType().context() == otherAccess.context()) {
           f = f.multiply(access.clause(otherAccess));
         }
       }

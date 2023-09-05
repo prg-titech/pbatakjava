@@ -23,7 +23,7 @@ aspect TypeMap {
 
   syn lazy Integer TypeDecl.typeNum() = program().getTypeNum(this);
 
-  public String Program.printTypeMap() {
+  public void Program.printTypeMap() {
     StringBuilder s = new StringBuilder();
     s.append("{");
     int i = 1;
@@ -37,7 +37,7 @@ aspect TypeMap {
       i++;
     }
     s.append("}");
-    return s.toString();
+    System.out.println(s.toString());
   }
 
 }
@@ -366,5 +366,13 @@ aspect TypeWideningAndIdentity {
 
     return applicable ? Optional.of(f) : Optional.empty();
   }
+
+}
+
+aspect NestedTypes {
+
+  inh TypeDecl VersionVariable.hostType();
+
+  eq GenericVersionClassDecl.getVersionVariable(int i).hostType() = hostType();
 
 }
