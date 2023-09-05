@@ -270,6 +270,20 @@ aspect SuperClasses {
     }
   }
 
+  public SimpleSet<TypeDecl> VersionClassDecl.superclassSet(Expr source) {
+    SimpleSet<TypeDecl> set = superclassSet();
+    if (context() != source.context() && hasSuperClass()) {
+      Access superAccess = getSuperClass();
+      TypeDecl solution = superAccess.getType(superAccess.model());
+      for (TypeDecl t: set) {
+        if (solution == t) {
+          return this.<TypeDecl>emptySet().add(t);
+        }
+      }
+    }
+    return set;
+  }
+
 }
 
 aspect TypeMap {
@@ -307,12 +321,11 @@ aspect TypeMap {
 
 aspect TypeWideningAndIdentity {
 
-  syn lazy Optional<Formula> TypeDecl.versionInstanceOf(TypeDecl destType,
-      Expr source, Expr dest);
+  /*
+  syn lazy Optional<Formula> TypeDecl.versionInstanceOf(TypeDecl destType, Expr source, Expr dest);
 
   eq TypeDecl.versionInstanceOf(TypeDecl destType, Expr source, Expr dest) {
     if (instanceOf(destType)) {
-      // abstract this into a method?
       Clause c = new Clause();
       c = c.add(source.clause(this));
       if (source.context() == dest.context()) {
@@ -331,9 +344,9 @@ aspect TypeWideningAndIdentity {
     if (sourceType == this || sourceType.assignConversionTo(this, source)) {
       Clause c = new Clause();
       c = c.add(source.clause(sourceType));
-      if (source.context() == dest.context()) {
-        c = c.add(dest.clause(this));
-      }
+      //if (source.context() == dest.context()) {
+      //  c = c.add(dest.clause(this));
+      //}
       return Optional.of(new Formula(c));
     }
     return Optional.empty();
@@ -357,7 +370,52 @@ aspect TypeWideningAndIdentity {
       Formula s = new Formula();
       Optional<Formula> parentConstraint = sourceParent.versionInstanceOf(this, source, dest);
       if (parentConstraint.isPresent()) {
-        s = s.multiply(sourceType.getSuperClass().clause(sourceParent));
+        if (source.context() == sourceType.context()) {
+          s = s.multiply(sourceType.getSuperClass().clause(sourceParent));
+        }
+        s = s.multiply(parentConstraint.get());
+        f = f.add(s);
+        applicable = true;
+      }
+    }
+
+    return applicable ? Optional.of(f) : Optional.empty();
+  }
+  */
+
+  syn lazy Optional<Formula> TypeDecl.versionInstanceOf(TypeDecl destType, Expr source);
+
+  eq TypeDecl.versionInstanceOf(TypeDecl destType, Expr source) {
+    if (instanceOf(destType)) {
+      return Optional.of(new Formula());
+    }
+    return Optional.empty();
+  }
+
+  eq VersionClassDecl.versionInstanceOf(TypeDecl destType, Expr source) = destType.isSupertypeOfVersionClassDecl(this, source);
+
+  syn Optional<Formula> TypeDecl.isSupertypeOfVersionClassDecl(VersionClassDecl sourceType, Expr source) {
+    if (sourceType == this || sourceType.assignConversionTo(this, source)) {
+      return Optional.of(new Formula());
+    }
+    return Optional.empty();
+  }
+
+  eq VersionClassDecl.isSupertypeOfVersionClassDecl(VersionClassDecl sourceType, Expr source) {
+    if (sourceType == this) {
+      return Optional.of(new Formula());
+    }
+
+    boolean applicable = false;
+    Formula f = new Formula();
+
+    for (TypeDecl sourceParent: sourceType.superclassSet(source)) {
+      Formula s = new Formula();
+      Optional<Formula> parentConstraint = sourceParent.versionInstanceOf(this, source);
+      if (parentConstraint.isPresent()) {
+        if (source.context() == sourceParent.context()) {
+          s = s.multiply(sourceType.getSuperClass().clause(sourceParent));
+        }
         s = s.multiply(parentConstraint.get());
         f = f.add(s);
         applicable = true;

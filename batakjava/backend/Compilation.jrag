@@ -9,15 +9,10 @@ aspect Generation {
     SimpleSet<String> interfaceNames = emptySet();
 
     for (int i = 0; i < numComponent(); i++) {
-      // TODO: handling multiple solutions
-      java.util.List<Model> componentModels = getComponentModels(i);
-      Model componentModel = getTerms(i).size() == 0 ? null : componentModels.get(0);
-
       for (TypeDecl t: getComponent(i)) {
         String name = t.packageName() + "." + t.name();
 
         CompilationUnit unit = t.compilationUnit();
-        unit.model = componentModel;
 
         // generating interface
         List<TypeDecl> is = t.compileInterface();

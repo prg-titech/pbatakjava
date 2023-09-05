@@ -27,7 +27,7 @@ aspect MethodDecl {
 
     Formula f = new Formula();
     for (int i = 0; i < m.getNumParameter(); i++) {
-      Optional<Formula> fArg = getArg(i).subtype(m.getParameter(i).getTypeAccess());
+      Optional<Formula> fArg = getArg(i).typeEquality(m.getParameter(i).getTypeAccess());
       if (fArg.isPresent()) {
         f = f.multiply(fArg.get());
       } else {

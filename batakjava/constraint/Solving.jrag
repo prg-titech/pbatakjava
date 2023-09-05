@@ -27,7 +27,7 @@ aspect ConstraintSolving {
     return componentModels.get(i);
   }
 
-  public Model CompilationUnit.model;
+  public Model CompilationUnit.model = null;
 
   public Model Expr.model() {
     return compilationUnit().model;
@@ -112,6 +112,14 @@ aspect ConstraintSolving {
       throw new Error("no solution found in component " + types.toString());
     }
     componentModels.add(models);
+
+    // TODO: handling multiple solutions
+    Model componentModel = models.get(0);
+
+    for (TypeDecl t: getComponent(i)) {
+      CompilationUnit unit = t.compilationUnit();
+      unit.model = componentModel;
+    }
 
     return 0;
   }

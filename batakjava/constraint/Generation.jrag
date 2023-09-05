@@ -78,6 +78,14 @@ aspect ConstraintGeneration {
 
   eq ThisAccess.constraint() = new Formula(new Clause(new TypeLit(solverConst, type().typeNum())));
 
+  eq SuperConstructorAccess.constraint() {
+    Formula f = new Formula();
+    for (TypeDecl type: hostType().superclassSet()) {
+      f = f.add(clause(type));
+    }
+    return f;
+  }
+
   eq TypeAccess.constraint() {
     Formula f = new Formula();
     for (TypeDecl type: typeSet()) {
@@ -106,7 +114,7 @@ aspect ConstraintGeneration {
   }
 
   eq AssignExpr.constraint() {
-    Optional<Formula> f = getSource().subtype(getDest());
+    Optional<Formula> f = getSource().typeEquality(getDest());
     return f.isPresent() ? f.get() : new Formula();
   }
 
@@ -205,6 +213,7 @@ aspect ConstraintGeneration {
     if (!hasInit()) {
       return new Formula();
     }
+    //Optional<Formula> f = getInit().typeEquality(declarationType());
     Optional<Formula> f = getInit().subtype(declarationType());
     // System.err.println(prettyPrint());
     // System.err.println(f);
@@ -219,7 +228,7 @@ aspect ConstraintGeneration {
 
   eq ReturnStmt.constraint() {
     if (hasResult()) {
-      Optional<Formula> f = getResult().subtype(returnTypeAccess());
+      Optional<Formula> f = getResult().typeEquality(returnTypeAccess());
       return f.isPresent() ? f.get() : new Formula();
     }
     return new Formula();
@@ -247,20 +256,46 @@ aspect ConstraintGeneration {
     return f;
   }
 
+  public Optional<Formula> Expr.typeEquality(Expr dest) {
+    Formula f = new Formula();
+    boolean equal = false;
+    for (TypeDecl sourceType: typeSet()) {
+      for (TypeDecl destType: dest.typeSet()) {
+        if (sourceType == destType || sourceType.assignConversionTo(destType, this)) {
+          Clause c = new Clause();
+          c = c.add(clause(sourceType));
+          if (context() == dest.context()) {
+            c = c.add(dest.clause(destType));
+          }
+          f = f.add(c);
+          equal = true;
+        }
+      }
+    }
+    return equal ? Optional.of(f) : Optional.empty();
+  }
+
   public Optional<Formula> Expr.subtype(Expr dest) {
     Formula f = new Formula();
-    boolean subtype = false;
+    boolean applicable = false;
 
     for (TypeDecl sourceType: typeSet()) {
       for (TypeDecl destType: dest.typeSet()) {
-        Optional<Formula> check = sourceType.versionInstanceOf(destType, this, dest);
+        Formula s = new Formula();
+        Optional<Formula> check = sourceType.versionInstanceOf(destType, this);
         if (check.isPresent()) {
-          f = f.add(check.get());
+          s = s.multiply(check.get());
+          s = s.multiply(clause(sourceType));
+          if (context() == dest.context()) {
+            s = s.multiply(dest.clause(destType));
+          }
+          f = f.add(s);
+          applicable = true;
         }
       }
     }
 
-    return Optional.of(f);
+    return applicable ? Optional.of(f) : Optional.empty();
   }
 
 }
