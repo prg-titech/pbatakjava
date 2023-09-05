@@ -114,7 +114,7 @@ aspect ConstraintGeneration {
   }
 
   eq AssignExpr.constraint() {
-    Optional<Formula> f = getSource().typeEquality(getDest());
+    Optional<Formula> f = getSource().subtype(getDest());
     return f.isPresent() ? f.get() : new Formula();
   }
 
@@ -213,7 +213,6 @@ aspect ConstraintGeneration {
     if (!hasInit()) {
       return new Formula();
     }
-    //Optional<Formula> f = getInit().typeEquality(declarationType());
     Optional<Formula> f = getInit().subtype(declarationType());
     // System.err.println(prettyPrint());
     // System.err.println(f);
@@ -228,7 +227,7 @@ aspect ConstraintGeneration {
 
   eq ReturnStmt.constraint() {
     if (hasResult()) {
-      Optional<Formula> f = getResult().typeEquality(returnTypeAccess());
+      Optional<Formula> f = getResult().subtype(returnTypeAccess());
       return f.isPresent() ? f.get() : new Formula();
     }
     return new Formula();
