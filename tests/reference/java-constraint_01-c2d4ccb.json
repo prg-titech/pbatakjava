@@ -1,0 +1,11 @@
+{
+    "basename": "java-constraint_01-c2d4ccb",
+    "cmd": "{infile}",
+    "infile": "tests/constraint_01/build.sh",
+    "infile_hash": "70ed5ce701ad1266bf702725f9bc8e0149782167a94ed672582c4b7b",
+    "stdout": "java-constraint_01-c2d4ccb.stdout",
+    "stdout_hash": "f3c892929fe3d094c42bc9b77545e4fd1518d01764b94b12781cbca5",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}

@@ -1,0 +1,11 @@
+{
+    "basename": "java-error_06-f31ef0d",
+    "cmd": "{infile}",
+    "infile": "tests/error_06/build.sh",
+    "infile_hash": "72ac74f493fda557310ca63facdb3c4061892323e8acf813cc4f8fc8",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "java-error_06-f31ef0d.stderr",
+    "stderr_hash": "27ecd9c1ff66a728124921f5d61b3069ad76abb42d8dcc5f97848613",
+    "returncode": 4
+}

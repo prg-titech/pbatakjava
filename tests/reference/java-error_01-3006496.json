@@ -1,0 +1,11 @@
+{
+    "basename": "java-error_01-3006496",
+    "cmd": "{infile}",
+    "infile": "tests/error_01/build.sh",
+    "infile_hash": "e27a56233474522720c6bbda440b67720f411838a5deb23f992278d2",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "java-error_01-3006496.stderr",
+    "stderr_hash": "f3974328983eef01e910a021e83e6295db28ab6323f7c0b882b1ae2d",
+    "returncode": 4
+}

@@ -1,0 +1,11 @@
+{
+    "basename": "java-error_04-cf5ea97",
+    "cmd": "{infile}",
+    "infile": "tests/error_04/build.sh",
+    "infile_hash": "a54bd81d1e2d65bbf3a5a15d88c519f7f88fad428a0053b93fc55a42",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "java-error_04-cf5ea97.stderr",
+    "stderr_hash": "753f36766f72fff46fddea2c139de8599bfa6cba37fc2742cf1a00b8",
+    "returncode": 4
+}

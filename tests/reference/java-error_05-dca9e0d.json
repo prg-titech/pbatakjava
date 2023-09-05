@@ -1,0 +1,11 @@
+{
+    "basename": "java-error_05-dca9e0d",
+    "cmd": "{infile}",
+    "infile": "tests/error_05/build.sh",
+    "infile_hash": "b17e967885b01189e3532569714c6e7f3158b6cae4f5e3c6481556ac",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "java-error_05-dca9e0d.stderr",
+    "stderr_hash": "f3974328983eef01e910a021e83e6295db28ab6323f7c0b882b1ae2d",
+    "returncode": 4
+}

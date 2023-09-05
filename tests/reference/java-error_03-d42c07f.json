@@ -1,0 +1,11 @@
+{
+    "basename": "java-error_03-d42c07f",
+    "cmd": "{infile}",
+    "infile": "tests/error_03/build.sh",
+    "infile_hash": "02de591ee2868952f1fa8b0d23cef3bc4f7e51b636567a6d3c05b60d",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "java-error_03-d42c07f.stderr",
+    "stderr_hash": "e2a52fe0de58540c7a8ce8aadba15b01ac184e3bf6c00bcc0ab914bb",
+    "returncode": 4
+}
