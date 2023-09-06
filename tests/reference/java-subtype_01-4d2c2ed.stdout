@@ -1,0 +1,80 @@
+
+public interface Point {
+}
+
+public interface Point_Factory {
+  public Point make(int x, int y);
+}
+
+public class Point_v1 implements Point {
+  public int x;
+
+  public int y;
+
+  public Point_v1(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Point_v1_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v1(x, y);
+  }
+}
+
+public class Point_v2 implements Point {
+  public int x;
+
+  public int y;
+
+  public Point_v2(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Point_v2_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v2(x, y);
+  }
+}
+
+public interface ColoredPoint {
+}
+
+public interface ColoredPoint_Factory {
+  public ColoredPoint make(int a, int b, int red, int green, int blue);
+}
+
+public class ColoredPoint_v1 extends Point_v1 implements ColoredPoint {
+  public int red;
+
+  public int green;
+
+  public int blue;
+
+  public ColoredPoint_v1(int a, int b, int red, int green, int blue) {
+    super(a, b);
+    this.red = red;
+    this.green = green;
+    this.blue = blue;
+  }
+}
+
+public class ColoredPoint_v1_Factory implements ColoredPoint_Factory {
+  public ColoredPoint make(int a, int b, int red, int green, int blue) {
+    return new ColoredPoint_v1(a, b, red, green, blue);
+  }
+}
+
+
+
+
+
+public class Test {
+  public static void main(String[] args) {
+    Point_v1 p1 = new Point_v1(1, 2);
+    Point_v1 p2 = new ColoredPoint_v1(1, 2, 3, 4, 5);
+  }
+}

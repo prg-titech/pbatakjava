@@ -1,0 +1,56 @@
+
+public interface Point {
+}
+
+public interface Point_Factory {
+  public Point make(int x, int y);
+}
+
+public class Point_v1 implements Point {
+  public int x;
+
+  public int y;
+
+  public Point_v1(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Point_v1_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v1(x, y);
+  }
+}
+
+public class Point_v2 implements Point {
+  public int x;
+
+  public int y;
+
+  public Point_v2(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Point_v2_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v2(x, y);
+  }
+}
+
+public interface Test {
+}
+
+public interface Test_Factory {
+}
+
+public class Test_v1 implements Test {
+  public static void main(String[] args) {
+    Point_v1 p = new Point_v1(1, 1);
+  }
+}
+
+public class Test_v1_Factory implements Test_Factory {
+}

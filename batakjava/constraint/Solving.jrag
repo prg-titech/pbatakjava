@@ -104,7 +104,7 @@ aspect ConstraintSolving {
     models = new ArrayList();
     getAllSolutions(s, i);
     if (models.size() == 0) {
-      printTypeMap();
+      // printTypeMap();
       java.util.List<String> types = new ArrayList();
       for (TypeDecl t: getComponent(i)) {
         types.add(t.verFullName());
@@ -155,7 +155,7 @@ aspect ConstraintSolving {
       }
     }
     
-    printTypeMap();
+    // printTypeMap();
 
     return 0;
   }

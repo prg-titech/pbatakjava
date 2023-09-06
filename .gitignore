@@ -25,5 +25,7 @@
 
 /tests/subtype_01/class
 
+/tests/output
+
 # Vim swap files.
 *.swp
