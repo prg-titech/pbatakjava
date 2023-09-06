@@ -1,0 +1,48 @@
+name: CI
+on: [push]
+jobs:
+  build:
+    name: Building and Testing BatakJava
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v3
+    - name: Set up JDK 8
+      uses: actions/setup-java@v3
+      with:
+        java-version: '8'
+        distribution: 'temurin'
+    - name: Setup Gradle
+      uses: gradle/gradle-build-action@v2
+    
+    - name: Install Z3
+      run: |
+        mvn install:install-file \
+          -Dfile="libs/com.microsoft.z3.jar" \
+          -DgroupId="com.microsoft" \
+          -DartifactId="z3" \
+          -Dversion="4.8.10" \
+          -Dpackaging=jar \
+          -DgeneratePom=true
+
+    - name: Install ExtendJ
+      run: |
+        git submodule init
+        git submodule update
+
+    - name: Build BatakJava
+      run: ./gradlew build
+
+    - name: Set up Python
+      uses: actions/setup-python@v4
+      with:
+        python-version: "3.7"
+
+    - name: Install Python dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install toml
+
+    - name: Run reference tests
+      env: 
+        LD_LIBRARY_PATH: ${{ github.workspace }}/libs
+      run: ./run_tests.py
