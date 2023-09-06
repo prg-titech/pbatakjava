@@ -23,6 +23,6 @@ jobs:
           -DgroupId="com.microsoft" \
           -DartifactId="z3" \
           -Dversion="4.8.7" \
-          -Dpackaging=jar
+          -Dpackaging=jar \
           -DgeneratePom=true
         ./gradlew build
