@@ -22,7 +22,7 @@ jobs:
           -Dfile="com.microsoft.z3.jar" \
           -DgroupId="com.microsoft" \
           -DartifactId="z3" \
-          -Dversion="4.8.7" \
+          -Dversion="4.8.10" \
           -Dpackaging=jar \
           -DgeneratePom=true
         ./gradlew build
