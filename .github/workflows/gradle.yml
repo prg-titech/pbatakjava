@@ -2,7 +2,7 @@ name: CI
 on: [push]
 jobs:
   build:
-    name: Building and Test BatakJava
+    name: Building and Testing BatakJava
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -15,7 +15,8 @@ jobs:
       uses: gradle/gradle-build-action@v2
     
     - name: Build BatakJava
-      run: git submodule init
-           git submodule update
-           gradle jar
+      run: |
+        git submodule init
+        git submodule update
+        gradle jar
       
