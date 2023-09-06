@@ -9,15 +9,10 @@ aspect Generation {
     SimpleSet<String> interfaceNames = emptySet();
 
     for (int i = 0; i < numComponent(); i++) {
-      // TODO: handling multiple solutions
-      java.util.List<Model> componentModels = getComponentModels(i);
-      Model componentModel = getTerms(i).size() == 0 ? null : componentModels.get(0);
-
       for (TypeDecl t: getComponent(i)) {
         String name = t.packageName() + "." + t.name();
 
         CompilationUnit unit = t.compilationUnit();
-        unit.model = componentModel;
 
         // generating interface
         List<TypeDecl> is = t.compileInterface();
@@ -98,6 +93,26 @@ aspect Generation {
 
   syn nta List<TypeDecl> TypeDecl.compileClass() = new List().add(treeCopy());
 
+  eq ClassDecl.compileClass() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> bodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.add(body.compile());
+    }
+
+    Opt<Access> superAccess = hasSuperClass() ? new Opt(getSuperClass().compileAccess()) : new Opt();
+
+    types = types.add(new ClassDecl(
+      getModifiers(),
+      getID(),
+      superAccess,
+      new List(),
+      bodyList));
+
+    return types;
+  }
+
   eq VersionClassDecl.compileClass() {
     List<TypeDecl> types = new List();
     List<BodyDecl> bodyList = new List();
@@ -123,10 +138,13 @@ aspect Generation {
       factoryBodyList = factoryBodyList.addAll(body.compileFactory());
     }
 
+    Opt<Access> superAccess = hasSuperClass() 
+      ? new Opt(getSuperClass().compileAccess()) : new Opt();
+
     types = types.add(new ClassDecl(
       getModifiers(),
       getID() + "_v" + version(), 
-      new Opt(),
+      superAccess,
       new List().add(new TypeAccess(packageName(), getID())),
       bodyList));
 
@@ -171,7 +189,9 @@ aspect Generation {
     }
 
     for (ParameterDeclaration param: getParameterList()) {
-      params = params.add(param.compileParameter());
+      ParameterDeclaration newParam = new ParameterDeclaration(
+        param.getModifiers(), param.getTypeAccess().compileAccess(), param.getID());
+      params = params.add(newParam);
     }
 
     Opt<Stmt> parsed = hasParsedConstructorInvocation()
@@ -196,7 +216,9 @@ aspect Generation {
   eq MethodDecl.compile() {
     List<ParameterDeclaration> params = new List();
     for (ParameterDeclaration param: getParameterList()) {
-      params = params.add(param.compileParameter());
+      ParameterDeclaration newParam = new ParameterDeclaration(
+        param.getModifiers(), param.getTypeAccess().compileAccess(), param.getID());
+      params = params.add(newParam);
     }
 
     return new MethodDecl(
@@ -222,7 +244,9 @@ aspect Generation {
     }
 
     for (ParameterDeclaration param: getParameterList()) {
-      params = params.add(param.compileParameter());
+      ParameterDeclaration newParam = new ParameterDeclaration(
+        param.getModifiers(), param.getTypeAccess().compileAccess(), param.getID());
+      params = params.add(newParam);
     }
 
     return new MethodDecl(
@@ -260,7 +284,9 @@ aspect Generation {
     }
 
     for (ParameterDeclaration p: getParameterList()) {
-      ps = ps.add(p.compileParameter());
+      ParameterDeclaration np = new ParameterDeclaration(
+        p.getModifiers(), p.getTypeAccess().compileAccess(), p.getID());
+      ps = ps.add(np);
     }
 
     return new List().add(new MethodDecl(
@@ -336,6 +362,14 @@ aspect Generation {
     return new MethodAccess(getID(), argList);
   }
 
+  eq SuperConstructorAccess.compileAccess() {
+    List<Expr> varList = new List();
+    for (Expr expr: getArgList()) {
+      varList = varList.add(expr.compileExpr());
+    }
+    return new SuperConstructorAccess(getID(), varList);
+  }
+
   syn nta Block Block.compileBlock() {
     List<Stmt> stmtList = new List();
     for (Stmt stmt: getStmtList()) {
@@ -358,6 +392,8 @@ aspect Generation {
   }
 
   eq ReturnStmt.compileStmt() = hasResult() ? new ReturnStmt(getResult().compileExpr()) : new ReturnStmt(new Opt());
+
+  eq ExprStmt.compileStmt() = new ExprStmt(getExpr().compileExpr());
 
   syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
     = new VariableDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
@@ -411,7 +447,7 @@ aspect Generation {
 
     return new ClassInstanceExpr(access, argList);
   }
-  
+
   syn String TypeDecl.compileName() = name();
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();
@@ -442,7 +478,9 @@ aspect Generation {
     }
 
     for (ParameterDeclaration param: getParameterList()) {
-      params = params.add(param.compileParameter());
+      ParameterDeclaration newParam = new ParameterDeclaration(
+        param.getModifiers(), param.getTypeAccess().compileAccess(), param.getID());
+      params = params.add(newParam);
       argList = argList.add(new VarAccess(param.getID()));
     }
     
@@ -484,7 +522,9 @@ aspect Generation {
     }
 
     for (ParameterDeclaration param: getParameterList()) {
-      params = params.add(param.compileParameter());
+      ParameterDeclaration newParam = new ParameterDeclaration(
+        param.getModifiers(), param.getTypeAccess().compileAccess(), param.getID());
+      params = params.add(newParam);
     }
 
     return new List().add(new MethodDecl(

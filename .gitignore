@@ -23,5 +23,7 @@
 /tests/constraint_06/class
 /tests/constraint_07/class
 
+/tests/subtype_01/class
+
 # Vim swap files.
 *.swp

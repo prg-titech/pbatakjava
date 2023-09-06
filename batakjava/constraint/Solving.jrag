@@ -11,6 +11,10 @@ aspect ConstraintSolving {
     return program().contexts.get(numComponent());
   }
 
+  public Context TypeDecl.context() {
+    return program().contexts.get(numComponent());
+  }
+
   public java.util.List<java.util.List<Model>> Program.componentModels;
 
   public java.util.List<Model> TypeDecl.models() {
@@ -23,7 +27,7 @@ aspect ConstraintSolving {
     return componentModels.get(i);
   }
 
-  public Model CompilationUnit.model;
+  public Model CompilationUnit.model = null;
 
   public Model Expr.model() {
     return compilationUnit().model;
@@ -100,10 +104,22 @@ aspect ConstraintSolving {
     models = new ArrayList();
     getAllSolutions(s, i);
     if (models.size() == 0) {
-      System.err.println(printTypeMap());
-      throw new Error("no solution found in component " + i);
+      printTypeMap();
+      java.util.List<String> types = new ArrayList();
+      for (TypeDecl t: getComponent(i)) {
+        types.add(t.verFullName());
+      }
+      throw new Error("no solution found in component " + types.toString());
     }
     componentModels.add(models);
+
+    // TODO: handling multiple solutions
+    Model componentModel = models.get(0);
+
+    for (TypeDecl t: getComponent(i)) {
+      CompilationUnit unit = t.compilationUnit();
+      unit.model = componentModel;
+    }
 
     return 0;
   }
@@ -139,7 +155,7 @@ aspect ConstraintSolving {
       }
     }
     
-    System.err.println(printTypeMap());
+    printTypeMap();
 
     return 0;
   }
