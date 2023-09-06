@@ -18,4 +18,10 @@ jobs:
       run: |
         git submodule init
         git submodule update
+        mvn install:install-file \
+          -Dfile="com.microsoft.z3.jar" \
+          -DgroupId="com.microsoft" \
+          -DartifactId="z3" \
+          -Dversion="4.8.7" \
+          -DgeneratePom=true
         ./gradlew build
