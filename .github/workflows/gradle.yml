@@ -1,8 +1,8 @@
 name: CI
-run-name: Building and testing BatakJava
 on: [push]
 jobs:
-  Explore-GitHub-Actions:
+  build:
+    name: Building and Test BatakJava
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v3
@@ -13,5 +13,9 @@ jobs:
         distribution: 'temurin'
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
+    
     - name: Build BatakJava
-      run: gradle jar
+      run: git submodule init
+           git submodule update
+           gradle jar
+      
