@@ -14,10 +14,8 @@ jobs:
     - name: Setup Gradle
       uses: gradle/gradle-build-action@v2
     
-    - name: Build BatakJava
+    - name: Install Z3
       run: |
-        git submodule init
-        git submodule update
         mvn install:install-file \
           -Dfile="com.microsoft.z3.jar" \
           -DgroupId="com.microsoft" \
@@ -25,4 +23,14 @@ jobs:
           -Dversion="4.8.10" \
           -Dpackaging=jar \
           -DgeneratePom=true
-        ./gradlew build
+
+    - name: Install ExtendJ
+      run: |
+        git submodule init
+        git submodule update
+
+    - name: Build BatakJava
+      run: ./gradlew build
+
+    - name: Run reference tests
+      run: ./run_tests.py

@@ -51,6 +51,7 @@ jastadd {
 sourceSets.main {
   java {
     srcDir 'extendj/src/frontend-main'
+    srcDir 'extendj/src/backend-main'
     srcDir 'src/frontend-main'
     srcDir 'src/backend-main'
   }
