@@ -1,9 +1,9 @@
 {
-    "basename": "java-constraint_03-50024c3",
+    "basename": "compilable-constraint_03-50024c3",
     "cmd": "{infile}",
     "infile": "tests/constraint_03/build.sh",
     "infile_hash": "4ba52daa8c414e869d499abb7ac359c2d715a771a8d73229ea471dee",
-    "stdout": "java-constraint_03-50024c3.stdout",
+    "stdout": "compilable-constraint_03-50024c3.stdout",
     "stdout_hash": "a4eb09e793950c018ba13c27c88841ba84facf73511ef3133319d2ee",
     "stderr": null,
     "stderr_hash": null,

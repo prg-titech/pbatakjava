@@ -1,11 +1,11 @@
 {
-    "basename": "java-error_02-6f3ce5d",
+    "basename": "error-error_02-6f3ce5d",
     "cmd": "{infile}",
     "infile": "tests/error_02/build.sh",
     "infile_hash": "1c1e941f0c07049ca0ac9eb4ca6dc4c2d5c63a85de844ff2cafa7636",
     "stdout": null,
     "stdout_hash": null,
-    "stderr": "java-error_02-6f3ce5d.stderr",
+    "stderr": "error-error_02-6f3ce5d.stderr",
     "stderr_hash": "55cf5939ee37bea1d497a29d429a40330812b63fbcac5cc03ea0f64e",
     "returncode": 4
 }

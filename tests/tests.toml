@@ -4,56 +4,56 @@
 
 [[test]]
 filename = "tests/constraint_01/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/constraint_02/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/constraint_03/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/constraint_04/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/constraint_05/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/constraint_06/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/constraint_07/build.sh"
-java = true
+compilable = true
 
 [[test]]
 filename = "tests/error_01/build.sh"
-java = true
+error = true
 
 [[test]]
 filename = "tests/error_02/build.sh"
-java = true
+error = true
 
 [[test]]
 filename = "tests/error_03/build.sh"
-java = true
+error = true
 
 [[test]]
 filename = "tests/error_04/build.sh"
-java = true
+error = true
 
 [[test]]
 filename = "tests/error_05/build.sh"
-java = true
+error = true
 
 [[test]]
 filename = "tests/error_06/build.sh"
-java = true
+error = true
 
 [[test]]
 filename = "tests/subtype_01/build.sh"
-java = true
+compilable = true
