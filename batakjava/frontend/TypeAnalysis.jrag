@@ -317,6 +317,62 @@ aspect TypeMap {
     return set;
   }
 
+  public TypeDecl Program.findInterface(String qualifiedName) {
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        String name = t.packageName().equals("") ? t.name() : t.packageName() + "." + t.name();
+        if (name.equals(qualifiedName) && t.isInterfaceDecl()) {
+          return t;
+        }
+      }
+    }
+    return null;
+  }
+
+  public SimpleSet<TypeDecl> Program.findClassSet(String qualifiedName) {
+    SimpleSet<TypeDecl> set = emptySet();
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        String[] splitName = t.name().split("_");
+        if (t.isClassDecl() && splitName.length >= 2
+            && splitName[splitName.length-1].charAt(0) == 'v') {
+          String name = String.join("_", Arrays.copyOfRange(splitName, 0, splitName.length-1));
+          if (!t.packageName().equals("")) {
+            name = t.packageName() + "." + name;
+          }
+          if (name.equals(qualifiedName)) {
+            set = set.add(t);
+          }
+        }
+      }
+    }
+    return set;
+  }
+
+  public SimpleSet<TypeDecl> Program.findFactorySet(String qualifiedName) {
+    SimpleSet<TypeDecl> set = emptySet();
+    for (int i = 0; i < getNumCompilationUnit(); i++) {
+      CompilationUnit unit = getCompilationUnit(i);
+      for (TypeDecl t: unit.getTypeDeclList()) {
+        String[] splitName = t.name().split("_");
+        if (t.isClassDecl() && splitName.length >= 3
+            && splitName[splitName.length-1].equals("Factory")
+            && splitName[splitName.length-2].charAt(0) == 'v') {
+          String name = String.join("_", Arrays.copyOfRange(splitName, 0, splitName.length-2));
+          if (!t.packageName().equals("")) {
+            name = t.packageName() + "." + name;
+          }
+          if (name.equals(qualifiedName)) {
+            set = set.add(t);
+          }
+        }
+      }
+    }
+    return set;
+  }
+
 }
 
 aspect TypeWideningAndIdentity {

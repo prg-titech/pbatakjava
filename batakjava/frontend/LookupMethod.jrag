@@ -47,3 +47,20 @@ aspect MethodDecl {
   }
 
 }
+
+aspect MemberMethods {
+
+  syn java.util.List<MethodDecl> TypeDecl.eagerLocalMethods() {
+    if (getNumBodyDecl() == 0) {
+      return Collections.emptyList();
+    }
+    ArrayList<MethodDecl> methods = new ArrayList<MethodDecl>(getNumBodyDecl());
+    for (BodyDecl decl : getBodyDeclList()) {
+      if (decl instanceof MethodDecl) {
+        methods.add((MethodDecl) decl);
+      }
+    }
+    return methods;
+  }
+
+}
