@@ -15,6 +15,7 @@
 /*.jar
 /*.zip
 
+# Tests
 /tests/constraint_01/class
 /tests/constraint_02/class
 /tests/constraint_03/class
@@ -22,8 +23,8 @@
 /tests/constraint_05/class
 /tests/constraint_06/class
 /tests/constraint_07/class
-
 /tests/subtype_01/class
+/tests/constructor_01/class
 
 /tests/output
 
