@@ -31,6 +31,14 @@ filename = "tests/constraint_07/build.sh"
 compilable = true
 
 [[test]]
+filename = "tests/subtype_01/build.sh"
+compilable = true
+
+[[test]]
+filename = "tests/constructor_01/build.sh"
+compilable = true
+
+[[test]]
 filename = "tests/error_01/build.sh"
 error = true
 
@@ -53,7 +61,3 @@ error = true
 [[test]]
 filename = "tests/error_06/build.sh"
 error = true
-
-[[test]]
-filename = "tests/subtype_01/build.sh"
-compilable = true

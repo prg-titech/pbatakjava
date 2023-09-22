@@ -1,7 +1,1 @@
-Fatal exception:
-java.lang.Error: no solution found in component [Test v.1]
-	at org.extendj.ast.Program.solve(Program.java:856)
-	at org.extendj.ast.Program.solve(Program.java:899)
-	at org.extendj.ast.BatakjavaBackend.run(BatakjavaBackend.java:132)
-	at org.batakjava.BatakjavaCompiler.run(BatakjavaCompiler.java:62)
-	at org.batakjava.BatakjavaCompiler.main(BatakjavaCompiler.java:31)
+tests/error_05/Test.java:1: error: no solution found in this component
