@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-method_03-269c346",
+    "cmd": "{infile}",
+    "infile": "tests/method_03/build.sh",
+    "infile_hash": "007d191c26263f17113537fa389af36ecd8ce948604c284f3b3b9e67",
+    "stdout": "compilable-method_03-269c346.stdout",
+    "stdout_hash": "aa36e870fcd7740dd636844477af4983b96e87bdb93187a2285bd2e7",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}

@@ -3,31 +3,39 @@
 # NOTE: make sure to only print the compilation result
 
 [[test]]
-filename = "tests/constraint_01/build.sh"
+filename = "tests/base_01/build.sh"
 compilable = true
 
 [[test]]
-filename = "tests/constraint_02/build.sh"
+filename = "tests/base_02/build.sh"
 compilable = true
 
 [[test]]
-filename = "tests/constraint_03/build.sh"
+filename = "tests/instance_01/build.sh"
 compilable = true
 
 [[test]]
-filename = "tests/constraint_04/build.sh"
+filename = "tests/instance_02/build.sh"
 compilable = true
 
 [[test]]
-filename = "tests/constraint_05/build.sh"
+filename = "tests/instance_03/build.sh"
+compilable = true
+
+#[[test]]
+#filename = "tests/instance_04/build.sh"
+#compilable = true
+
+[[test]]
+filename = "tests/method_01/build.sh"
 compilable = true
 
 [[test]]
-filename = "tests/constraint_06/build.sh"
+filename = "tests/method_02/build.sh"
 compilable = true
 
 [[test]]
-filename = "tests/constraint_07/build.sh"
+filename = "tests/method_03/build.sh"
 compilable = true
 
 [[test]]

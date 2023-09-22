@@ -1,0 +1,18 @@
+
+public interface C {
+}
+
+public interface C_Factory {
+}
+
+public class C_v1 implements C {
+}
+
+public class C_v1_Factory implements C_Factory {
+}
+
+public class C_v2 implements C {
+}
+
+public class C_v2_Factory implements C_Factory {
+}
