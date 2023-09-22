@@ -1,0 +1,118 @@
+
+public interface Color {
+}
+
+public interface Color_Factory {
+  public Color make();
+}
+
+class Color_v1 implements Color {
+  public Color_v1() {
+  }
+}
+
+public class Color_v1_Factory implements Color_Factory {
+  public Color make() {
+    return new Color_v1();
+  }
+}
+
+public interface Point {
+}
+
+public interface Point_Factory {
+  public Point make(boolean c);
+
+  public Point make(Color_Factory V, Color c);
+}
+
+class Point_v1 implements Point {
+  private boolean c;
+
+  public Point_v1(boolean c) {
+    this.c = c;
+  }
+}
+
+public class Point_v1_Factory implements Point_Factory {
+  public Point make(boolean c) {
+    return new Point_v1(c);
+  }
+
+  public Point make(Color_Factory V, Color c) {
+    return null;
+  }
+}
+
+class Color_v2 implements Color {
+  public Color_v2() {
+  }
+}
+
+public class Color_v2_Factory implements Color_Factory {
+  public Color make() {
+    return new Color_v2();
+  }
+}
+
+class Point_v2 implements Point {
+  public Color_Factory V;
+
+  private Color c;
+
+  public Point_v2(Color_Factory V, Color c) {
+    this.V = V;
+    this.c = c;
+  }
+}
+
+public class Point_v2_Factory implements Point_Factory {
+  public Point make(Color_Factory V, Color c) {
+    return new Point_v2(V, c);
+  }
+
+  public Point make(boolean c) {
+    return null;
+  }
+}
+
+public interface Line {
+  public Line_v1 update(Point_Factory Y, Point p);
+
+  public void update(Color_Factory Y);
+}
+
+public interface Line_Factory {
+  public Line make(Point_Factory V, Point_Factory W, Point p1, Point p2);
+}
+
+class Line_v1 implements Line {
+  public Point_Factory V;
+
+  public Point_Factory W;
+
+  public Point p1;
+
+  public Point p2;
+
+  public Line_v1(Point_Factory V, Point_Factory W, Point p1, Point p2) {
+    this.V = V;
+    this.W = W;
+    this.p1 = p1;
+    this.p2 = p2;
+  }
+
+  public Line_v1 update(Point_Factory Y, Point p) {
+    return new Line_v1(V, Y, p1, p);
+  }
+
+  public void update(Color_Factory Y) {
+    this.p1 = V.make(Y, new Color_v1());
+  }
+}
+
+public class Line_v1_Factory implements Line_Factory {
+  public Line make(Point_Factory V, Point_Factory W, Point p1, Point p2) {
+    return new Line_v1(V, W, p1, p2);
+  }
+}

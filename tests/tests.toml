@@ -22,9 +22,9 @@ compilable = true
 filename = "tests/instance_03/build.sh"
 compilable = true
 
-#[[test]]
-#filename = "tests/instance_04/build.sh"
-#compilable = true
+[[test]]
+filename = "tests/instance_04/build.sh"
+compilable = true
 
 [[test]]
 filename = "tests/method_01/build.sh"
