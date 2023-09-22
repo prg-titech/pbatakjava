@@ -1,2 +1,1 @@
 tests/error_02/Test.java:4: error: no applicable constructor for new Line«1,1»(new Color(), new Point())
-Solution not found.

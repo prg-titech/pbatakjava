@@ -4,7 +4,7 @@
     "infile": "tests/subtype_01/build.sh",
     "infile_hash": "75687d00d82803ba735d04c9e5dd0aa532fa06b68b45ea6aec4b3598",
     "stdout": "compilable-subtype_01-4d2c2ed.stdout",
-    "stdout_hash": "1a40102bd6632b4d01bdf53054254f4a216a3d73f03ccbd6b9975fba",
+    "stdout_hash": "c6ff2ad2d2fdaa29ad4b85fee07695a55322bf2f5bf6f39792ad2fe0",
     "stderr": null,
     "stderr_hash": null,
     "returncode": 0

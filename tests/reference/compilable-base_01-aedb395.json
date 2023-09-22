@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-base_01-aedb395",
+    "cmd": "{infile}",
+    "infile": "tests/base_01/build.sh",
+    "infile_hash": "3ecade6a40d974cd0d01860402f3dd4b4eadf78d6fcdcde5dfc2e5d9",
+    "stdout": "compilable-base_01-aedb395.stdout",
+    "stdout_hash": "d07145110ea7282446e86887e50d774107e87df7963bdc152c490f50",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}

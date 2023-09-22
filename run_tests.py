@@ -121,11 +121,11 @@ def main():
   parser = argparse.ArgumentParser(description="BatakJava Reference Tests")
   parser.add_argument("-u", "--update", action="store_true",
     help="update reference results")
-  parser.add_argument("-e", "--error", action="store_true",
-    help="check error tests")
+  #parser.add_argument("-e", "--error", action="store_true",
+  #  help="check error tests")
   args = parser.parse_args()
   update_reference = args.update
-  check_error = args.error
+  #check_error = args.error
 
   d = toml.load(open("tests/tests.toml"))
   for test in d["test"]:
@@ -138,7 +138,7 @@ def main():
     if compilable:
       run_test("compilable", "{infile}", filename, update_reference)
 
-    if (check_error or update_reference) and error:
+    if error:
       run_test("error", "{infile}", filename, update_reference)
 
   if update_reference:

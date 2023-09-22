@@ -6,48 +6,114 @@ aspect Generation {
     Program generated = new Program();
     generated.state().reset();
 
-    SimpleSet<String> interfaceNames = emptySet();
+    java.util.Set<String> names = new HashSet();
 
     for (int i = 0; i < numComponent(); i++) {
       for (TypeDecl t: getComponent(i)) {
-        String name = t.packageName() + "." + t.name();
+        String name = t.packageName().equals("") ? t.name() : t.packageName() + "." + t.name();
 
         CompilationUnit unit = t.compilationUnit();
 
-        // generating interface
-        List<TypeDecl> is = t.compileInterface();
+        if (t.isVersioned()) {
+          // generating interface
+          List<TypeDecl> is = t.compileInterface();
+          List<TypeDecl> ifs = t.compileInterfaceFactory();
 
-        if (interfaceNames.contains(name)) {
-          TypeDecl newInterface = is.iterator().next();
-          TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
-          for (BodyDecl newBody: newInterface.getBodyDeclList()) {
-            oldInterface.addBodyDecl(newBody);
-            BodyDecl newBodyWithReturn = newBody.addReturnStmt();
-            SimpleSet<TypeDecl> existingClassSet
-              = generated.findClassSet(newInterface.packageName(), newInterface.name());
-            for (TypeDecl existingClass: existingClassSet) {
-              existingClass.addBodyDecl(newBodyWithReturn);
+          if (names.contains(name)) {
+            TypeDecl newInterface = is.iterator().next();
+            TypeDecl newFactory = ifs.iterator().next();
+
+            TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
+            TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
+
+            for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
+              oldInterface.addBodyDecl(newMethod);
             }
+
+            for (BodyDecl newCons: newFactory.getBodyDeclList()) {
+              oldFactory.addBodyDecl(newCons);
+            }
+          } else {
+            CompilationUnit interfaceUnit = unit.compile(is);
+            CompilationUnit factoryUnit = unit.compile(t.compileInterfaceFactory());
+
+            generated.addNewCompilationUnit(interfaceUnit);
+            generated.addNewCompilationUnit(factoryUnit);
+
+            names.add(name);
           }
-        } else {
-          CompilationUnit interfaceUnit = unit.compile(is);
-          CompilationUnit factoryUnit = unit.compile(t.compileInterfaceFactory());
-
-          generated.addNewCompilationUnit(interfaceUnit);
-          generated.addNewCompilationUnit(factoryUnit);
-
-          interfaceNames = interfaceNames.add(name);
         }
-
+      
         // generating class and factory
         List<TypeDecl> cs = t.compileClass();
-        
         CompilationUnit classUnit = unit.compile(cs);
         generated.addNewCompilationUnit(classUnit);
+
+        if (t.isVersioned()) {
+          List<TypeDecl> cfs = t.compileClassFactory();
+          CompilationUnit classFactoryUnit = unit.compile(cfs);
+          generated.addNewCompilationUnit(classFactoryUnit);
+        }
       }
     }
 
+    for (String name: names) {
+      generated.processMethods(name);
+      generated.processConstructor(name);
+      generated.removeDuplicate(name);
+    }
+
     return generated;
+  }
+
+  public void Program.processMethods(String name) {
+    TypeDecl parent = findInterface(name);
+    SimpleSet<TypeDecl> classSet = findClassSet(name);
+    for (TypeDecl t: classSet) {
+      List<BodyDecl> newBodyList = new List();
+      for (BodyDecl b: t.getBodyDeclList()) {
+        newBodyList = newBodyList.add(b.treeCopy());
+      }
+      for (BodyDecl b: parent.getBodyDeclList()) {
+        if (!t.owns(b)) {
+          newBodyList = newBodyList.add(b.addReturnStmt());
+        }
+      }
+      t.setBodyDeclList(newBodyList);
+    }
+  }
+
+  public void Program.processConstructor(String name) {
+    TypeDecl parent = findInterface(name + "_Factory");
+    SimpleSet<TypeDecl> factorySet = findFactorySet(name);
+    for (TypeDecl t: factorySet) {
+      List<BodyDecl> newBodyList = new List();
+      for (BodyDecl b: t.getBodyDeclList()) {
+        newBodyList = newBodyList.add(b.treeCopy());
+      }
+      for (BodyDecl b: parent.getBodyDeclList()) {
+        if (!t.owns(b)) {
+          newBodyList = newBodyList.add(b.addReturnStmt());
+        }
+      }
+      t.setBodyDeclList(newBodyList);
+    }
+  }
+
+  public void Program.removeDuplicate(String name) {
+    TypeDecl t = findInterface(name + "_Factory");
+    List<BodyDecl> withoutDuplicate = new List();
+    java.util.Set<String> signatures = new HashSet();
+    for (BodyDecl b: t.getBodyDeclList()) {
+      if (b.isMethodOrConstructor()) {
+        String s = ((MethodDecl) b).nonAttributeSignature();
+        if (!signatures.contains(s)) {
+          withoutDuplicate = withoutDuplicate.add(b);
+          signatures.add(s);
+        }
+      }
+    }
+    t.setBodyDeclList(withoutDuplicate);
   }
 
   syn nta CompilationUnit CompilationUnit.compile(List<TypeDecl> typeList) {
@@ -116,7 +182,6 @@ aspect Generation {
   eq VersionClassDecl.compileClass() {
     List<TypeDecl> types = new List();
     List<BodyDecl> bodyList = new List();
-    List<BodyDecl> factoryBodyList = new List();
 
     if (this instanceof GenericVersionClassDecl) {
       GenericVersionClassDecl thisType = (GenericVersionClassDecl) this;
@@ -135,7 +200,6 @@ aspect Generation {
 
     for (BodyDecl body: getBodyDeclList()) {
       bodyList = bodyList.add(body.compile());
-      factoryBodyList = factoryBodyList.addAll(body.compileFactory());
     }
 
     Opt<Access> superAccess = hasSuperClass() 
@@ -148,6 +212,21 @@ aspect Generation {
       new List().add(new TypeAccess(packageName(), getID())),
       bodyList));
 
+    return types;
+  }
+
+  syn nta List<TypeDecl> TypeDecl.compileClassFactory() = new List();
+
+  eq ClassDecl.compileClassFactory() = new List();
+
+  eq VersionClassDecl.compileClassFactory() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> factoryBodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      factoryBodyList = factoryBodyList.addAll(body.compileFactory());
+    }
+
     types = types.add(new ClassDecl(
       new Modifiers(new List().add(new Modifier("public"))),
       getID() + "_v" + version() + "_Factory",
@@ -156,7 +235,7 @@ aspect Generation {
       factoryBodyList));
 
     return types;
-  }
+  }  
 
   syn nta BodyDecl BodyDecl.compile() = treeCopy();
 

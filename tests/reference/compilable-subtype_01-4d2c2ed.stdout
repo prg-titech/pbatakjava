@@ -68,10 +68,6 @@ public class ColoredPoint_v1_Factory implements ColoredPoint_Factory {
   }
 }
 
-
-
-
-
 public class Test {
   public static void main(String[] args) {
     Point_v1 p1 = new Point_v1(1, 2);

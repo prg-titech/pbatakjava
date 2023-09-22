@@ -15,14 +15,17 @@
 /*.jar
 /*.zip
 
-/tests/constraint_01/class
-/tests/constraint_02/class
-/tests/constraint_03/class
-/tests/constraint_04/class
-/tests/constraint_05/class
-/tests/constraint_06/class
-/tests/constraint_07/class
-
+# Tests
+/tests/base_01/class
+/tests/base_02/class
+/tests/constructor_01/class
+/tests/instance_01/class
+/tests/instance_02/class
+/tests/instance_03/class
+/tests/instance_04/class
+/tests/method_01/class
+/tests/method_02/class
+/tests/method_03/class
 /tests/subtype_01/class
 
 /tests/output

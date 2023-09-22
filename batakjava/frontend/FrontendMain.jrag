@@ -70,8 +70,6 @@ aspect FrontendMain {
         }
 
         if (program.solve() != EXIT_SUCCESS) {
-          // TODO: Make this better
-          System.err.println("Solution not found.");
           return EXIT_UNHANDLED_ERROR;
         }
 
@@ -205,7 +203,6 @@ aspect FrontendMain {
         }
         
         if (program.solve() != EXIT_SUCCESS) {
-          System.err.println("Solution not found.");
           return EXIT_UNHANDLED_ERROR;
         }
 
