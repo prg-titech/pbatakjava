@@ -24,7 +24,10 @@ aspect VersionVariableScope {
     if (accessSet.isSingleton()) {
       return accessSet.singletonValue();
     }
-    throw new Error("Version variables can only be associated with a single class (for now).");
+    if (accessSet.isEmpty()) {
+      throw new Error("Version variable " + getID() +" is not associated with anything.");
+    }
+    throw new Error("Version variable " + getID() +" can only be associated with a single class (for now).");
   }
 
   inh SimpleSet<Access> VersionVariable.boundSet();
@@ -32,12 +35,10 @@ aspect VersionVariableScope {
   eq Program.getChild().boundSet() = emptySet();
 
   eq GenericVersionClassDecl.getVersionVariable(int i).boundSet()
-    = boundSet(getVersionVariable(i),
-               this.<TypeDecl>emptySet().add(this));
+    = boundSet(getVersionVariable(i), this.<TypeDecl>emptySet().add(this));
 
   eq GenericVersionMethodDecl.getVersionVariable(int i).boundSet() 
-    = boundSet(getVersionVariable(i),
-               this.<TypeDecl>emptySet());
+    = boundSet(getVersionVariable(i), this.<TypeDecl>emptySet());
 
   syn SimpleSet<Access> TypeDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
     = this.<Access>emptySet();
@@ -52,18 +53,16 @@ aspect VersionVariableScope {
     return result;
   }
 
-  syn SimpleSet<Access> BodyDecl.boundSet(
-      VersionVariable v, SimpleSet<TypeDecl> visited) 
+  syn SimpleSet<Access> BodyDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) 
     = this.<Access>emptySet();
 
-  eq FieldDecl.boundSet(
-      VersionVariable v, SimpleSet<TypeDecl> visited) 
+  eq FieldDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) 
     = getTypeAccess().boundSet(v, visited);
 
   eq ConstructorDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
     SimpleSet<Access> set = emptySet();
     for (ParameterDeclaration param: getParameterList()) {
-      for (Access a: param.getTypeAccess().boundSet(v, visited)) {
+      for (Access a: param.getTypeAccess().accessBoundSet(v, visited)) {
         set = set.add(a); 
       }
     }
@@ -76,21 +75,66 @@ aspect VersionVariableScope {
   eq MethodDecl.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
     SimpleSet<Access> set = emptySet();
     for (ParameterDeclaration param: getParameterList()) {
-      for (Access a: param.getTypeAccess().boundSet(v, visited)) {
+      for (Access a: param.getTypeAccess().accessBoundSet(v, visited)) {
         set = set.add(a);
       }
     }
 
-    for (Access a: getTypeAccess().boundSet(v, visited)) {
+    for (Access a: getTypeAccess().accessBoundSet(v, visited)) {
       set = set.add(a);
     }
 
     // LATER: method body
+    if (hasBlock()) {
+      for (Access a: getBlock().blockBoundSet(v, visited)) {
+        set = set.add(a);
+      }
+    }
 
     return set;
   }
 
-  syn SimpleSet<Access> Access.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
+  syn SimpleSet<Access> Access.accessBoundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
+    = boundSet(v, visited);
+
+  syn SimpleSet<Access> Block.blockBoundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
+    for (Stmt stmt: getStmtList()) {
+      for (Access a: stmt.boundSet(v, visited)) {
+        set = set.add(a);
+      }
+    }
+    return set;
+  }
+
+  syn SimpleSet<Access> Expr.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
+    = this.<Access>emptySet();
+
+  eq AssignExpr.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
+    for (Access a: getDest().boundSet(v, visited)) {
+      set = set.add(a);
+    }
+    for (Access a: getSource().boundSet(v, visited)) {
+      set = set.add(a);
+    }
+    return set;
+  }
+
+  eq ClassInstanceExpr.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
+    for (Access a: getAccess().accessBoundSet(v, visited)) {
+      set = set.add(a);
+    }
+    for (Expr arg: getArgList()) {
+      for (Access a: arg.boundSet(v, visited)) {
+        set = set.add(a);
+      }
+    }
+    return set;
+  }
+
+  eq Access.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
     = this.<Access>emptySet();
 
   eq VersionTypeAccess.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited)
@@ -113,6 +157,12 @@ aspect VersionVariableScope {
     }
     return set;
   }
+
+  syn SimpleSet<Access> Stmt.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) = this.<Access>emptySet();
+
+  eq Block.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) = blockBoundSet(v, visited);
+
+  eq ExprStmt.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) = getExpr().boundSet(v, visited);
 
   syn boolean VersionArgument.isBound(VersionVariable v) = false;
 

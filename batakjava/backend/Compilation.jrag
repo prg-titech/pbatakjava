@@ -485,6 +485,8 @@ aspect Generation {
   eq Access.compileExpr() = compileAccess();
 
   eq ClassInstanceExpr.compileExpr() {
+    Access toCompile = getAccess();
+
     List<Expr> argList = new List();
     if (getAccess() instanceof ParVersionTypeAccess) {
       ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) getAccess();
@@ -507,15 +509,16 @@ aspect Generation {
           argList = argList.add(new VarAccess(va.getID()));
         }
       }
+      
+      toCompile = typeAccess.getTypeAccess();
     }
 
-    Access access = getAccess().compileAccess();
     for (Expr arg: getArgList()) {
       argList = argList.add(arg.compileExpr());
     }
 
-    if (getAccess() instanceof VersionTypeAccess) {
-      VersionTypeAccess typeAccess = (VersionTypeAccess) getAccess();
+    if (toCompile instanceof VersionTypeAccess) {
+      VersionTypeAccess typeAccess = (VersionTypeAccess) toCompile;
       VersionArgument va = typeAccess.getVersionArgument();
 
       Access makeCall = new MethodAccess("make", argList);
@@ -524,8 +527,11 @@ aspect Generation {
         makeCall);
     }
 
-    return new ClassInstanceExpr(access, argList);
+    return new ClassInstanceExpr(toCompile.compileAccess(), argList);
   }
+
+  eq AssignSimpleExpr.compileExpr()
+    =  new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
 
   syn String TypeDecl.compileName() = name();
 
