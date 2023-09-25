@@ -215,8 +215,9 @@ aspect FrontendMain {
         generated = new Program();
         generated.state().reset();
         
+        // to circumvent lazy attributes locking body decl list
         for (CompilationUnit newUnit: compilation.getCompilationUnitList()) {
-          generated.addNewCompilationUnit(newUnit);
+          generated.addNewCompilationUnit(newUnit.treeCopy());
         }
 
         Options genOptions = generated.options();

@@ -9,32 +9,19 @@ aspect InnerClassesBatak {
   }
 
   public boolean MethodDecl.owned(TypeDecl type) {
-    return type.nonAttributeHasMethod(this);
+    return type.hasLocalMethod(this);
   }
 
-  public boolean TypeDecl.nonAttributeHasMethod(MethodDecl decl) {
+  public boolean TypeDecl.hasLocalMethod(MethodDecl decl) {
     for (BodyDecl b: getBodyDeclList()) {
       if (b instanceof MethodDecl) {
         MethodDecl m = (MethodDecl) b;
-        if (m.nonAttributeSignature().equals(decl.nonAttributeSignature())) {
+        if (m.signature().equals(decl.signature())) {
           return true;
         }
       }
     }
     return false;
-  }
-
-  public String MethodDecl.nonAttributeSignature() {
-    StringBuilder sb = new StringBuilder();
-    sb.append(name() + "(");
-    for (int i = 0; i < getNumParameter(); i++) {
-      if (i != 0) {
-        sb.append(", ");
-      }
-      sb.append(getParameter(i).type().typeName());
-    }
-    sb.append(")");
-    return sb.toString();
   }
 
 }

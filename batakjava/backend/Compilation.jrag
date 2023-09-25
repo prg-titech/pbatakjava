@@ -27,15 +27,11 @@ aspect Generation {
             TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
 
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
-              if (!oldInterface.owns(newMethod)) {
-                oldInterface.addBodyDecl(newMethod);
-              }
+              oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
             for (BodyDecl newCons: newFactory.getBodyDeclList()) {
-              if (!oldFactory.owns(newCons)) {
-                oldFactory.addBodyDecl(newCons);
-              }
+              oldFactory.addBodyDecl(newCons.treeCopy());
             }
           } else {
             CompilationUnit interfaceUnit = unit.compile(is);
@@ -62,9 +58,9 @@ aspect Generation {
     }
 
     for (String name: names) {
+      generated.removeDuplicate(name);
       generated.processMethods(name);
       generated.processConstructor(name);
-      generated.removeDuplicate(name);
     }
 
     return generated;
@@ -110,7 +106,7 @@ aspect Generation {
     java.util.Set<String> signatures = new HashSet();
     for (BodyDecl b: t.getBodyDeclList()) {
       if (b.isMethodOrConstructor()) {
-        String s = ((MethodDecl) b).nonAttributeSignature();
+        String s = ((MethodDecl) b).signature();
         if (!signatures.contains(s)) {
           withoutDuplicate = withoutDuplicate.add(b);
           signatures.add(s);
