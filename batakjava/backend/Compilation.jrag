@@ -27,11 +27,15 @@ aspect Generation {
             TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
 
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
-              oldInterface.addBodyDecl(newMethod);
+              if (!oldInterface.owns(newMethod)) {
+                oldInterface.addBodyDecl(newMethod);
+              }
             }
 
             for (BodyDecl newCons: newFactory.getBodyDeclList()) {
-              oldFactory.addBodyDecl(newCons);
+              if (!oldFactory.owns(newCons)) {
+                oldFactory.addBodyDecl(newCons);
+              }
             }
           } else {
             CompilationUnit interfaceUnit = unit.compile(is);

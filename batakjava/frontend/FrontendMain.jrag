@@ -208,9 +208,16 @@ aspect FrontendMain {
 
         long startGen = System.nanoTime();
 
-        generated = program.compile();
+        Program compilation = program.compile();
 
         program.javaGenTime += System.nanoTime() - startGen;
+
+        generated = new Program();
+        generated.state().reset();
+        
+        for (CompilationUnit newUnit: compilation.getCompilationUnitList()) {
+          generated.addNewCompilationUnit(newUnit);
+        }
 
         Options genOptions = generated.options();
         genOptions.addKeyValueOption("-d");
