@@ -1,0 +1,83 @@
+
+public interface Point {
+}
+
+public interface Point_Factory {
+  public Point make(int x, int y);
+
+  public Point make(int x, int y, int z);
+}
+
+public class Point_v1 implements Point {
+  public int x;
+
+  public int y;
+
+  public Point_v1(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Point_v1_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v1(x, y);
+  }
+
+  public Point make(int x, int y, int z) {
+    return null;
+  }
+}
+
+public class Point_v2 implements Point {
+  public int x;
+
+  public int y;
+
+  public int z;
+
+  public Point_v2(int x, int y, int z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  public Point_v2(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+}
+
+public class Point_v2_Factory implements Point_Factory {
+  public Point make(int x, int y, int z) {
+    return new Point_v2(x, y, z);
+  }
+
+  public Point make(int x, int y) {
+    return new Point_v2(x, y);
+  }
+}
+
+public class Point_v3 implements Point {
+  public int x;
+
+  public int y;
+
+  public int z;
+
+  public Point_v3(int x, int y, int z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+}
+
+public class Point_v3_Factory implements Point_Factory {
+  public Point make(int x, int y, int z) {
+    return new Point_v3(x, y, z);
+  }
+
+  public Point make(int x, int y) {
+    return null;
+  }
+}

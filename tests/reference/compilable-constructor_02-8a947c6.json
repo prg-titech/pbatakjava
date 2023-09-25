@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-constructor_02-8a947c6",
+    "cmd": "{infile}",
+    "infile": "tests/constructor_02/build.sh",
+    "infile_hash": "1f66bf060e2319d8b217a108f34df5c0d2031d4388a8a2bb2828a7ec",
+    "stdout": "compilable-constructor_02-8a947c6.stdout",
+    "stdout_hash": "adb23c4645287e26411bdb71bf55a1a8ae68d81101be2e64dcc6f1ac",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}
