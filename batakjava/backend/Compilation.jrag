@@ -474,6 +474,12 @@ aspect Generation {
 
   eq ExprStmt.compileStmt() = new ExprStmt(getExpr().compileExpr());
 
+  eq IfStmt.compileStmt()
+    = new IfStmt(getCondition().compileExpr(), getThen().compileStmt(),
+        hasElse() ? new Opt(getElse().compileStmt()) : new Opt());
+
+  eq Block.compileStmt() = compileBlock();
+
   syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
     = new VariableDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
 

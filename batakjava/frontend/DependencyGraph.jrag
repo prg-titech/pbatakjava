@@ -174,7 +174,7 @@ aspect DependencyGraph {
     try {
       return host.numComponent();
     } catch (Error e) {
-      throw new Error("Host type " + host.verFullName()
+      throw new Error("Type " + host.verFullName()
           + " not found in any component.");
     }
   }

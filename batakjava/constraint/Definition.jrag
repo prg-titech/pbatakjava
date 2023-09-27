@@ -4,10 +4,16 @@ import com.microsoft.z3.IntExpr;
 aspect Constraint {
 
   public Clause Expr.clause(TypeDecl type) {
+    if (solverConst == null) {
+      throw new Error("Fails to generate constraint on " + prettyPrint());
+    }
     return new Clause(new TypeLit(solverConst, type.typeNum()));
   }
 
   public Clause Expr.clause(Expr other) {
+    if (solverConst == null) {
+      throw new Error("Fails to generate constraint on " + prettyPrint());
+    }
     return new Clause(new VarLit(solverConst, other.solverConst));
   }
 

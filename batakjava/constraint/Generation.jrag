@@ -285,7 +285,7 @@ aspect ConstraintGeneration {
         if (check.isPresent()) {
           s = s.multiply(check.get());
           s = s.multiply(clause(sourceType));
-          if (context() == dest.context()) {
+          if (destType.isVersioned() && context() == dest.context()) {
             s = s.multiply(dest.clause(destType));
           }
           f = f.add(s);
@@ -295,6 +295,11 @@ aspect ConstraintGeneration {
     }
 
     return applicable ? Optional.of(f) : Optional.empty();
+  }
+
+  public Optional<Formula> RelationalExpr.subtype(Expr dest) {
+    return type().isBoolean() && dest.type().isBoolean() 
+      ? Optional.of(new Formula()) : Optional.empty();
   }
 
 }
