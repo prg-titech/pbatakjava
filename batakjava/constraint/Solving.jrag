@@ -87,7 +87,7 @@ aspect ConstraintSolving {
 
     // Version arguments check
     for (TypeDecl t: getComponent(i)) {
-      System.err.println(t.prettyPrint());
+      // System.err.println(t.prettyPrint());
       Collection<Problem> errors = t.check();
       if (!errors.isEmpty()) {
         for (Problem error: errors) {

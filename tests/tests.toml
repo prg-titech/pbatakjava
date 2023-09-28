@@ -55,6 +55,10 @@ filename = "tests/constructor_02/build.sh"
 compilable = true
 
 [[test]]
+filename = "tests/hash_01/build.sh"
+compilable = true
+
+[[test]]
 filename = "tests/error_01/build.sh"
 error = true
 

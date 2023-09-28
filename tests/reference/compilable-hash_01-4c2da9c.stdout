@@ -1,0 +1,122 @@
+
+public interface HashValue {
+}
+
+public interface HashValue_Factory {
+  public HashValue make(int val);
+}
+
+public class HashValue_v2 implements HashValue {
+  private int val;
+
+  public HashValue_v2(int val) {
+    this.val = val;
+  }
+
+  public int getVal() {
+    return this.val;
+  }
+
+  public boolean equals(HashValue_v1 o) {
+    return this.getVal() == o.getVal();
+  }
+}
+
+public class HashValue_v2_Factory implements HashValue_Factory {
+  public HashValue make(int val) {
+    return new HashValue_v2(val);
+  }
+}
+
+public class HashValue_v1 implements HashValue {
+  private int val;
+
+  public HashValue_v1(int val) {
+    this.val = val;
+  }
+
+  public int getVal() {
+    return this.val;
+  }
+
+  public boolean equals(HashValue_v1 o) {
+    return this.getVal() == o.getVal();
+  }
+}
+
+public class HashValue_v1_Factory implements HashValue_Factory {
+  public HashValue make(int val) {
+    return new HashValue_v1(val);
+  }
+}
+
+public interface Hash {
+}
+
+public interface Hash_Factory {
+}
+
+public class Hash_v1 implements Hash {
+  public HashValue_v2 mkHash(String s) {
+    if (s.equals("a")) {
+      return new HashValue_v2(1);
+    }
+    return new HashValue_v2(0);
+  }
+
+  public boolean match(String s, HashValue_v2 h) {
+    return this.mkHash(s).equals(h);
+  }
+}
+
+public class Hash_v1_Factory implements Hash_Factory {
+}
+
+public class Hash_v2 implements Hash {
+  public HashValue_v2 mkHash(String s) {
+    if (s.equals("a")) {
+      return new HashValue_v2(-1);
+    }
+    return new HashValue_v2(0);
+  }
+
+  public boolean match(String s, HashValue_v2 h) {
+    return this.mkHash(s).equals(h);
+  }
+}
+
+public class Hash_v2_Factory implements Hash_Factory {
+}
+
+public class Dir {
+  public String[] getFiles() {
+    String[] files = new String[1];
+    files[0] = "a";
+    return files;
+  }
+
+  public boolean exists(HashValue_v2 h) {
+    String[] fs = this.getFiles();
+    Hash_v2 hash = new Hash_v2();
+    for (int i = 0; i < fs.length; i++) {
+      if (hash.match(fs[i], h)) {
+        return true;
+      }
+    }
+    return false;
+  }
+}
+
+public class Test {
+  public static void main(String[] args) {
+    String s = args[0];
+    Hash_v2 hash = new Hash_v2();
+    HashValue_v2 digest = hash.mkHash(s);
+    Dir dir = new Dir();
+    if (dir.exists(digest)) {
+      System.out.println("found");
+    } else {
+      System.err.println("not found");
+    }
+  }
+}
