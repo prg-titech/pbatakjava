@@ -6,7 +6,7 @@ public class HashValue ver 1 {
   public int getVal() {
     return this.val;
   }
-  public boolean equals(HashValue o) {
+  public boolean equals(HashValue#1# o) {
     return this.getVal() == o.getVal();
   }
 }

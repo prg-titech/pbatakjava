@@ -1,4 +1,19 @@
-aspect VersionVariableScope {
+aspect VersionVariableScope {  
+
+  // TODO: different version of superclass
+  inh Map<TypeDecl,SimpleSet<Variable>> Expr.verLookupVariable(String name);
+
+  eq Program.getChild().verLookupVariable(String name) = new HashMap();
+
+  eq Dot.getRight().verLookupVariable(String name) {
+    Map<TypeDecl,SimpleSet<Variable>> map = new HashMap();
+    for (TypeDecl type: getLeft().typeSet()) {
+      if (type.accessibleFrom(hostType())) {
+        map.put(type, keepAccessibleFields(type.memberFields(name)));
+      }
+    }
+    return map;
+  }
 
   syn TypeAccess Access.takeTypeAccess() = null;
 

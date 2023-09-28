@@ -1,11 +1,11 @@
-public class Dir ver 1 {
+public class Dir {
   public String[] getFiles() {
     String[] files = new String[1];
     files[0] = "a";
     return files;
   }
   public boolean exists(HashValue h) {
-    String[] fs = getFiles();
+    String[] fs = this.getFiles();
     // we can also reinforce hash with a specific version
     Hash hash = new Hash();
     for (int i = 0; i < fs.length; i++) {

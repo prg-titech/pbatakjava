@@ -85,6 +85,16 @@ aspect TypeSet {
 
   eq Dot.typeSet() = lastAccess().typeSet();
 
+  eq ArrayAccess.typeSet() {
+    SimpleSet<TypeDecl> typeSet = emptySet();
+    if (isQualified()) {
+      for (TypeDecl qualifierType: qualifier().typeSet()) {
+        typeSet = typeSet.add(qualifierType.componentType());
+      }
+    }
+    return typeSet;
+  }
+
   syn lazy SimpleSet<TypeDecl> Variable.typeSet();
 
   eq ParameterDeclaration.typeSet() = getTypeAccess().typeSet();
@@ -108,6 +118,14 @@ aspect TypeSet {
     = packageName().equals("")
       ? lookupTypeSet(name())
       : lookupTypeSet(packageName(), name());
+
+  eq ArrayTypeAccess.declSet() {
+    SimpleSet<TypeDecl> set = emptySet();
+    for (TypeDecl t: getAccess().typeSet()) {
+      set = set.add(t.arrayType());
+    }
+    return set;
+  }
 
   inh SimpleSet<TypeDecl> TypeAccess.lookupTypeSet(String name);
 

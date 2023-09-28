@@ -91,6 +91,8 @@ aspect ConstraintGeneration {
     for (TypeDecl type: typeSet()) {
       f = f.add(clause(type));
     }
+    //System.err.println(prettyPrint());
+    //System.err.println(f);
     return f;
   }
 
@@ -202,6 +204,38 @@ aspect ConstraintGeneration {
     }
     // System.err.println(prettyPrint());
     // System.err.println(f);
+    return f;
+  }
+
+  eq ArrayAccess.constraint() {
+    Formula f = new Formula();
+    for (TypeDecl type: typeSet()) {
+      for (TypeDecl accessType: getExpr().typeSet()) {
+        if (accessType.unaryNumericPromotion().isInt() && accessType.isIntegralType()) {
+          f = f.add(clause(type));
+        }
+      }
+    }
+    return f;
+  }
+
+  // TODO: field access
+  eq VarAccess.constraint() {
+    Formula f = new Formula();
+    Map<TypeDecl,SimpleSet<Variable>> map = verLookupVariable(name());
+    for (TypeDecl qualifierType: map.keySet()) {
+      for (Variable v: map.get(qualifierType)) {
+        for (TypeDecl vType: v.typeSet()) {
+          Formula s = new Formula();
+          s = s.multiply(qualifier().clause(qualifierType));
+          s = s.multiply(clause(vType));
+          if (vType.isVersioned() && context() == v.context()) {
+            s = s.multiply(v.clause(vType));
+          }
+          f = f.add(s);
+        }
+      }
+    }
     return f;
   }
 

@@ -478,6 +478,22 @@ aspect Generation {
     = new IfStmt(getCondition().compileExpr(), getThen().compileStmt(),
         hasElse() ? new Opt(getElse().compileStmt()) : new Opt());
 
+  eq ForStmt.compileStmt() {
+    List<Stmt> initList = new List();
+    for (Stmt s: getInitStmtList()) {
+      initList = initList.add(s.compileStmt());
+    }
+
+    Opt<Expr> cnd = hasCondition() ? new Opt(getCondition().compileExpr()) : new Opt();
+
+    List<Stmt> updateList = new List();
+    for (Stmt s: getUpdateStmtList()) {
+      updateList = updateList.add(s.compileStmt());
+    }
+
+    return new ForStmt(initList, cnd, updateList, getStmt().compileStmt());
+  }
+
   eq Block.compileStmt() = compileBlock();
 
   syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
@@ -526,11 +542,13 @@ aspect Generation {
     if (toCompile instanceof VersionTypeAccess) {
       VersionTypeAccess typeAccess = (VersionTypeAccess) toCompile;
       VersionArgument va = typeAccess.getVersionArgument();
-
-      Access makeCall = new MethodAccess("make", argList);
-      return new Dot(
-        new VarAccess(va.getID()),
-        makeCall);
+      
+      if (va instanceof VersionVarArgument) {
+        Access makeCall = new MethodAccess("make", argList);
+        return new Dot(
+          new VarAccess(va.getID()),
+          makeCall);
+      }
     }
 
     return new ClassInstanceExpr(toCompile.compileAccess(), argList);

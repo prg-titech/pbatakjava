@@ -15,6 +15,14 @@ aspect ConstraintSolving {
     return program().contexts.get(numComponent());
   }
 
+  public Context Variable.context() {
+    return null;
+  }
+
+  public Context Declarator.context() {
+    return declarationType().context();
+  }
+
   public java.util.List<java.util.List<Model>> Program.componentModels;
 
   public java.util.List<Model> TypeDecl.models() {
@@ -79,7 +87,7 @@ aspect ConstraintSolving {
 
     // Version arguments check
     for (TypeDecl t: getComponent(i)) {
-      // System.err.println(t.prettyPrint());
+      System.err.println(t.prettyPrint());
       Collection<Problem> errors = t.check();
       if (!errors.isEmpty()) {
         for (Problem error: errors) {
