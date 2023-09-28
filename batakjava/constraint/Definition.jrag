@@ -7,6 +7,19 @@ aspect Constraint {
     return new Clause(new TypeLit(solverConst, type.typeNum()));
   }
 
+  public Clause ArrayCreationExpr.clause(TypeDecl type) {
+    return new Clause(new TypeLit(getTypeAccess().solverConst, type.typeNum()));
+  }
+
+  public Clause Variable.clause(TypeDecl type) {
+    return new Clause();
+  }
+
+  public Clause Declarator.clause(TypeDecl type) {
+    return new Clause(
+      new TypeLit(declarationType().solverConst, type.typeNum()));
+  }
+
   public Clause Expr.clause(Expr other) {
     return new Clause(new VarLit(solverConst, other.solverConst));
   }

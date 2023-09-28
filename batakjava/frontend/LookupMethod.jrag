@@ -1,5 +1,6 @@
 aspect LookupMethod {
 
+  // TODO: different version of superclass
   inh Map<TypeDecl,Collection<MethodDecl>> Expr.verLookupMethod(String name);
 
   eq Program.getChild().verLookupMethod(String name) = new HashMap();

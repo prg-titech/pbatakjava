@@ -27,11 +27,11 @@ aspect Generation {
             TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
 
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
-              oldInterface.addBodyDecl(newMethod);
+              oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
             for (BodyDecl newCons: newFactory.getBodyDeclList()) {
-              oldFactory.addBodyDecl(newCons);
+              oldFactory.addBodyDecl(newCons.treeCopy());
             }
           } else {
             CompilationUnit interfaceUnit = unit.compile(is);
@@ -58,9 +58,9 @@ aspect Generation {
     }
 
     for (String name: names) {
+      generated.removeDuplicate(name);
       generated.processMethods(name);
       generated.processConstructor(name);
-      generated.removeDuplicate(name);
     }
 
     return generated;
@@ -106,7 +106,7 @@ aspect Generation {
     java.util.Set<String> signatures = new HashSet();
     for (BodyDecl b: t.getBodyDeclList()) {
       if (b.isMethodOrConstructor()) {
-        String s = ((MethodDecl) b).nonAttributeSignature();
+        String s = ((MethodDecl) b).signature();
         if (!signatures.contains(s)) {
           withoutDuplicate = withoutDuplicate.add(b);
           signatures.add(s);
@@ -474,6 +474,28 @@ aspect Generation {
 
   eq ExprStmt.compileStmt() = new ExprStmt(getExpr().compileExpr());
 
+  eq IfStmt.compileStmt()
+    = new IfStmt(getCondition().compileExpr(), getThen().compileStmt(),
+        hasElse() ? new Opt(getElse().compileStmt()) : new Opt());
+
+  eq ForStmt.compileStmt() {
+    List<Stmt> initList = new List();
+    for (Stmt s: getInitStmtList()) {
+      initList = initList.add(s.compileStmt());
+    }
+
+    Opt<Expr> cnd = hasCondition() ? new Opt(getCondition().compileExpr()) : new Opt();
+
+    List<Stmt> updateList = new List();
+    for (Stmt s: getUpdateStmtList()) {
+      updateList = updateList.add(s.compileStmt());
+    }
+
+    return new ForStmt(initList, cnd, updateList, getStmt().compileStmt());
+  }
+
+  eq Block.compileStmt() = compileBlock();
+
   syn nta VariableDeclarator VariableDeclarator.compileDeclarator()
     = new VariableDeclarator(getID(), getDimsList(), hasInit() ? new Opt(getInit().compileExpr()) : new Opt());
 
@@ -485,6 +507,8 @@ aspect Generation {
   eq Access.compileExpr() = compileAccess();
 
   eq ClassInstanceExpr.compileExpr() {
+    Access toCompile = getAccess();
+
     List<Expr> argList = new List();
     if (getAccess() instanceof ParVersionTypeAccess) {
       ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) getAccess();
@@ -507,25 +531,31 @@ aspect Generation {
           argList = argList.add(new VarAccess(va.getID()));
         }
       }
+      
+      toCompile = typeAccess.getTypeAccess();
     }
 
-    Access access = getAccess().compileAccess();
     for (Expr arg: getArgList()) {
       argList = argList.add(arg.compileExpr());
     }
 
-    if (getAccess() instanceof VersionTypeAccess) {
-      VersionTypeAccess typeAccess = (VersionTypeAccess) getAccess();
+    if (toCompile instanceof VersionTypeAccess) {
+      VersionTypeAccess typeAccess = (VersionTypeAccess) toCompile;
       VersionArgument va = typeAccess.getVersionArgument();
-
-      Access makeCall = new MethodAccess("make", argList);
-      return new Dot(
-        new VarAccess(va.getID()),
-        makeCall);
+      
+      if (va instanceof VersionVarArgument) {
+        Access makeCall = new MethodAccess("make", argList);
+        return new Dot(
+          new VarAccess(va.getID()),
+          makeCall);
+      }
     }
 
-    return new ClassInstanceExpr(access, argList);
+    return new ClassInstanceExpr(toCompile.compileAccess(), argList);
   }
+
+  eq AssignSimpleExpr.compileExpr()
+    =  new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
 
   syn String TypeDecl.compileName() = name();
 

@@ -91,6 +91,8 @@ aspect ConstraintGeneration {
     for (TypeDecl type: typeSet()) {
       f = f.add(clause(type));
     }
+    //System.err.println(prettyPrint());
+    //System.err.println(f);
     return f;
   }
 
@@ -205,6 +207,38 @@ aspect ConstraintGeneration {
     return f;
   }
 
+  eq ArrayAccess.constraint() {
+    Formula f = new Formula();
+    for (TypeDecl type: typeSet()) {
+      for (TypeDecl accessType: getExpr().typeSet()) {
+        if (accessType.unaryNumericPromotion().isInt() && accessType.isIntegralType()) {
+          f = f.add(clause(type));
+        }
+      }
+    }
+    return f;
+  }
+
+  // TODO: field access
+  eq VarAccess.constraint() {
+    Formula f = new Formula();
+    Map<TypeDecl,SimpleSet<Variable>> map = verLookupVariable(name());
+    for (TypeDecl qualifierType: map.keySet()) {
+      for (Variable v: map.get(qualifierType)) {
+        for (TypeDecl vType: v.typeSet()) {
+          Formula s = new Formula();
+          s = s.multiply(qualifier().clause(qualifierType));
+          s = s.multiply(clause(vType));
+          if (vType.isVersioned() && context() == v.context()) {
+            s = s.multiply(v.clause(vType));
+          }
+          f = f.add(s);
+        }
+      }
+    }
+    return f;
+  }
+
   Declarator contributes each constraintList() to TypeDecl.constraint();
 
   syn Collection<Formula> Declarator.constraintList() = constraint().toList();
@@ -285,7 +319,7 @@ aspect ConstraintGeneration {
         if (check.isPresent()) {
           s = s.multiply(check.get());
           s = s.multiply(clause(sourceType));
-          if (context() == dest.context()) {
+          if (destType.isVersioned() && context() == dest.context()) {
             s = s.multiply(dest.clause(destType));
           }
           f = f.add(s);
@@ -295,6 +329,11 @@ aspect ConstraintGeneration {
     }
 
     return applicable ? Optional.of(f) : Optional.empty();
+  }
+
+  public Optional<Formula> RelationalExpr.subtype(Expr dest) {
+    return type().isBoolean() && dest.type().isBoolean() 
+      ? Optional.of(new Formula()) : Optional.empty();
   }
 
 }
