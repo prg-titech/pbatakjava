@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-hash_02-a0a2bcd",
+    "cmd": "{infile}",
+    "infile": "tests/hash_02/build.sh",
+    "infile_hash": "fec4d6709bfd9781f16fb290dee0dc55eea88f36e670def985d0e3a5",
+    "stdout": "compilable-hash_02-a0a2bcd.stdout",
+    "stdout_hash": "3a8951ca76fd03cc677f5f60e68cd9f5007818ee0831d5fd4bb80166",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}

@@ -60,9 +60,13 @@ public interface Hash {
 }
 
 public interface Hash_Factory {
+  public Hash make();
 }
 
 public class Hash_v1 implements Hash {
+  public Hash_v1() {
+  }
+
   public HashValue mkHash(String s) {
     if (s.equals("a")) {
       return new HashValue_v1(1);
@@ -76,9 +80,15 @@ public class Hash_v1 implements Hash {
 }
 
 public class Hash_v1_Factory implements Hash_Factory {
+  public Hash make() {
+    return new Hash_v1();
+  }
 }
 
 public class Hash_v2 implements Hash {
+  public Hash_v2() {
+  }
+
   public HashValue mkHash(String s) {
     if (s.equals("a")) {
       return new HashValue_v2(-1);
@@ -92,9 +102,25 @@ public class Hash_v2 implements Hash {
 }
 
 public class Hash_v2_Factory implements Hash_Factory {
+  public Hash make() {
+    return new Hash_v2();
+  }
 }
 
-public class Dir {
+public interface Dir {
+  public String[] getFiles();
+
+  public boolean exists(HashValue h);
+}
+
+public interface Dir_Factory {
+}
+
+public class Dir_v1 implements Dir {
+  public HashValue_Factory V;
+
+  public Hash_Factory W;
+
   public String[] getFiles() {
     String[] files = new String[1];
     files[0] = "a";
@@ -103,7 +129,7 @@ public class Dir {
 
   public boolean exists(HashValue h) {
     String[] fs = this.getFiles();
-    Hash hash = new Hash_v1();
+    Hash hash = W.make();
     for (int i = 0; i < fs.length; i++) {
       if (hash.match(fs[i], h)) {
         return true;
@@ -113,16 +139,5 @@ public class Dir {
   }
 }
 
-public class Test {
-  public static void main(String[] args) {
-    String s = args[0];
-    Hash hash = new Hash_v1();
-    HashValue digest = hash.mkHash(s);
-    Dir dir = new Dir();
-    if (dir.exists(digest)) {
-      System.out.println("found");
-    } else {
-      System.err.println("not found");
-    }
-  }
+public class Dir_v1_Factory implements Dir_Factory {
 }

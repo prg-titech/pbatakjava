@@ -70,7 +70,7 @@ public class ColoredPoint_v1_Factory implements ColoredPoint_Factory {
 
 public class Test {
   public static void main(String[] args) {
-    Point_v1 p1 = new Point_v1(1, 2);
-    Point_v1 p2 = new ColoredPoint_v1(1, 2, 3, 4, 5);
+    Point p1 = new Point_v1(1, 2);
+    Point p2 = new ColoredPoint_v1(1, 2, 3, 4, 5);
   }
 }
