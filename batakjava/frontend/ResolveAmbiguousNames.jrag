@@ -1,0 +1,11 @@
+aspect AccessTypes {
+
+  syn boolean Access.isVersionTypeAccess() = false;
+  
+  eq VersionTypeAccess.isVersionTypeAccess() = true;
+
+  syn boolean Access.isParVersionTypeAccess() = false;
+
+  eq ParVersionTypeAccess.isParVersionTypeAccess() = true;
+
+}

@@ -99,7 +99,6 @@ aspect VersionVariableScope {
       set = set.add(a);
     }
 
-    // LATER: method body
     if (hasBlock()) {
       for (Access a: getBlock().blockBoundSet(v, visited)) {
         set = set.add(a);
@@ -178,6 +177,32 @@ aspect VersionVariableScope {
   eq Block.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) = blockBoundSet(v, visited);
 
   eq ExprStmt.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) = getExpr().boundSet(v, visited);
+
+  eq VarDeclStmt.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
+    for (Access a: getTypeAccess().boundSet(v, visited)) {
+      set = set.add(a);
+    }
+    for (VariableDeclarator d: getDeclaratorList()) {
+      for (Access a: d.boundSet(v, visited)) {
+        set = set.add(a);
+      }
+    }
+    return set;
+  }
+
+  syn SimpleSet<Access> Declarator.boundSet(VersionVariable v, SimpleSet<TypeDecl> visited) {
+    SimpleSet<Access> set = emptySet();
+    for (Access a: getTypeAccess().boundSet(v, visited)) {
+      set = set.add(a);
+    }
+    if (hasInit()) {
+      for (Access a: getInit().boundSet(v, visited)) {
+        set = set.add(a);
+      }
+    }
+    return set;
+  }
 
   syn boolean VersionArgument.isBound(VersionVariable v) = false;
 

@@ -27,6 +27,7 @@ aspect Generation {
             TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
 
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
+              //System.err.println(newMethod.prettyPrint());
               oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
@@ -59,14 +60,15 @@ aspect Generation {
 
     for (String name: names) {
       generated.removeDuplicate(name);
-      generated.processMethods(name);
+      generated.removeDuplicate(name + "_Factory");
+      generated.processMethod(name);
       generated.processConstructor(name);
     }
 
     return generated;
   }
 
-  public void Program.processMethods(String name) {
+  public void Program.processMethod(String name) {
     TypeDecl parent = findInterface(name);
     SimpleSet<TypeDecl> classSet = findClassSet(name);
     for (TypeDecl t: classSet) {
@@ -101,7 +103,7 @@ aspect Generation {
   }
 
   public void Program.removeDuplicate(String name) {
-    TypeDecl t = findInterface(name + "_Factory");
+    TypeDecl t = findInterface(name);
     List<BodyDecl> withoutDuplicate = new List();
     java.util.Set<String> signatures = new HashSet();
     for (BodyDecl b: t.getBodyDeclList()) {
@@ -125,7 +127,6 @@ aspect Generation {
   
   syn nta List<TypeDecl> TypeDecl.compileInterface() = new List();
 
-  // TODO: handle different constructors in different versions
   eq VersionClassDecl.compileInterface() {
     List<TypeDecl> types = new List();
     List<BodyDecl> bodyList = new List();
@@ -167,7 +168,7 @@ aspect Generation {
       bodyList = bodyList.add(body.compile());
     }
 
-    Opt<Access> superAccess = hasSuperClass() ? new Opt(getSuperClass().compileAccess()) : new Opt();
+    Opt<Access> superAccess = hasSuperClass() ? new Opt(getSuperClass().compileInstanceAccess()) : new Opt();
 
     types = types.add(new ClassDecl(
       getModifiers(),
@@ -183,7 +184,7 @@ aspect Generation {
     List<TypeDecl> types = new List();
     List<BodyDecl> bodyList = new List();
 
-    if (this instanceof GenericVersionClassDecl) {
+    if (isGenericVersionClassDecl()) {
       GenericVersionClassDecl thisType = (GenericVersionClassDecl) this;
       for (VersionVariable v: thisType.getVersionVariableList()) {
         TypeAccess typeAccess = v.typeAccess();
@@ -203,7 +204,7 @@ aspect Generation {
     }
 
     Opt<Access> superAccess = hasSuperClass() 
-      ? new Opt(getSuperClass().compileAccess()) : new Opt();
+      ? new Opt(getSuperClass().compileInstanceAccess()) : new Opt();
 
     types = types.add(new ClassDecl(
       getModifiers(),
@@ -244,7 +245,7 @@ aspect Generation {
     List<Stmt> blockStmtList = new List();
 
     // TODO: get rid of instanceof from here
-    if (hostType() instanceof GenericVersionClassDecl) {
+    if (hostType().isGenericVersionClassDecl()) {
       GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
       for (int i = 0; i < host.getNumVersionVariable(); i++) {
         VersionVariable v_i = host.getVersionVariable(i);
@@ -350,6 +351,28 @@ aspect Generation {
 
   syn nta List<BodyDecl> BodyDecl.compileInterface() = new List();
 
+  eq MethodDecl.compileInterface() {
+    if (getID().equals("main")) {
+      return new List();
+    }
+
+    List<ParameterDeclaration> ps = new List();
+
+    for (ParameterDeclaration p: getParameterList()) {
+      ParameterDeclaration np = new ParameterDeclaration(
+        p.getModifiers(), p.getTypeAccess().compileAccess(), p.getID());
+      ps = ps.add(np);
+    }
+
+    return new List().add(new MethodDecl(
+      getModifiers(),
+      getTypeAccess().compileAccess(),
+      getID(),
+      ps,
+      new List(),
+      new Opt()));
+  }
+
   eq GenericVersionMethodDecl.compileInterface() {
     List<ParameterDeclaration> ps = new List();
     
@@ -384,6 +407,8 @@ aspect Generation {
 
   eq Dot.compileAccess() = new Dot(getLeft().compileExpr(), getRight().compileAccess());
 
+  // TODO: abstract every versioned class?
+  /*
   eq TypeAccess.compileAccess() {
     TypeDecl type = program().typeMap.get(
       new Integer(model().evaluate(solverConst, false).toString()));
@@ -394,11 +419,14 @@ aspect Generation {
   }
   
   eq VersionTypeAccess.compileAccess() {
-    if (getVersionArgument() instanceof VersionVarArgument) {
+    if (getVersionArgument().isVersionVarArgument()) {
       return getTypeAccess().treeCopy();
     }
     return getTypeAccess().compileAccess();
   }
+  */
+
+  eq VersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
 
   eq ParVersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
 
@@ -421,13 +449,13 @@ aspect Generation {
         VersionArgument va = getVersionArgument(i);
         TypeAccess compileAccess = vv.typeAccess();
         // TODO: handle version variable argument
-        if (va instanceof VersionNumArgument) {
+        if (va.isVersionNumArgument()) {
           argList = argList.add(new ClassInstanceExpr(
             new TypeAccess(compileAccess.getPackage(),
                            compileAccess.getID() + "_v" + va.getID() + "_Factory"),
             new List()
           ));
-        } else if (va instanceof VersionVarArgument) {
+        } else if (va.isVersionVarArgument()) {
           argList = argList.add(new VarAccess(va.getID()));
         }
         i++;
@@ -456,6 +484,26 @@ aspect Generation {
     }
     return new Block(stmtList);
   }
+
+  syn Access Access.compileInstanceAccess() = treeCopy();
+
+  eq TypeAccess.compileInstanceAccess() {
+    TypeDecl type = getSolution();
+    if (type.isVersioned()) {
+      return new TypeAccess(getPackage(), type.getID() + "_v" + type.version());
+    }
+    return treeCopy();
+  }
+
+  eq VersionTypeAccess.compileInstanceAccess() {
+    VersionArgument va = getVersionArgument();
+    assert va.isVersionNumArgument();
+    
+    TypeDecl type = getSolution();
+    return new TypeAccess(((TypeAccess) getTypeAccess()).getPackage(), type.getID() + "_v" + type.version());
+  }
+
+  eq ParVersionTypeAccess.compileInstanceAccess() = getTypeAccess().compileAccess();
 
   syn nta Stmt Stmt.compileStmt() = treeCopy();
 
@@ -506,28 +554,29 @@ aspect Generation {
 
   eq Access.compileExpr() = compileAccess();
 
+  /*
   eq ClassInstanceExpr.compileExpr() {
     Access toCompile = getAccess();
 
     List<Expr> argList = new List();
-    if (getAccess() instanceof ParVersionTypeAccess) {
+    if (getAccess().isParVersionTypeAccess()) {
       ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) getAccess();
 
       TypeDecl compileType = program().typeMap.get(new Integer(model().evaluate(getAccess().solverConst, false).toString()));
-      assert compileType instanceof GenericVersionClassDecl;
+      assert compileType.isGenericVersionClassDecl();
       GenericVersionClassDecl compileClass = (GenericVersionClassDecl) compileType;
 
       for (int i = 0; i < typeAccess.getNumVersionArgument(); i++) {
         VersionArgument va = typeAccess.getVersionArgument(i);
         VersionVariable vv = compileClass.getVersionVariable(i);
         TypeAccess compileAccess = vv.typeAccess();
-        if (va instanceof VersionNumArgument) {
+        if (va.isVersionNumArgument()) {
           argList = argList.add(new ClassInstanceExpr(
             new TypeAccess(compileAccess.getPackage(),
                            compileAccess.getID() + "_v" + va.getID() + "_Factory"),
             new List()
           ));
-        } else if (va instanceof VersionVarArgument) {
+        } else if (va.isVersionVarArgument()) {
           argList = argList.add(new VarAccess(va.getID()));
         }
       }
@@ -539,11 +588,15 @@ aspect Generation {
       argList = argList.add(arg.compileExpr());
     }
 
-    if (toCompile instanceof VersionTypeAccess) {
+    Access access = toCompile.compileAccess();
+
+    if (toCompile.isVersionTypeAccess()) {
       VersionTypeAccess typeAccess = (VersionTypeAccess) toCompile;
       VersionArgument va = typeAccess.getVersionArgument();
       
-      if (va instanceof VersionVarArgument) {
+      if (va.isVersionNumArgument()) {
+        access = typeAccess.getTypeAccess().compileAccess();
+      } else if (va.isVersionVarArgument()) {
         Access makeCall = new MethodAccess("make", argList);
         return new Dot(
           new VarAccess(va.getID()),
@@ -551,7 +604,53 @@ aspect Generation {
       }
     }
 
-    return new ClassInstanceExpr(toCompile.compileAccess(), argList);
+    return new ClassInstanceExpr(access, argList);
+  }
+  */
+
+  eq ClassInstanceExpr.compileExpr() {
+    Access toCompile = getAccess();
+    List<Expr> argList = new List();
+
+    if (toCompile.isParVersionTypeAccess()) {
+      TypeDecl compileType = program().typeMap
+        .get(new Integer(model().evaluate(getAccess().solverConst, false).toString()));
+      assert compileType.isGenericVersionClassDecl();
+      GenericVersionClassDecl compileClass = (GenericVersionClassDecl) compileType;
+
+      ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) toCompile;
+
+      for (int i = 0; i < typeAccess.getNumVersionArgument(); i++) {
+        VersionArgument va = typeAccess.getVersionArgument(i);
+        VersionVariable vv = compileClass.getVersionVariable(i);
+        TypeAccess compileAccess = vv.typeAccess();
+        if (va.isVersionNumArgument()) {
+          argList = argList.add(new ClassInstanceExpr(
+            new TypeAccess(compileAccess.getPackage(), compileAccess.getID() + "_v" + va.getID() + "_Factory"),
+            new List()));
+        } else {
+          argList = argList.add(new VarAccess(va.getID()));
+        }
+      }
+
+      toCompile = typeAccess.getTypeAccess();
+    }
+
+    for (Expr arg: getArgList()) {
+      argList = argList.add(arg.compileExpr());
+    }
+
+    if (toCompile.isVersionTypeAccess()) {
+      VersionTypeAccess typeAccess = (VersionTypeAccess) toCompile;
+      VersionArgument va = typeAccess.getVersionArgument();
+      if (va.isVersionVarArgument()) {
+        return new Dot(new VarAccess(va.getID()), new MethodAccess("make", argList));
+      }
+    }
+
+    Access access = toCompile.compileInstanceAccess();
+
+    return new ClassInstanceExpr(access, argList); 
   }
 
   eq AssignSimpleExpr.compileExpr()
@@ -571,7 +670,7 @@ aspect Generation {
     List<ParameterDeclaration> params = new List();
     List<Expr> argList = new List();
 
-    if (hostType() instanceof GenericVersionClassDecl) {
+    if (hostType().isGenericVersionClassDecl()) {
       GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
       for (int i = 0; i < host.getNumVersionVariable(); i++) {
         VersionVariable v_i = host.getVersionVariable(i);
@@ -616,7 +715,7 @@ aspect Generation {
   eq ConstructorDecl.compileInterfaceFactory() {
     List<ParameterDeclaration> params = new List();
 
-    if (hostType() instanceof GenericVersionClassDecl) {
+    if (hostType().isGenericVersionClassDecl()) {
       GenericVersionClassDecl host = (GenericVersionClassDecl) hostType();
       for (int i = 0; i < host.getNumVersionVariable(); i++) {
         VersionVariable v_i = host.getVersionVariable(i);
@@ -655,7 +754,9 @@ aspect Generation {
       ps = ps.add(p.treeCopy());
     }
 
-    List<Stmt> stmtList = new List().add(new ReturnStmt(new NullLiteral("null")));
+    List<Stmt> stmtList = type().isVoid()
+      ? new List().add(new ReturnStmt())
+      : new List().add(new ReturnStmt(new NullLiteral("null")));
 
     return new MethodDecl(
       getModifiers(),

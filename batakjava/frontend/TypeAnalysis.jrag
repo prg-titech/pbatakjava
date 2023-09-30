@@ -52,7 +52,22 @@ aspect TypeSet {
 
   eq TypeAccess.typeSet() = declSet();
 
-  eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
+  // eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
+
+  eq VersionTypeAccess.typeSet() {
+    SimpleSet<TypeDecl> typeSet0 = getTypeAccess().typeSet();
+    VersionArgument arg = getVersionArgument();
+    if (arg.isVersionNumArgument()) {
+      SimpleSet<TypeDecl> typeSet = emptySet();
+      for (TypeDecl type: typeSet0) {
+        if (type.version().equals(arg.getID())) {
+          typeSet = typeSet.add(type);
+        }
+      }
+      return typeSet;
+    }
+    return typeSet0;
+  }
 
   eq ParVersionTypeAccess.typeSet() {
     SimpleSet<TypeDecl> typeSet = emptySet();
@@ -444,5 +459,17 @@ aspect NestedTypes {
   inh TypeDecl VersionVariable.hostType();
 
   eq GenericVersionClassDecl.getVersionVariable(int i).hostType() = hostType();
+
+}
+
+aspect TypeAnalysis {
+
+  syn boolean TypeDecl.isVersionClassDecl() = false;
+
+  eq VersionClassDecl.isVersionClassDecl() = true;
+
+  syn boolean TypeDecl.isGenericVersionClassDecl() = false;
+
+  eq GenericVersionClassDecl.isGenericVersionClassDecl() = true;
 
 }

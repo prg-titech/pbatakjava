@@ -14,7 +14,7 @@ aspect InnerClassesBatak {
 
   public boolean TypeDecl.hasLocalMethod(MethodDecl decl) {
     for (BodyDecl b: getBodyDeclList()) {
-      if (b instanceof MethodDecl) {
+      if (b.isMethodDecl()) {
         MethodDecl m = (MethodDecl) b;
         if (m.signature().equals(decl.signature())) {
           return true;
