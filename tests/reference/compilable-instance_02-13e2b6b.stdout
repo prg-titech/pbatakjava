@@ -78,10 +78,10 @@ public interface Test_Factory {
 
 public class Test_v1 implements Test {
   public static void main(String[] args) {
-    Line_v1 l1 = new Line_v1(new Point_v1_Factory(), new Point_v1_Factory(), new Point_v1(1, 1), new Point_v1(2, 2));
-    Line_v1 l2 = new Line_v1(new Point_v2_Factory(), new Point_v2_Factory(), new Point_v2(1, 1), new Point_v2(2, 2));
-    Line_v1 l3 = new Line_v1(new Point_v1_Factory(), new Point_v2_Factory(), new Point_v1(1, 1), new Point_v2(2, 2));
-    Line_v1 l4 = new Line_v1(new Point_v2_Factory(), new Point_v1_Factory(), new Point_v2(1, 1), new Point_v1(2, 2));
+    Line l1 = new Line_v1(new Point_v1_Factory(), new Point_v1_Factory(), new Point_v1(1, 1), new Point_v1(2, 2));
+    Line l2 = new Line_v1(new Point_v2_Factory(), new Point_v2_Factory(), new Point_v2(1, 1), new Point_v2(2, 2));
+    Line l3 = new Line_v1(new Point_v1_Factory(), new Point_v2_Factory(), new Point_v1(1, 1), new Point_v2(2, 2));
+    Line l4 = new Line_v1(new Point_v2_Factory(), new Point_v1_Factory(), new Point_v2(1, 1), new Point_v1(2, 2));
   }
 }
 

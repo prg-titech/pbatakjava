@@ -61,6 +61,11 @@ aspect ConstraintVariable {
     return Collections.singleton(solverConst);
   }
   
+  public TypeDecl Expr.getSolution() {
+    assert solverConst != null;
+    return program().typeMap.get(new Integer(model().evaluate(solverConst, false).toString()));
+  }
+
 }
 
 aspect ConstraintGeneration {
@@ -171,8 +176,8 @@ aspect ConstraintGeneration {
   eq ClassInstanceExpr.constraint() {
     Formula f = new Formula();
     // TODO: remove this temporary fix
-    if (getAccess() instanceof VersionTypeAccess &&
-        ((VersionTypeAccess) getAccess()).getVersionArgument() instanceof VersionVarArgument) {
+    if (getAccess().isVersionTypeAccess() &&
+        ((VersionTypeAccess) getAccess()).getVersionArgument().isVersionVarArgument()) {
       return f;
     }
     for (TypeDecl type: typeSet()) {

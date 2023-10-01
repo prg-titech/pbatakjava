@@ -17,6 +17,10 @@ aspect LookupMethod {
 
 aspect MethodDecl {
 
+  syn boolean BodyDecl.isMethodDecl() = false;
+
+  eq MethodDecl.isMethodDecl() = true;
+  
   syn Optional<Formula> MethodAccess.verApplicableAndAccessible(MethodDecl m) {
     if (m.getNumParameter() != getNumArg()) {
       return Optional.empty();
@@ -57,7 +61,7 @@ aspect MemberMethods {
     }
     ArrayList<MethodDecl> methods = new ArrayList<MethodDecl>(getNumBodyDecl());
     for (BodyDecl decl : getBodyDeclList()) {
-      if (decl instanceof MethodDecl) {
+      if (decl.isMethodDecl()) {
         methods.add((MethodDecl) decl);
       }
     }

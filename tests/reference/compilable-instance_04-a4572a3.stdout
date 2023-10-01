@@ -77,7 +77,7 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface Line {
-  public Line_v1 update(Point_Factory Y, Point p);
+  public Line update(Point_Factory Y, Point p);
 
   public void update(Color_Factory Y);
 }
@@ -102,7 +102,7 @@ class Line_v1 implements Line {
     this.p2 = p2;
   }
 
-  public Line_v1 update(Point_Factory Y, Point p) {
+  public Line update(Point_Factory Y, Point p) {
     return new Line_v1(V, Y, p1, p);
   }
 

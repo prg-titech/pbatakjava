@@ -1,5 +1,6 @@
 
 public interface Point {
+  public void m();
 }
 
 public interface Point_Factory {
@@ -35,6 +36,10 @@ public class Point_v2 implements Point {
   public Point_v2(int x, int y) {
     this.x = x;
     this.y = y;
+  }
+
+  public void m() {
+    return;
   }
 }
 
@@ -82,9 +87,9 @@ public interface Test_Factory {
 
 public class Test_v1 implements Test {
   public static void main(String[] args) {
-    Point_v1 p1 = new Point_v1(1, 1);
+    Point p1 = new Point_v1(1, 1);
     p1.m();
-    Line_v1 l1 = new Line_v1(new Point_v1_Factory(), new Point_v2_Factory(), p1, new Point_v2(2, 2));
+    Line l1 = new Line_v1(new Point_v1_Factory(), new Point_v2_Factory(), p1, new Point_v2(2, 2));
   }
 }
 

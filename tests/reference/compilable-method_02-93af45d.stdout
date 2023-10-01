@@ -50,7 +50,7 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface Line {
-  public Line_v1 rotate(Point_Factory Y);
+  public Line rotate(Point_Factory Y);
 }
 
 public interface Line_Factory {
@@ -73,7 +73,7 @@ public class Line_v1 implements Line {
     this.p2 = p2;
   }
 
-  public Line_v1 rotate(Point_Factory Y) {
+  public Line rotate(Point_Factory Y) {
     return new Line_v1(V, Y, p1, p2.inverse(Y));
   }
 }
@@ -92,8 +92,8 @@ public interface Test_Factory {
 
 public class Test_v1 implements Test {
   public static void main(String[] args) {
-    Line_v1 l1 = new Line_v1(new Point_v2_Factory(), new Point_v2_Factory(), new Point_v2(2, 2), new Point_v2(1, 1));
-    Line_v1 l2 = l1.rotate(new Point_v1_Factory());
+    Line l1 = new Line_v1(new Point_v2_Factory(), new Point_v2_Factory(), new Point_v2(2, 2), new Point_v2(1, 1));
+    Line l2 = l1.rotate(new Point_v1_Factory());
   }
 }
 
