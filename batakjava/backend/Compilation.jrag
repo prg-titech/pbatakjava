@@ -106,16 +106,18 @@ aspect Generation {
     TypeDecl t = findInterface(name);
     List<BodyDecl> withoutDuplicate = new List();
     java.util.Set<String> signatures = new HashSet();
-    for (BodyDecl b: t.getBodyDeclList()) {
-      if (b.isMethodOrConstructor()) {
-        String s = ((MethodDecl) b).signature();
-        if (!signatures.contains(s)) {
-          withoutDuplicate = withoutDuplicate.add(b);
-          signatures.add(s);
+    if (t != null) {
+      for (BodyDecl b: t.getBodyDeclList()) {
+        if (b.isMethodOrConstructor()) {
+          String s = ((MethodDecl) b).signature();
+          if (!signatures.contains(s)) {
+            withoutDuplicate = withoutDuplicate.add(b);
+            signatures.add(s);
+          }
         }
       }
+      t.setBodyDeclList(withoutDuplicate);
     }
-    t.setBodyDeclList(withoutDuplicate);
   }
 
   syn nta CompilationUnit CompilationUnit.compile(List<TypeDecl> typeList) {
@@ -135,6 +137,21 @@ aspect Generation {
       bodyList = bodyList.addAll(body.compileInterface());
 
     }
+    return new List().add(new InterfaceDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID(),
+      new List(),
+      bodyList));
+  }
+
+  eq VersionInterfaceDecl.compileInterface() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> bodyList = new List();
+    
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.addAll(body.compileInterface());
+    }
+
     return new List().add(new InterfaceDecl(
       new Modifiers(new List().add(new Modifier("public"))),
       getID(),
@@ -206,11 +223,40 @@ aspect Generation {
     Opt<Access> superAccess = hasSuperClass() 
       ? new Opt(getSuperClass().compileInstanceAccess()) : new Opt();
 
+    List<Access> implementList = new List().add(new TypeAccess(packageName(), getID()));
+
+    for (Access implementAccess: getImplementsList()) {
+      implementList = implementList.add(implementAccess.compileInstanceAccess());
+    }
+
     types = types.add(new ClassDecl(
       getModifiers(),
       getID() + "_v" + version(), 
       superAccess,
-      new List().add(new TypeAccess(packageName(), getID())),
+      implementList,
+      bodyList));
+
+    return types;
+  }
+
+  eq VersionInterfaceDecl.compileClass() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> bodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.add(body.compile());
+    }
+
+    List<Access> extendList = new List().add(new TypeAccess(packageName(), getID()));
+
+    for (Access extendAccess: getSuperInterfaceList()) {
+      extendList = extendList.add(extendAccess.compileInstanceAccess());
+    }
+
+    types = types.add(new InterfaceDecl(
+      getModifiers(),
+      getID() + "_v" + version(),
+      extendList,
       bodyList));
 
     return types;

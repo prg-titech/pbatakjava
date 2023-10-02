@@ -48,6 +48,8 @@ aspect TypeSet {
 
   eq VersionClassDecl.isVersioned() = true;
 
+  eq VersionInterfaceDecl.isVersioned() = true;
+
   syn lazy SimpleSet<TypeDecl> Expr.typeSet() = this.<TypeDecl>emptySet().add(type());
 
   eq TypeAccess.typeSet() = declSet();

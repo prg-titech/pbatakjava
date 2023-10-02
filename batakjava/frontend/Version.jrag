@@ -4,6 +4,8 @@ aspect Version {
 
   eq VersionClassDecl.version() = getVersion().getID();
 
+  eq VersionInterfaceDecl.version() = getVersion().getID();
+
   syn String VersionArgument.version();
 
   eq VersionVarArgument.version() = getID();
