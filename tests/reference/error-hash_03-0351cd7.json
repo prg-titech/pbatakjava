@@ -1,0 +1,11 @@
+{
+    "basename": "error-hash_03-0351cd7",
+    "cmd": "{infile}",
+    "infile": "tests/hash_03/build.sh",
+    "infile_hash": "07d77b2fc7fb8d2b1021cb92768af671c7f4ead885a0751bb8be44a5",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "error-hash_03-0351cd7.stderr",
+    "stderr_hash": "01c6e741f417b6a1d96127d4297c20a7a01e0c5c46496ce26ad68389",
+    "returncode": 4
+}

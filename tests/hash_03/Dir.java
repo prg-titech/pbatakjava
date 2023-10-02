@@ -1,5 +1,6 @@
 public class Dir ver 1 «V,W» {
   public Dir() {}
+
   public String[] getFiles() {
     String[] files = new String[1];
     files[0] = "a";

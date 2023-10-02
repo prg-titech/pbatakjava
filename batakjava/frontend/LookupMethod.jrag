@@ -20,8 +20,8 @@ aspect MethodDecl {
   syn boolean BodyDecl.isMethodDecl() = false;
 
   eq MethodDecl.isMethodDecl() = true;
-  
-  syn Optional<Formula> MethodAccess.verApplicableAndAccessible(MethodDecl m) {
+
+  syn Optional<Formula> MethodAccess.verApplicableAndAccessible(MethodDecl m, TypeDecl t) {
     if (m.getNumParameter() != getNumArg()) {
       return Optional.empty();
     }
@@ -31,6 +31,8 @@ aspect MethodDecl {
     }
 
     Formula f = new Formula();
+    Map<String,VersionArgument> qualifierVerMap = qualifier().verMap(t);
+
     for (int i = 0; i < m.getNumParameter(); i++) {
       Optional<Formula> fArg = getArg(i).subtype(m.getParameter(i).getTypeAccess());
       if (fArg.isPresent()) {
@@ -38,17 +40,34 @@ aspect MethodDecl {
       } else {
         return Optional.empty();
       }
+
+      // check against version parameters
+      SimpleSet<TypeDecl> set = m.getParameter(i).getTypeAccess().map(qualifierVerMap);
+      if (set.isSingleton()) {
+        TypeDecl boundType = set.singletonValue();
+        boolean applicable = false;
+        for (TypeDecl argType: getArg(i).typeSet()) {
+          Optional<Formula> argCheck = argType.versionInstanceOf(boundType, getArg(i));
+          if (argCheck.isPresent()) {
+            applicable = true;
+            f = f.multiply(argCheck.get());
+          }
+        }
+        if (!applicable) {
+          return Optional.empty();
+        }
+      }
     }
-    
+
     return Optional.of(f);
   }
 
-  eq ParVersionMethodAccess.verApplicableAndAccessible(MethodDecl m) {
+  eq ParVersionMethodAccess.verApplicableAndAccessible(MethodDecl m, TypeDecl t) {
     if (m.numVersionVariable() != getNumVersionArgument()) {
       return Optional.empty();
     }
-    
-    return super.verApplicableAndAccessible(m);
+
+    return super.verApplicableAndAccessible(m, t);
   }
 
 }

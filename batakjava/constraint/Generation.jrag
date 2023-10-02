@@ -135,7 +135,7 @@ aspect ConstraintGeneration {
         // TODO: check inheritance
 
         // check arguments
-        Optional<Formula> optS = verApplicableAndAccessible(method);
+        Optional<Formula> optS = verApplicableAndAccessible(method, qualifierType);
         
         if (!optS.isPresent()) {
           continue;
