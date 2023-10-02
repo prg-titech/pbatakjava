@@ -10,9 +10,25 @@ aspect Version {
 
   eq VersionNumArgument.version() = getID();
 
-  syn Map<String,VersionArgument> Access.verMap(TypeDecl t) = new HashMap();
+  syn Map<String,VersionArgument> Expr.verMap(TypeDecl t) = new HashMap();
 
   eq ParVersionTypeAccess.verMap(TypeDecl t) = t.verMap(this);
+
+  eq ClassInstanceExpr.verMap(TypeDecl t) = getAccess().verMap(t);
+
+  eq VarAccess.verMap(TypeDecl t) = decl().verMap(t);
+
+  syn Map<String,VersionArgument> Variable.verMap(TypeDecl t);
+
+  eq Declarator.verMap(TypeDecl t) = declarationType().verMap(t);
+
+  eq CatchParameterDeclaration.verMap(TypeDecl t) = new HashMap();  // ignore
+
+  eq EnumConstant.verMap(TypeDecl t) = new HashMap();  // ignore
+
+  eq InferredParameterDeclaration.verMap(TypeDecl t) = new HashMap();   // ignore
+
+  eq ParameterDeclaration.verMap(TypeDecl t) = getTypeAccess().verMap(t);
   
   syn Map<String,VersionArgument> MethodAccess.verMap(MethodDecl m) = new HashMap();
 

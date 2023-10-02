@@ -52,8 +52,6 @@ aspect TypeSet {
 
   eq TypeAccess.typeSet() = declSet();
 
-  // eq VersionTypeAccess.typeSet() = getTypeAccess().typeSet();
-
   eq VersionTypeAccess.typeSet() {
     SimpleSet<TypeDecl> typeSet0 = getTypeAccess().typeSet();
     VersionArgument arg = getVersionArgument();

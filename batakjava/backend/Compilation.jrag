@@ -407,25 +407,6 @@ aspect Generation {
 
   eq Dot.compileAccess() = new Dot(getLeft().compileExpr(), getRight().compileAccess());
 
-  // TODO: abstract every versioned class?
-  /*
-  eq TypeAccess.compileAccess() {
-    TypeDecl type = program().typeMap.get(
-      new Integer(model().evaluate(solverConst, false).toString()));
-    if (type.isVersioned()) {
-      return new TypeAccess(getPackage(), type.getID() + "_v" + type.version());
-    }
-    return treeCopy();
-  }
-  
-  eq VersionTypeAccess.compileAccess() {
-    if (getVersionArgument().isVersionVarArgument()) {
-      return getTypeAccess().treeCopy();
-    }
-    return getTypeAccess().compileAccess();
-  }
-  */
-
   eq VersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
 
   eq ParVersionTypeAccess.compileAccess() = getTypeAccess().compileAccess();
@@ -553,60 +534,6 @@ aspect Generation {
   syn nta Expr Expr.compileExpr() = treeCopy();
 
   eq Access.compileExpr() = compileAccess();
-
-  /*
-  eq ClassInstanceExpr.compileExpr() {
-    Access toCompile = getAccess();
-
-    List<Expr> argList = new List();
-    if (getAccess().isParVersionTypeAccess()) {
-      ParVersionTypeAccess typeAccess = (ParVersionTypeAccess) getAccess();
-
-      TypeDecl compileType = program().typeMap.get(new Integer(model().evaluate(getAccess().solverConst, false).toString()));
-      assert compileType.isGenericVersionClassDecl();
-      GenericVersionClassDecl compileClass = (GenericVersionClassDecl) compileType;
-
-      for (int i = 0; i < typeAccess.getNumVersionArgument(); i++) {
-        VersionArgument va = typeAccess.getVersionArgument(i);
-        VersionVariable vv = compileClass.getVersionVariable(i);
-        TypeAccess compileAccess = vv.typeAccess();
-        if (va.isVersionNumArgument()) {
-          argList = argList.add(new ClassInstanceExpr(
-            new TypeAccess(compileAccess.getPackage(),
-                           compileAccess.getID() + "_v" + va.getID() + "_Factory"),
-            new List()
-          ));
-        } else if (va.isVersionVarArgument()) {
-          argList = argList.add(new VarAccess(va.getID()));
-        }
-      }
-      
-      toCompile = typeAccess.getTypeAccess();
-    }
-
-    for (Expr arg: getArgList()) {
-      argList = argList.add(arg.compileExpr());
-    }
-
-    Access access = toCompile.compileAccess();
-
-    if (toCompile.isVersionTypeAccess()) {
-      VersionTypeAccess typeAccess = (VersionTypeAccess) toCompile;
-      VersionArgument va = typeAccess.getVersionArgument();
-      
-      if (va.isVersionNumArgument()) {
-        access = typeAccess.getTypeAccess().compileAccess();
-      } else if (va.isVersionVarArgument()) {
-        Access makeCall = new MethodAccess("make", argList);
-        return new Dot(
-          new VarAccess(va.getID()),
-          makeCall);
-      }
-    }
-
-    return new ClassInstanceExpr(access, argList);
-  }
-  */
 
   eq ClassInstanceExpr.compileExpr() {
     Access toCompile = getAccess();

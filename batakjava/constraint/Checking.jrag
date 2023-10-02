@@ -63,10 +63,10 @@ aspect VersionChecking {
     boolean applicable = false;
     Iterator<TypeDecl> typeIterator = map.keySet().iterator();
     while (typeIterator.hasNext() && !applicable) {
-      TypeDecl type = typeIterator.next();
-      if (type.isVersioned()) {
-        for (MethodDecl m: map.get(type)) {
-          if (verApplicableAndAccessible(m).isPresent()) {
+      TypeDecl t = typeIterator.next();
+      if (t.isVersioned()) {
+        for (MethodDecl m: map.get(t)) {
+          if (verApplicableAndAccessible(m, t).isPresent()) {
             applicable = true;
             break;
           }

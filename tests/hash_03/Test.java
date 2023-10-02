@@ -8,10 +8,10 @@ public class Test {
     Hash#2# hash2 = new Hash#2#();
     HashValue#2# digest2 = hash2.mkHash(s);
 
-    Dir«1,1» dir1 = new Dir«1,1»();
-    Dir«2,2» dir2 = new Dir«2,2»();
+    Dir«1,1» dir = new Dir«1,1»();
+    boolean b1 = dir.exists(digest1);
+    boolean b2 = dir.exists(digest2); // this has to rejected
 
-    System.out.println(dir1.exists(digest1));
-    System.out.println(dir2.exists(digest2));
+    Dir«1,2» dirWrong = new Dir«1,2»();
   }
 }
