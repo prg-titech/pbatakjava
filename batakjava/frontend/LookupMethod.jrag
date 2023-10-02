@@ -21,6 +21,7 @@ aspect MethodDecl {
 
   eq MethodDecl.isMethodDecl() = true;
   
+  /*
   syn Optional<Formula> MethodAccess.verApplicableAndAccessible(MethodDecl m) {
     if (m.getNumParameter() != getNumArg()) {
       return Optional.empty();
@@ -50,6 +51,7 @@ aspect MethodDecl {
 
     return super.verApplicableAndAccessible(m);
   }
+  */
 
   syn Optional<Formula> MethodAccess.verApplicableAndAccessible(MethodDecl m, TypeDecl t) {
     if (m.getNumParameter() != getNumArg()) {
@@ -90,6 +92,14 @@ aspect MethodDecl {
     }
 
     return Optional.of(f);
+  }
+
+  eq ParVersionMethodAccess.verApplicableAndAccessible(MethodDecl m, TypeDecl t) {
+    if (m.numVersionVariable() != getNumVersionArgument()) {
+      return Optional.empty();
+    }
+
+    return super.verApplicableAndAccessible(m, t);
   }
 
 }

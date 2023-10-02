@@ -114,12 +114,18 @@ public interface Dir {
 }
 
 public interface Dir_Factory {
+  public Dir make(HashValue_Factory V, Hash_Factory W);
 }
 
 public class Dir_v1 implements Dir {
   public HashValue_Factory V;
 
   public Hash_Factory W;
+
+  public Dir_v1(HashValue_Factory V, Hash_Factory W) {
+    this.V = V;
+    this.W = W;
+  }
 
   public String[] getFiles() {
     String[] files = new String[1];
@@ -140,4 +146,21 @@ public class Dir_v1 implements Dir {
 }
 
 public class Dir_v1_Factory implements Dir_Factory {
+  public Dir make(HashValue_Factory V, Hash_Factory W) {
+    return new Dir_v1(V, W);
+  }
+}
+
+public class Test {
+  public static void main(String[] args) {
+    String s = args[0];
+    Hash hash1 = new Hash_v1();
+    HashValue digest1 = hash1.mkHash(s);
+    Hash hash2 = new Hash_v2();
+    HashValue digest2 = hash2.mkHash(s);
+    Dir dir1 = new Dir_v1(new HashValue_v1_Factory(), new Hash_v1_Factory());
+    Dir dir2 = new Dir_v1(new HashValue_v2_Factory(), new Hash_v2_Factory());
+    System.out.println(dir1.exists(digest1));
+    System.out.println(dir2.exists(digest2));
+  }
 }
