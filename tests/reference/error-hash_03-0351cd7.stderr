@@ -1,3 +1,1 @@
-tests/hash_03/Test.java:13: error: no applicable method for exists(digest2)
-tests/hash_03/Test.java:15: error: no applicable solution for Dir«1,2»
-tests/hash_03/Test.java:15: error: no applicable solution for Dir«1,2»
+tests/hash_03/Test.java:1: error: no solution found in this component
