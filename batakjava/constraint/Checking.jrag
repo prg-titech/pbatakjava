@@ -50,6 +50,37 @@ aspect VersionChecking {
     return err;
   }
 
+  SuperConstructorAccess contributes each check() to TypeDecl.check();
+
+  syn Collection<Problem> SuperConstructorAccess.check() {
+    Collection<Problem> err = new LinkedList();
+
+    TypeDecl host = hostType();
+    boolean hasSuperAccess 
+      = (host instanceof ClassDecl) && (((ClassDecl) host).hasSuperClass());
+
+    if (!hasSuperAccess) {
+      return err;
+    }
+
+    boolean applicable = false;
+    Access superAccess = ((ClassDecl) host).getSuperClass();
+    for (TypeDecl superType: superAccess.typeSet()) {
+      for (ConstructorDecl decl: superType.constructors()) {
+        if (verApplicableAndAccessible(decl).isPresent()) {
+          applicable = true;
+          break;
+        }
+      }
+    }
+
+    if (!applicable) {
+      err.add(errorf("no applicable constructor for %s", prettyPrint()));
+    }
+
+    return err;
+  }
+
   Declarator contributes each check() to TypeDecl.check();
 
   syn Collection<Problem> Declarator.check() {
