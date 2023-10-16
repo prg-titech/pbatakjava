@@ -21,15 +21,14 @@ aspect Generation {
 
           if (names.contains(name)) {
             TypeDecl newInterface = is.iterator().next();
-            TypeDecl newFactory = ifs.iterator().next();
-
             TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
-            TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
-
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
               //System.err.println(newMethod.prettyPrint());
               oldInterface.addBodyDecl(newMethod.treeCopy());
             }
+
+            TypeDecl newFactory = ifs.iterator().next();
+            TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
 
             for (BodyDecl newCons: newFactory.getBodyDeclList()) {
               oldFactory.addBodyDecl(newCons.treeCopy());
@@ -175,6 +174,20 @@ aspect Generation {
       factoryBodyList));
   }
 
+  eq VersionInterfaceDecl.compileInterfaceFactory() {
+    List<BodyDecl> factoryBodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      factoryBodyList = factoryBodyList.addAll(body.compileInterfaceFactory());
+    }
+
+    return new List().add(new InterfaceDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID() + "_Factory",
+      new List(),
+      factoryBodyList));
+  }
+
   syn nta List<TypeDecl> TypeDecl.compileClass() = new List().add(treeCopy());
 
   eq ClassDecl.compileClass() {
@@ -283,6 +296,24 @@ aspect Generation {
 
     return types;
   }  
+
+  eq VersionInterfaceDecl.compileClassFactory() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> factoryBodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      factoryBodyList = factoryBodyList.addAll(body.compileFactory());
+    }
+
+    types = types.add(new ClassDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID() + "_v" + version() + "_Factory",
+      new Opt(),
+      new List().add(new TypeAccess(packageName(), getID() + "_Factory")),
+      factoryBodyList));
+
+    return types;
+  }
 
   syn nta BodyDecl BodyDecl.compile() = treeCopy();
 

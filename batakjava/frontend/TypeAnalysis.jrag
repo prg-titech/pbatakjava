@@ -317,6 +317,20 @@ aspect SuperClasses {
     return set;
   }
 
+  // this access is super interface's access
+  public SimpleSet<TypeDecl> Access.interfaceSet(Expr source) {
+    SimpleSet<TypeDecl> set = typeSet();
+    if (context() != source.context()) {
+      TypeDecl solution = getType(model());
+      for (TypeDecl t: set) {
+        if (solution == t) {
+          return this.<TypeDecl>emptySet().add(t);
+        }
+      }
+    }
+    return set;
+  }
+
 }
 
 aspect TypeMap {
@@ -421,6 +435,8 @@ aspect TypeWideningAndIdentity {
 
   eq VersionClassDecl.versionInstanceOf(TypeDecl destType, Expr source) = destType.isSupertypeOfVersionClassDecl(this, source);
 
+  eq VersionInterfaceDecl.versionInstanceOf(TypeDecl destType, Expr source) = destType.isSupertypeOfVersionInterfaceDecl(this, source);
+
   syn Optional<Formula> TypeDecl.isSupertypeOfVersionClassDecl(VersionClassDecl sourceType, Expr source) {
     if (sourceType == this || sourceType.assignConversionTo(this, source)) {
       return Optional.of(new Formula());
@@ -446,6 +462,66 @@ aspect TypeWideningAndIdentity {
         s = s.multiply(parentConstraint.get());
         f = f.add(s);
         applicable = true;
+      }
+    }
+
+    return applicable ? Optional.of(f) : Optional.empty();
+  }
+
+  eq VersionInterfaceDecl.isSupertypeOfVersionClassDecl(VersionClassDecl sourceType, Expr source) {
+    Optional<Formula> superCheck = super.isSupertypeOfVersionClassDecl(sourceType, source);
+    if (superCheck.isPresent()) {
+      return superCheck;
+    }
+
+    boolean applicable = false;
+    Formula f = new Formula();
+
+    for (Access acc: sourceType.getImplementsList()) {
+      for (TypeDecl sourceParent: acc.interfaceSet(source)) {
+        Formula s = new Formula();
+        Optional<Formula> parentConstraint = sourceParent.versionInstanceOf(this, source);
+        if (parentConstraint.isPresent()) {
+          if (source.context() == sourceParent.context()) {
+            s = s.multiply(acc.clause(sourceParent));
+          }
+          s = s.multiply(parentConstraint.get());
+          f = f.add(s);
+          applicable = true;
+        }
+      }
+    }
+
+    return applicable ? Optional.of(f) : Optional.empty();
+  }
+
+  syn Optional<Formula> TypeDecl.isSupertypeOfVersionInterfaceDecl(VersionInterfaceDecl sourceType, Expr source) 
+    = sourceType == this ? Optional.of(new Formula()) : Optional.empty();
+    
+  eq ClassDecl.isSupertypeOfVersionInterfaceDecl(VersionInterfaceDecl sourceType, Expr source)
+    = isObject() ? Optional.of(new Formula()) : Optional.empty();
+
+  eq VersionInterfaceDecl.isSupertypeOfVersionInterfaceDecl(VersionInterfaceDecl sourceType, Expr source) {
+    Optional<Formula> superCheck = super.isSupertypeOfVersionInterfaceDecl(sourceType, source);
+    if (superCheck.isPresent()) {
+      return superCheck;
+    }
+
+    boolean applicable = false;
+    Formula f = new Formula();
+
+    for (Access acc: sourceType.getSuperInterfaceList()) {
+      for (TypeDecl sourceParent: acc.interfaceSet(source)) {
+        Formula s = new Formula();
+        Optional<Formula> parentConstraint = sourceParent.versionInstanceOf(this, source);
+        if (parentConstraint.isPresent()) {
+          if (source.context() == sourceParent.context()) {
+            s = s.multiply(acc.clause(sourceParent));
+          }
+          s = s.multiply(parentConstraint.get());
+          f = f.add(s);
+          applicable = true;
+        }
       }
     }
 

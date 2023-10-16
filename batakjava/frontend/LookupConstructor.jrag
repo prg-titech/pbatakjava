@@ -1,12 +1,36 @@
 aspect ConstructScope {
 
-  // TODO: turn this into optional too
   syn Optional<Formula> ClassInstanceExpr.verApplicableAndAccessible(ConstructorDecl decl) {
     Formula f = new Formula();
     if ((getNumArg() == decl.getNumParameter()) && decl.accessibleFrom(hostType()) &&
         (!decl.isProtected() || decl.hostPackage().equals(hostPackage()))) {
       for (int i = 0; i < getNumArg(); i++) {
         Optional<Formula> fArg = getArg(i).subtype(decl.getParameter(i).getTypeAccess());
+        if (fArg.isPresent()) {
+          f = f.multiply(fArg.get());
+        } else {
+          return Optional.empty();
+        }
+      }
+    }
+    return Optional.of(f);
+  }
+
+  syn Optional<Formula> ClassInstanceExpr.newVerApplicableAndAccessible(ConstructorDecl decl,
+      Map<String,VersionArgument> verMap) {
+    Formula f = new Formula();
+    if ((getNumArg() == decl.getNumParameter()) && decl.accessibleFrom(hostType()) &&
+        (!decl.isProtected() || decl.hostPackage().equals(hostPackage()))) {
+      for (int i = 0; i < getNumArg(); i++) {
+        Optional<Formula> fArg;
+        SimpleSet<TypeDecl> set = decl.getParameter(i).getTypeAccess().map(verMap);
+
+        if (set.isSingleton()) {
+          fArg = getArg(i).subtype(decl.getParameter(i).getTypeAccess(), set.singletonValue());
+        } else {
+          fArg = getArg(i).subtype(decl.getParameter(i).getTypeAccess());
+        }
+
         if (fArg.isPresent()) {
           f = f.multiply(fArg.get());
         } else {

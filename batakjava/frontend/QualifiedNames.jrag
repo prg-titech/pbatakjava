@@ -4,4 +4,6 @@ aspect TypeName {
 
   eq VersionClassDecl.verFullName() = fullName() + " v." + getVersion().getID();
 
+  eq VersionInterfaceDecl.verFullName() = fullName() + " v." + getVersion().getID();
+
 }

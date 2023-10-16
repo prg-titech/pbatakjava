@@ -114,7 +114,7 @@ aspect ConstraintSolving {
     models = new ArrayList();
     getAllSolutions(s, i);
     if (models.size() == 0) {
-      // printTypeMap();
+      printTypeMap();
       for (TypeDecl t: getComponent(i)) {
         System.err.println(t.errorf("no solution found in this component"));
       }

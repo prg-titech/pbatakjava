@@ -50,6 +50,18 @@ aspect VersionChecking {
     return err;
   }
 
+  Declarator contributes each check() to TypeDecl.check();
+
+  syn Collection<Problem> Declarator.check() {
+    Collection<Problem> err = new LinkedList();
+
+    if (hasInit() && !getInit().subtype(declarationType()).isPresent()) {
+      err.add(errorf("no applicable assignment for %s", prettyPrint()));
+    }
+
+    return err;
+  }
+
   MethodAccess contributes each check() to TypeDecl.check();
 
   syn Collection<Problem> MethodAccess.check() {
