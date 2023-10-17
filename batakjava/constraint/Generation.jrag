@@ -120,6 +120,15 @@ aspect ConstraintGeneration {
     return f;
   }
 
+  eq SuperAccess.constraint() {
+    Formula f = new Formula();
+
+    for (TypeDecl type: typeSet()) {
+      f = f.add(clause(type));
+    }
+
+    return f;
+  }
 
   eq TypeAccess.constraint() {
     Formula f = new Formula();

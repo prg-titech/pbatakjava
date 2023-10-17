@@ -23,7 +23,6 @@ aspect Generation {
             TypeDecl newInterface = is.iterator().next();
             TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
-              //System.err.println(newMethod.prettyPrint());
               oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
@@ -758,9 +757,15 @@ aspect Generation {
       ps = ps.add(p.treeCopy());
     }
 
-    List<Stmt> stmtList = type().isVoid()
-      ? new List().add(new ReturnStmt())
-      : new List().add(new ReturnStmt(new NullLiteral("null")));
+    Stmt returnStmt;
+
+    if (type().isVoid()) {
+      returnStmt = new ReturnStmt();
+    } else if (type().isIntegralType()) {
+      returnStmt = new ReturnStmt(new IntegerLiteral("0"));
+    } else {
+      returnStmt = new ReturnStmt(new NullLiteral("null"));
+    }
 
     return new MethodDecl(
       getModifiers(),
@@ -768,6 +773,6 @@ aspect Generation {
       getID(),
       ps,
       new List(),
-      new Opt(new Block(stmtList)));
+      new Opt(new Block(new List().add(returnStmt))));
   }
 }

@@ -110,6 +110,19 @@ aspect TypeSet {
     return typeSet;
   }
 
+  eq SuperAccess.typeSet() {
+    SimpleSet<TypeDecl> typeSet = emptySet();
+    TypeDecl type = decl();
+    if (!type.isClassDecl()) {
+      return typeSet;
+    }
+    ClassDecl classDecl = (ClassDecl) type;
+    for (TypeDecl superType: classDecl.superclassSet()) {
+      typeSet = typeSet.add(superType);
+    }
+    return typeSet;
+  }
+
   syn lazy SimpleSet<TypeDecl> Variable.typeSet();
 
   eq ParameterDeclaration.typeSet() = getTypeAccess().typeSet();
