@@ -103,7 +103,7 @@ aspect ConstraintSolving {
 
     // Gather initial constraints
     for (TypeDecl t: getComponent(i)) {
-      System.err.println(t.prettyPrint());
+      //System.err.println(t.prettyPrint());
       for (Formula f: t.constraint()) {
         // System.err.println(f);
         s.add(f.convert(ctx));

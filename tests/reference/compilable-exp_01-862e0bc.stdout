@@ -1,0 +1,121 @@
+
+public interface Exp {
+  public void print();
+}
+
+public interface Exp_Factory {
+}
+
+interface Exp_v1 extends Exp {
+  public void print();
+}
+
+public class Exp_v1_Factory implements Exp_Factory {
+}
+
+interface Exp_v2 extends Exp {
+  public void print();
+}
+
+public class Exp_v2_Factory implements Exp_Factory {
+}
+
+public interface Add {
+  public void print();
+}
+
+public interface Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r);
+}
+
+public class Add_v1 implements Add, Exp_v1 {
+  public Exp_Factory V;
+
+  public Exp_Factory W;
+
+  public Exp left;
+
+  public Exp right;
+
+  public Add_v1(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    this.V = V;
+    this.W = W;
+    this.left = l;
+    this.right = r;
+  }
+
+  public void print() {
+    this.left.print();
+    System.out.print("+");
+    this.right.print();
+  }
+}
+
+public class Add_v1_Factory implements Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    return new Add_v1(V, W, l, r);
+  }
+}
+
+public interface Lit {
+  public void print();
+}
+
+public interface Lit_Factory {
+  public Lit make(int v);
+}
+
+public class Lit_v1 implements Lit, Exp_v1 {
+  public int value;
+
+  public Lit_v1(int v) {
+    this.value = v;
+  }
+
+  public void print() {
+    System.out.print(this.value);
+  }
+}
+
+public class Lit_v1_Factory implements Lit_Factory {
+  public Lit make(int v) {
+    return new Lit_v1(v);
+  }
+}
+
+public interface Neg {
+  public void print();
+}
+
+public interface Neg_Factory {
+  public Neg make(Exp exp);
+}
+
+public class Neg_v2 implements Neg, Exp_v2 {
+  public Exp exp;
+
+  public Neg_v2(Exp exp) {
+    this.exp = exp;
+  }
+
+  public void print() {
+    System.out.print("-");
+    this.exp.print();
+  }
+}
+
+public class Neg_v2_Factory implements Neg_Factory {
+  public Neg make(Exp exp) {
+    return new Neg_v2(exp);
+  }
+}
+
+public class Test {
+  public static void main(String[] args) {
+    Exp exp_1 = new Add_v1(new Exp_v1_Factory(), new Exp_v1_Factory(), new Lit_v1(1), new Lit_v1(2));
+    Exp exp_2 = new Add_v1(new Exp_v1_Factory(), new Exp_v2_Factory(), new Lit_v1(1), new Neg_v2(new Lit_v1(1)));
+    exp_1.print();
+    System.out.println();
+    exp_2.print();
+  }
+}
