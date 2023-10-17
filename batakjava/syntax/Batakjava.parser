@@ -6,6 +6,11 @@ ClassDecl class_declaration =
       {: return new GenericVersionClassDecl(new Modifiers(m), IDENTIFIER, s, i, b, v, p); :}
   ;
 
+InterfaceDecl interface_declaration =
+    modifiers.m? INTERFACE IDENTIFIER VER version_number.v extends_interfaces.i? interface_body.b
+      {: return new VersionInterfaceDecl(new Modifiers(m), IDENTIFIER, i, b, v); :}
+  ;
+
 MethodDecl method_header =
     modifiers.m? LGUI version_variables.l RGUI type.t IDENTIFIER LPAREN formal_parameter_list.p? RPAREN dims.d? throws.tl?
     {: return new GenericVersionMethodDecl(new Modifiers(m), t.addArrayDims(d), IDENTIFIER, p, tl, new Opt(), l); :}

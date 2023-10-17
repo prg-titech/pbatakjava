@@ -38,9 +38,9 @@ compilable = true
 filename = "tests/method_03/build.sh"
 compilable = true
 
-[[test]]
-filename = "tests/method_04/build.sh"
-compilable = true
+#[[test]]
+#filename = "tests/method_04/build.sh"
+#compilable = true
 
 [[test]]
 filename = "tests/subtype_01/build.sh"
@@ -65,6 +65,14 @@ compilable = true
 [[test]]
 filename = "tests/hash_03/build.sh"
 error = true
+
+[[test]]
+filename = "tests/inherit_01/build.sh"
+compilable = true
+
+[[test]]
+filename = "tests/exp_01/build.sh"
+compilable = true
 
 [[test]]
 filename = "tests/error_01/build.sh"

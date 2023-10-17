@@ -1,3 +1,0 @@
-tests/hash_01/2/HashValue.java:0: error: return value must be an instance of boolean which null is not
-tests/hash_01/1/HashValue.java:0: error: return value must be an instance of boolean which null is not
-tests/hash_01/Test.java:0: error: can not assign variable digest of type HashValue_v1 a value of type HashValue

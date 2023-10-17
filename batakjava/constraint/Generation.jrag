@@ -83,6 +83,7 @@ aspect ConstraintGeneration {
 
   eq ThisAccess.constraint() = new Formula(new Clause(new TypeLit(solverConst, type().typeNum())));
 
+  /*
   eq SuperConstructorAccess.constraint() {
     Formula f = new Formula();
     for (TypeDecl type: hostType().superclassSet()) {
@@ -90,8 +91,54 @@ aspect ConstraintGeneration {
     }
     return f;
   }
+  */
+
+  eq SuperConstructorAccess.constraint() {
+    Formula f = new Formula();
+    TypeDecl host = hostType();
+    boolean hasSuperAccess 
+      = (host instanceof ClassDecl) && (((ClassDecl) host).hasSuperClass());
+    if (hasSuperAccess) {
+      Access superAccess = ((ClassDecl) host).getSuperClass();
+      for (TypeDecl superType: superAccess.typeSet()) {
+        for (ConstructorDecl decl: superType.constructors()) {
+          Optional<Formula> optS = verApplicableAndAccessible(decl);
+
+          if (!optS.isPresent()) {
+            continue;
+          }
+
+          Formula s = optS.get();
+          s = s.multiply(clause(typeVoid()));
+          s = s.multiply(superAccess.clause(superType));
+          f = f.add(s);
+        }
+      }
+    }
+    //System.err.println(prettyPrint());
+    //System.err.println(f);
+    return f;
+  }
+
+  eq SuperAccess.constraint() {
+    Formula f = new Formula();
+
+    for (TypeDecl type: typeSet()) {
+      f = f.add(clause(type));
+    }
+
+    return f;
+  }
 
   eq TypeAccess.constraint() {
+    Formula f = new Formula();
+    for (TypeDecl type: typeSet()) {
+      f = f.add(clause(type));
+    }
+    return f;
+  }
+
+  eq VersionTypeAccess.constraint() {
     Formula f = new Formula();
     for (TypeDecl type: typeSet()) {
       f = f.add(clause(type));
@@ -160,16 +207,12 @@ aspect ConstraintGeneration {
           *  TODO: constraint on the method declaration's return type
           *        that depends on the existence of version arguments
           */
-
           // constraint on the method invocation itself
           Lit lReturn = new TypeLit(solverConst, returnType.typeNum());
           f = f.add(s.multiply(new Clause(lReturn)));
         }
       }
     }
-    // System.err.println(qualifier().solverConst);
-    // System.err.println(prettyPrint());
-    // System.err.println(f);
     return f;
   }
 
@@ -183,7 +226,7 @@ aspect ConstraintGeneration {
     for (TypeDecl type: typeSet()) {
       Map<String,VersionArgument> verMap = getAccess().verMap(type);
       for (ConstructorDecl constructor: type.constructors()) {
-        Optional<Formula> optS = verApplicableAndAccessible(constructor);
+        Optional<Formula> optS = verApplicableAndAccessible(constructor, verMap);
 
         if (!optS.isPresent()) {
           continue;
@@ -191,24 +234,12 @@ aspect ConstraintGeneration {
 
         Formula s = optS.get();
 
-        for (int i = 0; i < getNumArg(); i++) {
-          // TODO: handle version var argument
-          SimpleSet<TypeDecl> set
-            = constructor.getParameter(i).getTypeAccess().map(verMap);
-          if (set.isSingleton()) {
-            Lit lArg = new TypeLit(getArg(i).solverConst, set.singletonValue().typeNum());
-            s = s.multiply(new Clause(lArg));
-          }
-        }
-
         Lit lAccess = new TypeLit(getAccess().solverConst, type.typeNum());
         s = s.multiply(new Clause(lAccess));
 
         f = f.add(s);
       }
     }
-    // System.err.println(prettyPrint());
-    // System.err.println(f);
     return f;
   }
 
@@ -224,7 +255,6 @@ aspect ConstraintGeneration {
     return f;
   }
 
-  // TODO: field access
   eq VarAccess.constraint() {
     Formula f = new Formula();
     Map<TypeDecl,SimpleSet<Variable>> map = verLookupVariable(name());
@@ -253,8 +283,6 @@ aspect ConstraintGeneration {
       return new Formula();
     }
     Optional<Formula> f = getInit().subtype(declarationType());
-    // System.err.println(prettyPrint());
-    // System.err.println(f);
     return f.isPresent() ? f.get() : new Formula();
   }
 
@@ -339,6 +367,31 @@ aspect ConstraintGeneration {
   public Optional<Formula> RelationalExpr.subtype(Expr dest) {
     return type().isBoolean() && dest.type().isBoolean() 
       ? Optional.of(new Formula()) : Optional.empty();
+  }
+
+  public Optional<Formula> Expr.subtype(Expr dest, TypeDecl argType) {
+    Formula f = new Formula();
+    boolean applicable = false;
+
+    for (TypeDecl sourceType: typeSet()) {
+      for (TypeDecl destType: dest.typeSet()) {
+        if (destType == argType) {
+          Formula s = new Formula();
+          Optional<Formula> check = sourceType.versionInstanceOf(destType, this);
+          if (check.isPresent()) {
+            s = s.multiply(check.get());
+            s = s.multiply(clause(sourceType));
+            if (destType.isVersioned() && context() == dest.context()) {
+              s = s.multiply(dest.clause(destType));
+            }
+            f = f.add(s);
+            applicable = true;
+          }
+        }
+      }
+    }
+
+    return applicable ? Optional.of(f) : Optional.empty();
   }
 
 }

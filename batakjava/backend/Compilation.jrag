@@ -21,15 +21,13 @@ aspect Generation {
 
           if (names.contains(name)) {
             TypeDecl newInterface = is.iterator().next();
-            TypeDecl newFactory = ifs.iterator().next();
-
             TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
-            TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
-
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
-              //System.err.println(newMethod.prettyPrint());
               oldInterface.addBodyDecl(newMethod.treeCopy());
             }
+
+            TypeDecl newFactory = ifs.iterator().next();
+            TypeDecl oldFactory = generated.findInterface(newInterface.packageName(), newInterface.name() + "_Factory");
 
             for (BodyDecl newCons: newFactory.getBodyDeclList()) {
               oldFactory.addBodyDecl(newCons.treeCopy());
@@ -106,16 +104,18 @@ aspect Generation {
     TypeDecl t = findInterface(name);
     List<BodyDecl> withoutDuplicate = new List();
     java.util.Set<String> signatures = new HashSet();
-    for (BodyDecl b: t.getBodyDeclList()) {
-      if (b.isMethodOrConstructor()) {
-        String s = ((MethodDecl) b).signature();
-        if (!signatures.contains(s)) {
-          withoutDuplicate = withoutDuplicate.add(b);
-          signatures.add(s);
+    if (t != null) {
+      for (BodyDecl b: t.getBodyDeclList()) {
+        if (b.isMethodOrConstructor()) {
+          String s = ((MethodDecl) b).signature();
+          if (!signatures.contains(s)) {
+            withoutDuplicate = withoutDuplicate.add(b);
+            signatures.add(s);
+          }
         }
       }
+      t.setBodyDeclList(withoutDuplicate);
     }
-    t.setBodyDeclList(withoutDuplicate);
   }
 
   syn nta CompilationUnit CompilationUnit.compile(List<TypeDecl> typeList) {
@@ -142,9 +142,38 @@ aspect Generation {
       bodyList));
   }
 
+  eq VersionInterfaceDecl.compileInterface() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> bodyList = new List();
+    
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.addAll(body.compileInterface());
+    }
+
+    return new List().add(new InterfaceDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID(),
+      new List(),
+      bodyList));
+  }
+
   syn nta List<TypeDecl> TypeDecl.compileInterfaceFactory() = new List();
 
   eq VersionClassDecl.compileInterfaceFactory() {
+    List<BodyDecl> factoryBodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      factoryBodyList = factoryBodyList.addAll(body.compileInterfaceFactory());
+    }
+
+    return new List().add(new InterfaceDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID() + "_Factory",
+      new List(),
+      factoryBodyList));
+  }
+
+  eq VersionInterfaceDecl.compileInterfaceFactory() {
     List<BodyDecl> factoryBodyList = new List();
 
     for (BodyDecl body: getBodyDeclList()) {
@@ -206,11 +235,40 @@ aspect Generation {
     Opt<Access> superAccess = hasSuperClass() 
       ? new Opt(getSuperClass().compileInstanceAccess()) : new Opt();
 
+    List<Access> implementList = new List().add(new TypeAccess(packageName(), getID()));
+
+    for (Access implementAccess: getImplementsList()) {
+      implementList = implementList.add(implementAccess.compileInstanceAccess());
+    }
+
     types = types.add(new ClassDecl(
       getModifiers(),
       getID() + "_v" + version(), 
       superAccess,
-      new List().add(new TypeAccess(packageName(), getID())),
+      implementList,
+      bodyList));
+
+    return types;
+  }
+
+  eq VersionInterfaceDecl.compileClass() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> bodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.add(body.compile());
+    }
+
+    List<Access> extendList = new List().add(new TypeAccess(packageName(), getID()));
+
+    for (Access extendAccess: getSuperInterfaceList()) {
+      extendList = extendList.add(extendAccess.compileInstanceAccess());
+    }
+
+    types = types.add(new InterfaceDecl(
+      getModifiers(),
+      getID() + "_v" + version(),
+      extendList,
       bodyList));
 
     return types;
@@ -237,6 +295,24 @@ aspect Generation {
 
     return types;
   }  
+
+  eq VersionInterfaceDecl.compileClassFactory() {
+    List<TypeDecl> types = new List();
+    List<BodyDecl> factoryBodyList = new List();
+
+    for (BodyDecl body: getBodyDeclList()) {
+      factoryBodyList = factoryBodyList.addAll(body.compileFactory());
+    }
+
+    types = types.add(new ClassDecl(
+      new Modifiers(new List().add(new Modifier("public"))),
+      getID() + "_v" + version() + "_Factory",
+      new Opt(),
+      new List().add(new TypeAccess(packageName(), getID() + "_Factory")),
+      factoryBodyList));
+
+    return types;
+  }
 
   syn nta BodyDecl BodyDecl.compile() = treeCopy();
 
@@ -681,9 +757,15 @@ aspect Generation {
       ps = ps.add(p.treeCopy());
     }
 
-    List<Stmt> stmtList = type().isVoid()
-      ? new List().add(new ReturnStmt())
-      : new List().add(new ReturnStmt(new NullLiteral("null")));
+    Stmt returnStmt;
+
+    if (type().isVoid()) {
+      returnStmt = new ReturnStmt();
+    } else if (type().isIntegralType()) {
+      returnStmt = new ReturnStmt(new IntegerLiteral("0"));
+    } else {
+      returnStmt = new ReturnStmt(new NullLiteral("null"));
+    }
 
     return new MethodDecl(
       getModifiers(),
@@ -691,6 +773,6 @@ aspect Generation {
       getID(),
       ps,
       new List(),
-      new Opt(new Block(stmtList)));
+      new Opt(new Block(new List().add(returnStmt))));
   }
 }

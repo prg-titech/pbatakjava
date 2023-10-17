@@ -9,28 +9,6 @@ public interface HashValue_Factory {
   public HashValue make(int val);
 }
 
-public class HashValue_v2 implements HashValue {
-  private int val;
-
-  public HashValue_v2(int val) {
-    this.val = val;
-  }
-
-  public int getVal() {
-    return this.val;
-  }
-
-  public boolean equals(HashValue o) {
-    return this.getVal() == o.getVal();
-  }
-}
-
-public class HashValue_v2_Factory implements HashValue_Factory {
-  public HashValue make(int val) {
-    return new HashValue_v2(val);
-  }
-}
-
 public class HashValue_v1 implements HashValue {
   private int val;
 
@@ -50,6 +28,28 @@ public class HashValue_v1 implements HashValue {
 public class HashValue_v1_Factory implements HashValue_Factory {
   public HashValue make(int val) {
     return new HashValue_v1(val);
+  }
+}
+
+public class HashValue_v2 implements HashValue {
+  private int val;
+
+  public HashValue_v2(int val) {
+    this.val = val;
+  }
+
+  public int getVal() {
+    return this.val;
+  }
+
+  public boolean equals(HashValue o) {
+    return this.getVal() == o.getVal();
+  }
+}
+
+public class HashValue_v2_Factory implements HashValue_Factory {
+  public HashValue make(int val) {
+    return new HashValue_v2(val);
   }
 }
 

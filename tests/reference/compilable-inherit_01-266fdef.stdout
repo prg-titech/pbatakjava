@@ -1,0 +1,110 @@
+
+public interface Point {
+  public int getX();
+
+  public int getY();
+
+  public int getZ();
+}
+
+public interface Point_Factory {
+  public Point make(int x, int y);
+
+  public Point make(int x, int y, int z);
+}
+
+public class Point_v1 implements Point {
+  private int x;
+
+  private int y;
+
+  public Point_v1(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public int getX() {
+    return this.x;
+  }
+
+  public int getY() {
+    return this.y;
+  }
+
+  public int getZ() {
+    return 0;
+  }
+}
+
+public class Point_v1_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v1(x, y);
+  }
+
+  public Point make(int x, int y, int z) {
+    return null;
+  }
+}
+
+public class Point_v2 implements Point {
+  private int x;
+
+  private int y;
+
+  private int z;
+
+  public Point_v2(int x, int y, int z) {
+    this.x = x;
+    this.y = y;
+    this.z = z;
+  }
+
+  public int getX() {
+    return this.x;
+  }
+
+  public int getY() {
+    return this.y;
+  }
+
+  public int getZ() {
+    return this.z;
+  }
+}
+
+public class Point_v2_Factory implements Point_Factory {
+  public Point make(int x, int y, int z) {
+    return new Point_v2(x, y, z);
+  }
+
+  public Point make(int x, int y) {
+    return null;
+  }
+}
+
+public interface ColoredPoint {
+  public int getX();
+}
+
+public interface ColoredPoint_Factory {
+  public ColoredPoint make(int x, int y, Object c);
+}
+
+public class ColoredPoint_v1 extends Point_v1 implements ColoredPoint {
+  public Object c;
+
+  public ColoredPoint_v1(int x, int y, Object c) {
+    super(x, y);
+    this.c = c;
+  }
+
+  public int getX() {
+    return -super.getX();
+  }
+}
+
+public class ColoredPoint_v1_Factory implements ColoredPoint_Factory {
+  public ColoredPoint make(int x, int y, Object c) {
+    return new ColoredPoint_v1(x, y, c);
+  }
+}
