@@ -75,6 +75,18 @@ filename = "tests/exp_01/build.sh"
 compilable = true
 
 [[test]]
+filename = "tests/exp_02/build.sh"
+error = true
+
+[[test]]
+filename = "tests/exp_03/build.sh"
+compilable = true
+
+[[test]]
+filename = "tests/exp_04/build.sh"
+compilable = true
+
+[[test]]
 filename = "tests/error_01/build.sh"
 error = true
 

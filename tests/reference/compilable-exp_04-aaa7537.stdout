@@ -1,0 +1,457 @@
+
+public interface Env {
+  public void set(String var, Integer val);
+
+  public int get(String var);
+
+  public boolean has(String var);
+}
+
+public interface Env_Factory {
+  public Env make();
+}
+
+public class Env_v1 implements Env {
+  public java.util.Map<String, Integer> env;
+
+  public Env_v1() {
+    this.env = new java.util.HashMap<String, Integer>();
+  }
+
+  public void set(String var, Integer val) {
+    this.env.put(var, val);
+  }
+
+  public int get(String var) {
+    return this.env.get(var);
+  }
+
+  public boolean has(String var) {
+    return this.env.containsKey(var);
+  }
+}
+
+public class Env_v1_Factory implements Env_Factory {
+  public Env make() {
+    return new Env_v1();
+  }
+}
+
+public class Env_v2 implements Env {
+  public java.util.Map<String, Integer> env;
+
+  public Env_v2() {
+    this.env = new java.util.HashMap<String, Integer>();
+  }
+
+  public void set(String var, Integer val) {
+    this.env.put(var, val);
+  }
+
+  public int get(String var) {
+    return this.env.get(var);
+  }
+
+  public boolean has(String var) {
+    return this.env.containsKey(var);
+  }
+}
+
+public class Env_v2_Factory implements Env_Factory {
+  public Env make() {
+    return new Env_v2();
+  }
+}
+
+public interface Exp {
+  public Integer eval(Env env);
+}
+
+public interface Exp_Factory {
+}
+
+interface Exp_v1 extends Exp {
+  public Integer eval(Env env);
+}
+
+public class Exp_v1_Factory implements Exp_Factory {
+}
+
+interface Exp_v2 extends Exp {
+  public Integer eval(Env env);
+}
+
+public class Exp_v2_Factory implements Exp_Factory {
+}
+
+public interface Add {
+  public Integer eval(Env env);
+}
+
+public interface Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r);
+}
+
+public class Add_v1 implements Add, Exp_v1 {
+  public Exp_Factory V;
+
+  public Exp_Factory W;
+
+  public Exp left;
+
+  public Exp right;
+
+  public Add_v1(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    this.V = V;
+    this.W = W;
+    this.left = l;
+    this.right = r;
+  }
+
+  public Integer eval(Env env) {
+    return this.left.eval(env) + this.right.eval(env);
+  }
+}
+
+public class Add_v1_Factory implements Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    return new Add_v1(V, W, l, r);
+  }
+}
+
+public interface Stmt {
+  public void interp(Env env);
+}
+
+public interface Stmt_Factory {
+}
+
+public interface Stmt_v2 extends Stmt {
+  public void interp(Env env);
+}
+
+public class Stmt_v2_Factory implements Stmt_Factory {
+}
+
+public interface Var {
+  public String get();
+
+  public Integer eval(Env env);
+}
+
+public interface Var_Factory {
+  public Var make(String var);
+}
+
+public class Var_v2 implements Var, Exp_v2 {
+  public String var;
+
+  public Var_v2(String var) {
+    this.var = var;
+  }
+
+  public String get() {
+    return this.var;
+  }
+
+  public Integer eval(Env env) {
+    if (!env.has(this.var)) {
+      env.set(this.var, new Integer(0));
+    }
+    return env.get(this.var);
+  }
+}
+
+public class Var_v2_Factory implements Var_Factory {
+  public Var make(String var) {
+    return new Var_v2(var);
+  }
+}
+
+public interface Stmt_v1 extends Stmt {
+  public void interp(Env env);
+}
+
+public class Stmt_v1_Factory implements Stmt_Factory {
+}
+
+public class Var_v1 implements Var, Exp_v1 {
+  public String var;
+
+  public Var_v1(String var) {
+    this.var = var;
+  }
+
+  public String get() {
+    return this.var;
+  }
+
+  public Integer eval(Env env) {
+    if (!env.has(this.var)) {
+      env.set(this.var, new Integer(0));
+    }
+    return env.get(this.var);
+  }
+}
+
+public class Var_v1_Factory implements Var_Factory {
+  public Var make(String var) {
+    return new Var_v1(var);
+  }
+}
+
+public interface Assign {
+  public void interp(Env env);
+}
+
+public interface Assign_Factory {
+  public Assign make(Exp_Factory V, Var dest, Exp source);
+}
+
+public class Assign_v1 implements Assign, Stmt_v1 {
+  public Exp_Factory V;
+
+  public Var dest;
+
+  public Exp source;
+
+  public Assign_v1(Exp_Factory V, Var dest, Exp source) {
+    this.V = V;
+    this.dest = dest;
+    this.source = source;
+  }
+
+  public void interp(Env env) {
+    env.set(this.dest.get(), this.source.eval(env));
+  }
+}
+
+public class Assign_v1_Factory implements Assign_Factory {
+  public Assign make(Exp_Factory V, Var dest, Exp source) {
+    return new Assign_v1(V, dest, source);
+  }
+}
+
+public interface For {
+  public void interp(Env env);
+}
+
+public interface For_Factory {
+  public For make(Stmt_Factory V, Integer start, Integer end, Stmt body);
+}
+
+public class For_v1 implements For, Stmt_v1 {
+  public Stmt_Factory V;
+
+  public Integer start;
+
+  public Integer end;
+
+  public Stmt body;
+
+  public For_v1(Stmt_Factory V, Integer start, Integer end, Stmt body) {
+    this.V = V;
+    this.start = start;
+    this.end = end;
+    this.body = body;
+  }
+
+  public void interp(Env env) {
+    for (int i = this.start; i <= this.end; i++) {
+      this.body.interp(env);
+    }
+  }
+}
+
+public class For_v1_Factory implements For_Factory {
+  public For make(Stmt_Factory V, Integer start, Integer end, Stmt body) {
+    return new For_v1(V, start, end, body);
+  }
+}
+
+public interface Lit {
+  public Integer eval(Env env);
+}
+
+public interface Lit_Factory {
+  public Lit make(int v);
+}
+
+public class Lit_v1 implements Lit, Exp_v1 {
+  public Integer value;
+
+  public Lit_v1(int v) {
+    this.value = v;
+  }
+
+  public Integer eval(Env env) {
+    return this.value;
+  }
+}
+
+public class Lit_v1_Factory implements Lit_Factory {
+  public Lit make(int v) {
+    return new Lit_v1(v);
+  }
+}
+
+public class Add_v2 implements Add, Exp_v2 {
+  public Exp_Factory V;
+
+  public Exp_Factory W;
+
+  public Exp left;
+
+  public Exp right;
+
+  public Add_v2(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    this.V = V;
+    this.W = W;
+    this.left = l;
+    this.right = r;
+  }
+
+  public Integer eval(Env env) {
+    return this.left.eval(env) + this.right.eval(env);
+  }
+}
+
+public class Add_v2_Factory implements Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    return new Add_v2(V, W, l, r);
+  }
+}
+
+public class Assign_v2 implements Assign, Stmt_v2 {
+  public Exp_Factory V;
+
+  public Var dest;
+
+  public Exp source;
+
+  public Assign_v2(Exp_Factory V, Var dest, Exp source) {
+    this.V = V;
+    this.dest = dest;
+    this.source = source;
+  }
+
+  public void interp(Env env) {
+    env.set(this.dest.get(), this.source.eval(env));
+  }
+}
+
+public class Assign_v2_Factory implements Assign_Factory {
+  public Assign make(Exp_Factory V, Var dest, Exp source) {
+    return new Assign_v2(V, dest, source);
+  }
+}
+
+public class For_v2 implements For, Stmt_v2 {
+  public Stmt_Factory V;
+
+  public Integer start;
+
+  public Integer end;
+
+  public Stmt body;
+
+  public For_v2(Stmt_Factory V, Integer start, Integer end, Stmt body) {
+    this.V = V;
+    this.start = start;
+    this.end = end;
+    this.body = body;
+  }
+
+  public void interp(Env env) {
+    for (int i = this.start; i < this.end; i++) {
+      this.body.interp(env);
+    }
+  }
+}
+
+public class For_v2_Factory implements For_Factory {
+  public For make(Stmt_Factory V, Integer start, Integer end, Stmt body) {
+    return new For_v2(V, start, end, body);
+  }
+}
+
+public interface IfStmt {
+  public void interp(Env env);
+}
+
+public interface IfStmt_Factory {
+  public IfStmt make(Exp_Factory V, Stmt_Factory W, Stmt_Factory X, Exp ifCond, Stmt thenStmt, Stmt elseStmt);
+}
+
+public class IfStmt_v2 implements IfStmt, Stmt_v2 {
+  public Exp_Factory V;
+
+  public Stmt_Factory W;
+
+  public Stmt_Factory X;
+
+  public Exp ifCond;
+
+  public Stmt thenStmt;
+
+  public Stmt elseStmt;
+
+  public IfStmt_v2(Exp_Factory V, Stmt_Factory W, Stmt_Factory X, Exp ifCond, Stmt thenStmt, Stmt elseStmt) {
+    this.V = V;
+    this.W = W;
+    this.X = X;
+    this.ifCond = ifCond;
+    this.thenStmt = thenStmt;
+    this.elseStmt = elseStmt;
+  }
+
+  public void interp(Env env) {
+    if (this.ifCond.eval(env) == 1) {
+      this.thenStmt.interp(env);
+    } else {
+      this.elseStmt.interp(env);
+    }
+  }
+}
+
+public class IfStmt_v2_Factory implements IfStmt_Factory {
+  public IfStmt make(Exp_Factory V, Stmt_Factory W, Stmt_Factory X, Exp ifCond, Stmt thenStmt, Stmt elseStmt) {
+    return new IfStmt_v2(V, W, X, ifCond, thenStmt, elseStmt);
+  }
+}
+
+public class Lit_v2 implements Lit, Exp_v2 {
+  public Integer value;
+
+  public Lit_v2(int v) {
+    this.value = v;
+  }
+
+  public Integer eval(Env env) {
+    return this.value;
+  }
+}
+
+public class Lit_v2_Factory implements Lit_Factory {
+  public Lit make(int v) {
+    return new Lit_v2(v);
+  }
+}
+
+public class UnitTest {
+  public static void test() {
+    Stmt prog_1 = new For_v1(new Stmt_v1_Factory(), new Integer(1), new Integer(10), new Assign_v1(new Exp_v1_Factory(), new Var_v1("x"), new Add_v1(new Exp_v1_Factory(), new Exp_v1_Factory(), new Var_v1("x"), new Lit_v1(2))));
+    Env env_1 = new Env_v1();
+    prog_1.interp(env_1);
+    System.out.println(env_1.get("x"));
+    Stmt prog_2 = new IfStmt_v2(new Exp_v2_Factory(), new Stmt_v2_Factory(), new Stmt_v2_Factory(), new Var_v2("x"), new Assign_v2(new Exp_v2_Factory(), new Var_v1("x"), new Lit_v2(2)), new Assign_v2(new Exp_v2_Factory(), new Var_v1("x"), new Lit_v2(-2)));
+    Env env_2 = new Env_v1();
+    prog_2.interp(env_2);
+    System.out.println(env_2.get("x"));
+    Stmt prog_3 = new For_v2(new Stmt_v2_Factory(), new Integer(1), new Integer(10), new Assign_v2(new Exp_v1_Factory(), new Var_v1("x"), new Add_v1(new Exp_v2_Factory(), new Exp_v2_Factory(), new Var_v2("x"), new Lit_v2(2))));
+  }
+
+  public static void main(String[] args) {
+    new UnitTest().test();
+  }
+}

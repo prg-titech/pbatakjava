@@ -4,7 +4,7 @@
     "infile": "tests/exp_01/build.sh",
     "infile_hash": "51ca297a148fc610e9fcee1b21b3c1465f8781ba180e4366aeea3f4b",
     "stdout": "compilable-exp_01-862e0bc.stdout",
-    "stdout_hash": "b405cc1c4ca8dd0a8796dd32bde8c09fddae8e2df6590e2bf0f5b0a0",
+    "stdout_hash": "450767beacf405eb6458b207f03b6f4adbd857783b479a1b682dabe8",
     "stderr": null,
     "stderr_hash": null,
     "returncode": 0

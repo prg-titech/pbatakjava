@@ -1,0 +1,11 @@
+{
+    "basename": "error-exp_02-d18edf5",
+    "cmd": "{infile}",
+    "infile": "tests/exp_02/build.sh",
+    "infile_hash": "85609461259209558f27232255a25ee5e4cabc8a255d26faba843152",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "error-exp_02-d18edf5.stderr",
+    "stderr_hash": "79ce921daf6ccf721e9a11571b333cb160cbebd317bd5f124cb97445",
+    "returncode": 4
+}

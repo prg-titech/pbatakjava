@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-exp_04-aaa7537",
+    "cmd": "{infile}",
+    "infile": "tests/exp_04/build.sh",
+    "infile_hash": "e8a7d8cc6aeac13b3ab5724c2f23a2607093420be52f1a55f4478502",
+    "stdout": "compilable-exp_04-aaa7537.stdout",
+    "stdout_hash": "9b3930166a734e8f9a34c5b74718d5e5f658e9d2933517043339107b",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}
