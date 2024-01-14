@@ -233,6 +233,10 @@ aspect Generation {
       bodyList = bodyList.add(body.compile());
     }
 
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.addAll(body.compileGetterAndSetter());
+    }
+
     Opt<Access> superAccess = hasSuperClass() 
       ? new Opt(getSuperClass().compileInstanceAccess()) : new Opt();
 
@@ -426,17 +430,92 @@ aspect Generation {
   }
 
   eq FieldDecl.compile() {
+    List<BodyDecl> result = new List();
+
     List<FieldDeclarator> decls = new List();
     for (FieldDeclarator decl: getDeclaratorList()) {
       decls = decls.add(decl.compileDeclarator());
     }
+
     return new FieldDecl(
       getModifiers(),
       getTypeAccess().compileAccess(),
       decls);
   }
 
+  syn nta List<BodyDecl> BodyDecl.compileGetterAndSetter() = new List();
+
+  eq FieldDecl.compileGetterAndSetter() {
+    List<BodyDecl> result = new List();
+
+    if (getModifiers().isPublic() && hostType().isVersioned()) {
+      for (FieldDeclarator decl: getDeclaratorList()) {
+        List<Stmt> getStmt = new List();
+        getStmt = getStmt.add(new ReturnStmt(new Dot(new ThisAccess(), new VarAccess(decl.getID()))));
+        BodyDecl newGetter = new MethodDecl(
+          getModifiers(),
+          getTypeAccess().compileAccess(),
+          "get__" + decl.getID(),
+          new List(),
+          new List(),
+          new Opt(new Block(getStmt)));
+        result = result.add(newGetter);
+
+        ParameterDeclaration param = new ParameterDeclaration(
+          new Modifiers(),
+          getTypeAccess().compileAccess(),
+          "toAssign");
+        List<Stmt> setStmt = new List();
+        setStmt = setStmt.add(new ExprStmt(new AssignSimpleExpr(
+          new Dot(new ThisAccess(), new VarAccess(decl.getID())),
+          new VarAccess("toAssign"))));
+        BodyDecl newSetter = new MethodDecl(
+          getModifiers(),
+          new PrimitiveTypeAccess("@primitive", "void"),
+          "set__" + decl.getID(),
+          new List().add(param),
+          new List(),
+          new Opt(new Block(setStmt)));
+        result = result.add(newSetter);
+      }
+    }
+
+    return result;
+  }
+
   syn nta List<BodyDecl> BodyDecl.compileInterface() = new List();
+
+  eq FieldDecl.compileInterface() {
+    List<BodyDecl> result = new List();
+
+    if (getModifiers().isPublic() && hostType().isVersioned()) {
+      for (FieldDeclarator d: getDeclaratorList()) {
+        MethodDecl newGetter = new MethodDecl(
+          getModifiers(),
+          getTypeAccess().compileAccess(),
+          "get__" + d.getID(),
+          new List(),
+          new List(),
+          new Opt());
+        result = result.add(newGetter);
+
+        ParameterDeclaration param = new ParameterDeclaration(
+          new Modifiers(),
+          getTypeAccess().compileAccess(),
+          "toAssign");
+        BodyDecl newSetter = new MethodDecl(
+          getModifiers(),
+          new PrimitiveTypeAccess("@primitive", "void"),
+          "set__" + d.getID(),
+          new List().add(param),
+          new List(),
+          new Opt());
+        result = result.add(newSetter);
+      }
+    }
+
+    return result;
+  }
 
   eq MethodDecl.compileInterface() {
     if (getID().equals("main")) {
@@ -576,6 +655,14 @@ aspect Generation {
     return new MethodAccess(name, argList);
   }
 
+  eq VarAccess.compileAccess() {
+    if (isQualified() && !(qualifier() instanceof ThisAccess)
+        && qualifier().type().isVersioned()) {
+      return new MethodAccess("get__" + getID(), new List());
+    }
+    return treeCopy();
+  }
+
   eq SuperConstructorAccess.compileAccess() {
     List<Expr> varList = new List();
     for (Expr expr: getArgList()) {
@@ -706,9 +793,23 @@ aspect Generation {
     return new ClassInstanceExpr(access, argList); 
   }
 
-  eq AssignSimpleExpr.compileExpr()
-    =  new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
+  //eq AssignSimpleExpr.compileExpr()
+  //  = new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
 
+  eq AssignSimpleExpr.compileExpr() {
+    if (getDest() instanceof Dot) {
+      Dot dest = (Dot) getDest();
+      if (!(dest.getLeft() instanceof ThisAccess)
+          && dest.getLeft().type().isVersioned()
+          && dest.getRight() instanceof VarAccess) {
+        VarAccess var = (VarAccess) dest.getRight();
+        return new Dot(dest.getLeft(),
+          new MethodAccess("set__" + var.getID(), new List().add(getSource().compileExpr())));
+      }
+    }
+    return new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
+  }
+  
   syn String TypeDecl.compileName() = name();
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();
