@@ -1,0 +1,57 @@
+aspect Overlap {
+
+  public boolean MethodDecl.needsReplacing = false;
+
+  public MethodDecl MethodDecl.interfaceMethod = null;
+  public MethodDecl MethodDecl.sourceMethod = null;
+
+  public void TypeDecl.addNewMethod(BodyDecl body) {
+    return;
+  }
+
+  public void InterfaceDecl.addNewMethod(BodyDecl body) {
+    body.addTo(this);
+  }
+
+  public void BodyDecl.addTo(InterfaceDecl i) {
+    return;
+  }
+
+  public void MethodDecl.addTo(InterfaceDecl i) {
+    Collection<MethodDecl> members = i.memberMethods(name());
+    String signature = signature();
+    boolean hasOverlappingMethod = false;
+
+    Iterator<MethodDecl> membersIterator = members.iterator();
+    while (membersIterator.hasNext() && !hasOverlappingMethod) {
+      MethodDecl member_i = membersIterator.next();
+      if (member_i.signature().equals(signature)
+          && !member_i.type().fullName().equals(type().fullName())) {
+            hasOverlappingMethod = true;
+      }
+    }
+
+    MethodDecl newMethod = treeCopy();
+
+    if (hasOverlappingMethod) {
+      String newName = name() + "__" + type().name();
+      List<ParameterDeclaration> ps = new List();
+      for (ParameterDeclaration p: getParameterList()) {
+        ps = ps.add(p.treeCopy());
+      }
+      newMethod = new MethodDecl(
+        getModifiers(),
+        getTypeAccess().compileAccess(),
+        newName,
+        ps,
+        new List(),
+        new Opt());
+      newMethod.needsReplacing = true;
+    }
+
+    MethodDecl sourceMethod = this.sourceMethod;
+    sourceMethod.interfaceMethod = newMethod;
+    i.addBodyDecl(newMethod);
+  }
+
+}

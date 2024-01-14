@@ -1,0 +1,80 @@
+
+public interface Point {
+  public int getX();
+
+  public int getX(int z);
+
+  public float getX__float();
+
+  public float useGetX();
+}
+
+public interface Point_Factory {
+  public Point make(int x, int y);
+}
+
+public class Point_v1 implements Point {
+  public int x;
+
+  public int y;
+
+  public Point_v1(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public int getX() {
+    return this.x;
+  }
+
+  public int getX(int z) {
+    return 0;
+  }
+
+  public float getX__float() {
+    return 0;
+  }
+
+  public float useGetX() {
+    return 0;
+  }
+}
+
+public class Point_v1_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v1(x, y);
+  }
+}
+
+public class Point_v2 implements Point {
+  public float x;
+
+  public float y;
+
+  public Point_v2(int x, int y) {
+    this.x = x;
+    this.y = y;
+  }
+
+  public int getX(int z) {
+    return z;
+  }
+
+  public float getX__float() {
+    return this.x;
+  }
+
+  public float useGetX() {
+    return this.getX__float();
+  }
+
+  public int getX() {
+    return 0;
+  }
+}
+
+public class Point_v2_Factory implements Point_Factory {
+  public Point make(int x, int y) {
+    return new Point_v2(x, y);
+  }
+}

@@ -38,9 +38,17 @@ compilable = true
 filename = "tests/method_03/build.sh"
 compilable = true
 
-#[[test]]
-#filename = "tests/method_04/build.sh"
-#compilable = true
+[[test]]
+filename = "tests/method_04/build.sh"
+compilable = true
+
+[[test]]
+filename = "tests/method_05/build.sh"
+compilable = true
+
+[[test]]
+filename = "tests/method_06/build.sh"
+compilable = true
 
 [[test]]
 filename = "tests/subtype_01/build.sh"

@@ -1,9 +1,9 @@
 aspect Generation {
 
-  public java.util.List<String> Program.generatedNames = new ArrayList();
+  public Program Program.generated;
 
   public Program Program.compile() {
-    Program generated = new Program();
+    generated = new Program();
     generated.state().reset();
 
     java.util.Set<String> names = new HashSet();
@@ -23,7 +23,8 @@ aspect Generation {
             TypeDecl newInterface = is.iterator().next();
             TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
-              oldInterface.addBodyDecl(newMethod.treeCopy());
+              oldInterface.addNewMethod(newMethod);
+              //oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
             TypeDecl newFactory = ifs.iterator().next();
@@ -371,16 +372,26 @@ aspect Generation {
 
   eq MethodDecl.compile() {
     List<ParameterDeclaration> params = new List();
-    for (ParameterDeclaration param: getParameterList()) {
+    for (int i = 0; i < getNumParameter(); i++) {
+      ParameterDeclaration param = getParameter(i);
       ParameterDeclaration newParam = new ParameterDeclaration(
         param.getModifiers(), param.getTypeAccess().compileAccess(), param.getID());
       params = params.add(newParam);
     }
 
+    String name = getID();
+
+    if (this.interfaceMethod != null) {
+      MethodDecl interfaceMethod = this.interfaceMethod;
+      if (interfaceMethod.needsReplacing) {
+        name = interfaceMethod.name();
+      }
+    } 
+
     return new MethodDecl(
       getModifiers(),
       getTypeAccess().compileAccess(),
-      getID(),
+      name,
       params,
       new List(),
       hasBlock() ? new Opt(getBlock().compileBlock()) : new Opt());
@@ -440,13 +451,17 @@ aspect Generation {
       ps = ps.add(np);
     }
 
-    return new List().add(new MethodDecl(
+    MethodDecl newMethod = new MethodDecl(
       getModifiers(),
       getTypeAccess().compileAccess(),
       getID(),
       ps,
       new List(),
-      new Opt()));
+      new Opt());
+
+    newMethod.sourceMethod = this;
+
+    return new List().add(newMethod);
   }
 
   eq GenericVersionMethodDecl.compileInterface() {
@@ -467,13 +482,17 @@ aspect Generation {
       ps = ps.add(np);
     }
 
-    return new List().add(new MethodDecl(
+    MethodDecl newMethod = new MethodDecl(
       getModifiers(),
       getTypeAccess().compileAccess(),
       getID(),
       ps,
       new List(),
-      new Opt()));
+      new Opt());
+
+    newMethod.sourceMethod = this;
+  
+    return new List().add(newMethod);
   }
 
   syn nta ParameterDeclaration ParameterDeclaration.compileParameter()
@@ -498,7 +517,7 @@ aspect Generation {
     }
 
     List<Expr> argList = new List();
-
+    
     if (methods.size() == 1) {
       MethodDecl m = methods.iterator().next();
       int i = 0;
@@ -524,6 +543,38 @@ aspect Generation {
     }
 
     return new MethodAccess(getID(), argList);
+  }
+
+  eq MethodAccess.compileAccess() {
+    TypeDecl qualifierType = isQualified() ? qualifier().compileType() : hostType();
+    Map<TypeDecl,Collection<MethodDecl>> methodMap = verLookupMethod(name());
+    Collection<MethodDecl> methods = new ArrayList();
+    for (TypeDecl keyType: methodMap.keySet()) {
+      if (keyType == qualifierType) {
+        methods = methodMap.get(keyType);
+      }
+    }
+
+    String name = getID();
+    for (MethodDecl method: methods) {
+      // TODO: define applicable post constraint generation
+      // NOTE: for the time being just reuse the one from constraint generation
+      if (verApplicableAndAccessible(method, qualifierType).isPresent()) {
+        if (method.interfaceMethod != null) {
+          MethodDecl interfaceMethod = method.interfaceMethod;
+          if (interfaceMethod.needsReplacing) {
+            name = interfaceMethod.name();
+          }
+        }
+        break;
+      }
+    }
+
+    List<Expr> argList = new List();
+    for (Expr expr: getArgList()) {
+      argList = argList.add(expr.compileExpr());
+    }
+    return new MethodAccess(name, argList);
   }
 
   eq SuperConstructorAccess.compileAccess() {
@@ -761,8 +812,12 @@ aspect Generation {
 
     if (type().isVoid()) {
       returnStmt = new ReturnStmt();
-    } else if (type().isIntegralType()) {
+    } else if (type().isNumericType()) {
       returnStmt = new ReturnStmt(new IntegerLiteral("0"));
+    } else if (type().isBoolean()) {
+      returnStmt = new ReturnStmt(new BooleanLiteral("false"));
+    } else if (type().isChar()) {
+      returnStmt = new ReturnStmt(new CharacterLiteral(""));
     } else {
       returnStmt = new ReturnStmt(new NullLiteral("null"));
     }
