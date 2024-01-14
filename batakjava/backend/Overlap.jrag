@@ -20,19 +20,20 @@ aspect Overlap {
   public void MethodDecl.addTo(InterfaceDecl i) {
     Collection<MethodDecl> members = i.memberMethods(name());
     String signature = signature();
-    boolean hasMethod = false;
+    boolean hasOverlappingMethod = false;
 
     Iterator<MethodDecl> membersIterator = members.iterator();
-    while (membersIterator.hasNext() && !hasMethod) {
+    while (membersIterator.hasNext() && !hasOverlappingMethod) {
       MethodDecl member_i = membersIterator.next();
-      if (member_i.signature().equals(signature)) {
-        hasMethod = true;
+      if (member_i.signature().equals(signature)
+          && !member_i.type().fullName().equals(type().fullName())) {
+            hasOverlappingMethod = true;
       }
     }
 
     MethodDecl newMethod = treeCopy();
 
-    if (hasMethod) {
+    if (hasOverlappingMethod) {
       String newName = name() + "__" + type().name();
       List<ParameterDeclaration> ps = new List();
       for (ParameterDeclaration p: getParameterList()) {

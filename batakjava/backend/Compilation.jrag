@@ -482,13 +482,17 @@ aspect Generation {
       ps = ps.add(np);
     }
 
-    return new List().add(new MethodDecl(
+    MethodDecl newMethod = new MethodDecl(
       getModifiers(),
       getTypeAccess().compileAccess(),
       getID(),
       ps,
       new List(),
-      new Opt()));
+      new Opt());
+
+    newMethod.sourceMethod = this;
+  
+    return new List().add(newMethod);
   }
 
   syn nta ParameterDeclaration ParameterDeclaration.compileParameter()
@@ -553,8 +557,8 @@ aspect Generation {
 
     String name = getID();
     for (MethodDecl method: methods) {
-      // have to check again to find the correct method based on the solution
-      // for the time being just reuse the one from constraint generation
+      // TODO: define applicable post constraint generation
+      // NOTE: for the time being just reuse the one from constraint generation
       if (verApplicableAndAccessible(method, qualifierType).isPresent()) {
         if (method.interfaceMethod != null) {
           MethodDecl interfaceMethod = method.interfaceMethod;
