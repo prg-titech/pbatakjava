@@ -142,6 +142,9 @@ aspect VersionChecking {
       if (a.isVersionNumArgument()) {
         TypeAccess access = v.typeAccess();
         TypeDecl modelType = access.getType(m);
+        if (modelType.version().equals(a.version()) && !a.checkRanges(v)) {
+          return false;
+        }
         if (!modelType.version().equals(a.version())) {
           return false;
         }
@@ -150,5 +153,26 @@ aspect VersionChecking {
     }
     return true;
   }
+
+  syn boolean VersionArgument.checkRanges(VersionVariable v) = true;
+
+  eq VersionNumArgument.checkRanges(VersionVariable v) {
+    for (VersionRange range: v.getVersionRangeList()) {
+      if (!range.check(this)) {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  syn boolean VersionRange.check(VersionNumArgument n) = true;
+
+  eq VersionLT.check(VersionNumArgument n) = new Integer(n.getID()) < new Integer(getVersion().getID());
+
+  eq VersionLE.check(VersionNumArgument n) = new Integer(n.getID()) <= new Integer(getVersion().getID());
+
+  eq VersionGT.check(VersionNumArgument n) = new Integer(n.getID()) > new Integer(getVersion().getID());
+
+  eq VersionGE.check(VersionNumArgument n) = new Integer(n.getID()) >= new Integer(getVersion().getID());
 
 }
