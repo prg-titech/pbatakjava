@@ -761,8 +761,12 @@ aspect Generation {
 
     if (type().isVoid()) {
       returnStmt = new ReturnStmt();
-    } else if (type().isIntegralType()) {
+    } else if (type().isNumericType()) {
       returnStmt = new ReturnStmt(new IntegerLiteral("0"));
+    } else if (type().isBoolean()) {
+      returnStmt = new ReturnStmt(new BooleanLiteral("false"));
+    } else if (type().isChar()) {
+      returnStmt = new ReturnStmt(new CharacterLiteral(""));
     } else {
       returnStmt = new ReturnStmt(new NullLiteral("null"));
     }
