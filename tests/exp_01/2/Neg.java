@@ -1,10 +1,9 @@
-public class Neg ver 2 implements Exp#2# {
-  public Exp exp;
-  public Add(Exp exp) {
+public class Neg ver 2 «V» implements Exp#2# {
+  public Exp#V# exp;
+  public Add(Exp#V# exp) {
     this.exp = exp;
   }
-  public void print() {
-    System.out.print("-");
-    this.exp.print();
+  public int interp() {
+    return -this.exp.interp();
   }
 }

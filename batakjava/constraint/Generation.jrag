@@ -183,7 +183,7 @@ aspect ConstraintGeneration {
 
         // check arguments
         Optional<Formula> optS = verApplicableAndAccessible(method, qualifierType);
-        
+
         if (!optS.isPresent()) {
           continue;
         }
@@ -213,6 +213,8 @@ aspect ConstraintGeneration {
         }
       }
     }
+    //System.err.println(prettyPrint());
+    //System.err.println(f);
     return f;
   }
 
@@ -344,7 +346,6 @@ aspect ConstraintGeneration {
   public Optional<Formula> Expr.subtype(Expr dest) {
     Formula f = new Formula();
     boolean applicable = false;
-
     for (TypeDecl sourceType: typeSet()) {
       for (TypeDecl destType: dest.typeSet()) {
         Formula s = new Formula();
@@ -360,8 +361,18 @@ aspect ConstraintGeneration {
         }
       }
     }
-
     return applicable ? Optional.of(f) : Optional.empty();
+  }
+
+  public boolean Expr.subtype0(Expr dest) {
+    for (TypeDecl sourceType: typeSet()) {
+      for (TypeDecl destType: dest.typeSet()) {
+        if (sourceType.assignConversionTo(destType, this)) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   public Optional<Formula> RelationalExpr.subtype(Expr dest) {

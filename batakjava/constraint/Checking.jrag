@@ -85,11 +85,17 @@ aspect VersionChecking {
 
   syn Collection<Problem> Declarator.check() {
     Collection<Problem> err = new LinkedList();
-
-    if (hasInit() && !getInit().subtype(declarationType()).isPresent()) {
-      err.add(errorf("no applicable assignment for %s", prettyPrint()));
+    if (hasInit()) {
+      if (!getInit().isVersionTypeDecl() && !declarationType().isVersionTypeDecl()) {
+        if (!getInit().subtype0(declarationType())) {
+          err.add(errorf("no applicable assignment for %s", prettyPrint()));
+        }
+      } else {
+        if (!getInit().subtype(declarationType()).isPresent()) {
+          err.add(errorf("no applicable assignment for %s", prettyPrint()));
+        }
+      }
     }
-
     return err;
   }
 

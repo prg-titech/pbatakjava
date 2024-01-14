@@ -1,0 +1,165 @@
+
+public interface Exp {
+  public int interp();
+}
+
+public interface Exp_Factory {
+}
+
+interface Exp_v1 extends Exp {
+  public int interp();
+}
+
+public class Exp_v1_Factory implements Exp_Factory {
+}
+
+interface Exp_v2 extends Exp {
+  public int interp();
+}
+
+public class Exp_v2_Factory implements Exp_Factory {
+}
+
+public interface Add {
+  public int interp();
+}
+
+public interface Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r);
+}
+
+public class Add_v1 implements Add, Exp_v1 {
+  public Exp_Factory V;
+
+  public Exp_Factory W;
+
+  public Exp left;
+
+  public Exp right;
+
+  public Add_v1(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    this.V = V;
+    this.W = W;
+    this.left = l;
+    this.right = r;
+  }
+
+  public int interp() {
+    return this.left.interp() + this.right.interp();
+  }
+}
+
+public class Add_v1_Factory implements Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    return new Add_v1(V, W, l, r);
+  }
+}
+
+public interface Lit {
+  public int interp();
+}
+
+public interface Lit_Factory {
+  public Lit make(int v);
+}
+
+public class Lit_v1 implements Lit, Exp_v1 {
+  public int value;
+
+  public Lit_v1(int v) {
+    this.value = v;
+  }
+
+  public int interp() {
+    return this.value;
+  }
+}
+
+public class Lit_v1_Factory implements Lit_Factory {
+  public Lit make(int v) {
+    return new Lit_v1(v);
+  }
+}
+
+public interface Neg {
+  public int interp();
+}
+
+public interface Neg_Factory {
+  public Neg make(Exp_Factory V, Exp exp);
+}
+
+public class Neg_v1 implements Neg, Exp_v1 {
+  public Exp_Factory V;
+
+  public Exp exp;
+
+  public Neg_v1(Exp_Factory V, Exp exp) {
+    this.V = V;
+    this.exp = exp;
+  }
+
+  public int interp() {
+    return -this.exp.interp();
+  }
+}
+
+public class Neg_v1_Factory implements Neg_Factory {
+  public Neg make(Exp_Factory V, Exp exp) {
+    return new Neg_v1(V, exp);
+  }
+}
+
+public class Add_v2 implements Add, Exp_v2 {
+  public Exp_Factory V;
+
+  public Exp_Factory W;
+
+  public Exp left;
+
+  public Exp right;
+
+  public Add_v2(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    this.V = V;
+    this.W = W;
+    this.left = l;
+    this.right = r;
+  }
+
+  public int interp() {
+    return this.left.interp() + this.right.interp();
+  }
+}
+
+public class Add_v2_Factory implements Add_Factory {
+  public Add make(Exp_Factory V, Exp_Factory W, Exp l, Exp r) {
+    return new Add_v2(V, W, l, r);
+  }
+}
+
+public class Lit_v2 implements Lit, Exp_v2 {
+  public int value;
+
+  public Lit_v2(int v) {
+    this.value = v;
+  }
+
+  public int interp() {
+    return this.value;
+  }
+}
+
+public class Lit_v2_Factory implements Lit_Factory {
+  public Lit make(int v) {
+    return new Lit_v2(v);
+  }
+}
+
+public class Test {
+  public static void main(String[] args) {
+    Exp exp_1 = new Add_v1(new Exp_v1_Factory(), new Exp_v1_Factory(), new Lit_v1(1), new Neg_v1(new Exp_v1_Factory(), new Lit_v1(1)));
+    Exp exp_2 = new Add_v2(new Exp_v2_Factory(), new Exp_v2_Factory(), new Lit_v2(2), new Lit_v2(2));
+    Exp exp_3 = new Add_v2(new Exp_v1_Factory(), new Exp_v2_Factory(), exp_1, exp_2);
+    System.out.println(exp_3.interp());
+  }
+}

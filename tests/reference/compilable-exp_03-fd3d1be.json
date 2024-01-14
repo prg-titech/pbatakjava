@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-exp_03-fd3d1be",
+    "cmd": "{infile}",
+    "infile": "tests/exp_03/build.sh",
+    "infile_hash": "9ca73e776043451dcb57dbbe749d48f104290cbccf64d5bc219bf628",
+    "stdout": "compilable-exp_03-fd3d1be.stdout",
+    "stdout_hash": "af26772f1e39cabcdbdb35f300f69e15a5ad4ed1aa743b76784bb550",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}

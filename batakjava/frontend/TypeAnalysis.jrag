@@ -52,7 +52,13 @@ aspect TypeSet {
 
   syn lazy SimpleSet<TypeDecl> Expr.typeSet() = this.<TypeDecl>emptySet().add(type());
 
-  eq TypeAccess.typeSet() = declSet();
+  eq TypeAccess.typeSet() {
+    SimpleSet<TypeDecl> set = declSet();
+    if (!set.isEmpty()) {
+      return set;
+    }
+    return this.<TypeDecl>emptySet().add(type());
+  }
 
   eq VersionTypeAccess.typeSet() {
     SimpleSet<TypeDecl> typeSet0 = getTypeAccess().typeSet();
@@ -440,7 +446,7 @@ aspect TypeWideningAndIdentity {
   syn lazy Optional<Formula> TypeDecl.versionInstanceOf(TypeDecl destType, Expr source);
 
   eq TypeDecl.versionInstanceOf(TypeDecl destType, Expr source) {
-    if (instanceOf(destType)) {
+    if (subtype(destType)) {
       return Optional.of(new Formula());
     }
     return Optional.empty();
@@ -557,8 +563,21 @@ aspect TypeAnalysis {
 
   eq VersionClassDecl.isVersionClassDecl() = true;
 
+  syn boolean TypeDecl.isVersionInterfaceDecl() = false;
+
+  eq VersionInterfaceDecl.isVersionInterfaceDecl() = true;
+
   syn boolean TypeDecl.isGenericVersionClassDecl() = false;
 
   eq GenericVersionClassDecl.isGenericVersionClassDecl() = true;
+
+  syn boolean Expr.isVersionTypeDecl() {
+    for (TypeDecl type: typeSet()) {
+      if (type.isVersionClassDecl() || type.isVersionInterfaceDecl()) {
+        return true;
+      }
+    }
+    return false;
+  }
 
 }
