@@ -67,6 +67,19 @@ aspect MethodDecl {
       return Optional.empty();
     }
 
+    GenericVersionMethodDecl gM = (GenericVersionMethodDecl) m;
+    Iterator<VersionVariable> iterator = gM.versionVariableList().iterator();
+    int i = 0;
+    while (iterator.hasNext()) {
+      VersionVariable v = iterator.next();
+      VersionArgument a = getVersionArgument(i);
+      if (a.isVersionNumArgument()) {
+        if (!a.checkRanges(v)) {
+          return Optional.empty();
+        }
+      }
+    }
+
     return super.verApplicableAndAccessible(m, t);
   }
 
