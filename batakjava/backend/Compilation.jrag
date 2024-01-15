@@ -24,7 +24,6 @@ aspect Generation {
             TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
               oldInterface.addNewMethod(newMethod);
-              //oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
             TypeDecl newFactory = ifs.iterator().next();
@@ -385,12 +384,17 @@ aspect Generation {
 
     String name = getID();
 
+    /*
     if (this.interfaceMethod != null) {
       MethodDecl interfaceMethod = this.interfaceMethod;
       if (interfaceMethod.needsReplacing) {
         name = interfaceMethod.name();
       }
-    } 
+    }
+    */
+    if (this.rename) {
+      name = getID() + "__" + type().name();
+    }
 
     return new MethodDecl(
       getModifiers(),
@@ -450,12 +454,17 @@ aspect Generation {
 
     if (getModifiers().isPublic() && hostType().isVersioned()) {
       for (FieldDeclarator decl: getDeclaratorList()) {
+        String getterName = decl.getID();
+        if (this.rename) {
+          getterName = getterName + "__" + type().name();
+        }
+
         List<Stmt> getStmt = new List();
         getStmt = getStmt.add(new ReturnStmt(new Dot(new ThisAccess(), new VarAccess(decl.getID()))));
         BodyDecl newGetter = new MethodDecl(
           getModifiers(),
           getTypeAccess().compileAccess(),
-          "get__" + decl.getID(),
+          getterName, //"get__" + decl.getID(),
           new List(),
           new List(),
           new Opt(new Block(getStmt)));
@@ -497,13 +506,14 @@ aspect Generation {
           new List(),
           new List(),
           new Opt());
+        newGetter.source = this;
         result = result.add(newGetter);
 
         ParameterDeclaration param = new ParameterDeclaration(
           new Modifiers(),
           getTypeAccess().compileAccess(),
           "toAssign");
-        BodyDecl newSetter = new MethodDecl(
+        MethodDecl newSetter = new MethodDecl(
           getModifiers(),
           new PrimitiveTypeAccess("@primitive", "void"),
           "set__" + d.getID(),
@@ -537,8 +547,7 @@ aspect Generation {
       ps,
       new List(),
       new Opt());
-
-    newMethod.sourceMethod = this;
+    newMethod.source = this;
 
     return new List().add(newMethod);
   }
@@ -569,8 +578,8 @@ aspect Generation {
       new List(),
       new Opt());
 
-    newMethod.sourceMethod = this;
-  
+    //newMethod.methodSource = this;
+
     return new List().add(newMethod);
   }
 
@@ -638,11 +647,16 @@ aspect Generation {
       // TODO: define applicable post constraint generation
       // NOTE: for the time being just reuse the one from constraint generation
       if (verApplicableAndAccessible(method, qualifierType).isPresent()) {
+        /*
         if (method.interfaceMethod != null) {
           MethodDecl interfaceMethod = method.interfaceMethod;
           if (interfaceMethod.needsReplacing) {
             name = interfaceMethod.name();
           }
+        }
+        */
+        if (method.rename) {
+          name = method.name() + "__" + method.type().name();
         }
         break;
       }
@@ -792,9 +806,6 @@ aspect Generation {
 
     return new ClassInstanceExpr(access, argList); 
   }
-
-  //eq AssignSimpleExpr.compileExpr()
-  //  = new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
 
   eq AssignSimpleExpr.compileExpr() {
     if (getDest() instanceof Dot) {

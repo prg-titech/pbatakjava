@@ -1,9 +1,7 @@
 aspect Overlap {
 
-  public boolean MethodDecl.needsReplacing = false;
-
-  public MethodDecl MethodDecl.interfaceMethod = null;
-  public MethodDecl MethodDecl.sourceMethod = null;
+  public BodyDecl BodyDecl.source = null;
+  public boolean BodyDecl.rename = false;
 
   public void TypeDecl.addNewMethod(BodyDecl body) {
     return;
@@ -46,11 +44,12 @@ aspect Overlap {
         ps,
         new List(),
         new Opt());
-      newMethod.needsReplacing = true;
+      //newMethod.needsReplacing = true;
+      if (source != null) {
+        source.rename = true;
+      }
     }
 
-    MethodDecl sourceMethod = this.sourceMethod;
-    sourceMethod.interfaceMethod = newMethod;
     i.addBodyDecl(newMethod);
   }
 
