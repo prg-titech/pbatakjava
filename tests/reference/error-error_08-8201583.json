@@ -1,0 +1,11 @@
+{
+    "basename": "error-error_08-8201583",
+    "cmd": "{infile}",
+    "infile": "tests/error_08/build.sh",
+    "infile_hash": "a4ea91bbbfa34ebea1c0cad55d1a4bdf5dc4de5f13f625d1b00523ed",
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "error-error_08-8201583.stderr",
+    "stderr_hash": "355944dfbd1e667a173be4c15d724b22cd392ecdc4bc9f5dc2fa2b5e",
+    "returncode": 4
+}

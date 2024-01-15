@@ -517,14 +517,13 @@ aspect Generation {
     }
 
     List<Expr> argList = new List();
-    
+
     if (methods.size() == 1) {
       MethodDecl m = methods.iterator().next();
       int i = 0;
       for (VersionVariable vv: m.versionVariableList()) {
         VersionArgument va = getVersionArgument(i);
         TypeAccess compileAccess = vv.typeAccess();
-        // TODO: handle version variable argument
         if (va.isVersionNumArgument()) {
           argList = argList.add(new ClassInstanceExpr(
             new TypeAccess(compileAccess.getPackage(),

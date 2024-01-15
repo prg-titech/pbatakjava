@@ -117,3 +117,11 @@ error = true
 [[test]]
 filename = "tests/error_06/build.sh"
 error = true
+
+[[test]]
+filename = "tests/error_07/build.sh"
+error = true
+
+[[test]]
+filename = "tests/error_08/build.sh"
+error = true
