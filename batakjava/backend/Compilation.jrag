@@ -2,11 +2,13 @@ aspect Generation {
 
   public Program Program.generated;
 
+  public java.util.Set<String> Program.names;
+
   public Program Program.compile() {
     generated = new Program();
     generated.state().reset();
 
-    java.util.Set<String> names = new HashSet();
+    names = new HashSet();
 
     for (int i = 0; i < numComponent(); i++) {
       for (TypeDecl t: getComponent(i)) {
@@ -382,19 +384,7 @@ aspect Generation {
       params = params.add(newParam);
     }
 
-    String name = getID();
-
-    /*
-    if (this.interfaceMethod != null) {
-      MethodDecl interfaceMethod = this.interfaceMethod;
-      if (interfaceMethod.needsReplacing) {
-        name = interfaceMethod.name();
-      }
-    }
-    */
-    if (this.rename) {
-      name = getID() + "__" + type().name();
-    }
+    String name = this.rename ? getID() + "__" + type().name() : getID();
 
     return new MethodDecl(
       getModifiers(),
@@ -500,10 +490,20 @@ aspect Generation {
 
     if (getModifiers().isPublic() && hostType().isVersioned()) {
       for (FieldDeclarator d: getDeclaratorList()) {
+        String getterName = "get__" + d.getID();
+        for (Variable f: hostType().verMemberFields(d.getID())) {
+          FieldDeclarator otherD = (FieldDeclarator) f;
+          if (otherD != d) {
+            this.rename = true;
+            getterName += "__" + type().name();
+            break;
+          }
+        }
+
         MethodDecl newGetter = new MethodDecl(
           getModifiers(),
           getTypeAccess().compileAccess(),
-          "get__" + d.getID(),
+          getterName,
           new List(),
           new List(),
           new Opt());
@@ -525,7 +525,6 @@ aspect Generation {
         result = result.add(newSetter);
       }
     }
-
     return result;
   }
 

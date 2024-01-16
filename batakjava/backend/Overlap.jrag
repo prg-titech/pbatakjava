@@ -34,7 +34,7 @@ aspect Overlap {
       }
       if (member_i.signature().equals(signature)
           && !member_i_returnType.fullName().equals(type().fullName())) {
-            hasOverlappingMethod = true;
+        hasOverlappingMethod = true;
       }
     }
 
