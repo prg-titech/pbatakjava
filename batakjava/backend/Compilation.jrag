@@ -521,6 +521,7 @@ aspect Generation {
           new List().add(param),
           new List(),
           new Opt());
+        newSetter.source = this;
         result = result.add(newSetter);
       }
     }
@@ -933,14 +934,15 @@ aspect Generation {
     }
 
     Stmt returnStmt;
+    TypeDecl returnType = getTypeAccess().typeSet().iterator().next();
 
-    if (type().isVoid()) {
+    if (returnType.isVoid()) {
       returnStmt = new ReturnStmt();
-    } else if (type().isNumericType()) {
+    } else if (returnType.isNumericType()) {
       returnStmt = new ReturnStmt(new IntegerLiteral("0"));
-    } else if (type().isBoolean()) {
+    } else if (returnType.isBoolean()) {
       returnStmt = new ReturnStmt(new BooleanLiteral("false"));
-    } else if (type().isChar()) {
+    } else if (returnType.isChar()) {
       returnStmt = new ReturnStmt(new CharacterLiteral(""));
     } else {
       returnStmt = new ReturnStmt(new NullLiteral("null"));

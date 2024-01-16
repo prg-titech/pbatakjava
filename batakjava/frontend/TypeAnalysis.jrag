@@ -161,7 +161,7 @@ aspect TypeSet {
     return set;
   }
 
-  inh SimpleSet<TypeDecl> TypeAccess.lookupTypeSet(String name);
+  inh SimpleSet<TypeDecl> Access.lookupTypeSet(String name);
 
   inh SimpleSet<TypeDecl> CompilationUnit.lookupTypeSet(String name);
 
