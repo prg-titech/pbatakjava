@@ -21,6 +21,14 @@ public class Exp_v2_Factory implements Exp_Factory {
 }
 
 public interface Add {
+  public Exp get__left();
+
+  public Exp set__left(Exp toAssign);
+
+  public Exp get__right();
+
+  public Exp set__right(Exp toAssign);
+
   public int interp();
 }
 
@@ -47,6 +55,22 @@ public class Add_v1 implements Add, Exp_v1 {
   public int interp() {
     return this.left.interp() + this.right.interp();
   }
+
+  public Exp get__left() {
+    return this.left;
+  }
+
+  public Exp set__left(Exp toAssign) {
+    return this.left = toAssign;
+  }
+
+  public Exp get__right() {
+    return this.right;
+  }
+
+  public Exp set__right(Exp toAssign) {
+    return this.right = toAssign;
+  }
 }
 
 public class Add_v1_Factory implements Add_Factory {
@@ -56,6 +80,10 @@ public class Add_v1_Factory implements Add_Factory {
 }
 
 public interface Lit {
+  public int get__value();
+
+  public int set__value(int toAssign);
+
   public int interp();
 }
 
@@ -72,6 +100,14 @@ public class Lit_v1 implements Lit, Exp_v1 {
 
   public int interp() {
     return this.value;
+  }
+
+  public int get__value() {
+    return this.value;
+  }
+
+  public int set__value(int toAssign) {
+    return this.value = toAssign;
   }
 }
 
@@ -100,6 +136,22 @@ public class Add_v2 implements Add, Exp_v2 {
   public int interp() {
     return this.left.interp() + this.right.interp();
   }
+
+  public Exp get__left() {
+    return this.left;
+  }
+
+  public Exp set__left(Exp toAssign) {
+    return this.left = toAssign;
+  }
+
+  public Exp get__right() {
+    return this.right;
+  }
+
+  public Exp set__right(Exp toAssign) {
+    return this.right = toAssign;
+  }
 }
 
 public class Add_v2_Factory implements Add_Factory {
@@ -118,6 +170,14 @@ public class Lit_v2 implements Lit, Exp_v2 {
   public int interp() {
     return this.value;
   }
+
+  public int get__value() {
+    return this.value;
+  }
+
+  public int set__value(int toAssign) {
+    return this.value = toAssign;
+  }
 }
 
 public class Lit_v2_Factory implements Lit_Factory {
@@ -127,6 +187,10 @@ public class Lit_v2_Factory implements Lit_Factory {
 }
 
 public interface Neg {
+  public Exp get__exp();
+
+  public Exp set__exp(Exp toAssign);
+
   public int interp();
 }
 
@@ -146,6 +210,14 @@ public class Neg_v2 implements Neg, Exp_v2 {
 
   public int interp() {
     return -this.exp.interp();
+  }
+
+  public Exp get__exp() {
+    return this.exp;
+  }
+
+  public Exp set__exp(Exp toAssign) {
+    return this.exp = toAssign;
   }
 }
 

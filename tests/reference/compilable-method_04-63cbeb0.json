@@ -4,7 +4,7 @@
     "infile": "tests/method_04/build.sh",
     "infile_hash": "0b9fdedb398d89d484f396ad318abd0ca5bdcb802296bcf5293d7a9b",
     "stdout": "compilable-method_04-63cbeb0.stdout",
-    "stdout_hash": "20a1da2b78fca4eafea76d634fa9c5ba74c13d53b48cb60d216eda4a",
+    "stdout_hash": "47d30b3be198b0d922717831dfb5ee6fd7e4726e7dba08d14aab43e0",
     "stderr": null,
     "stderr_hash": null,
     "returncode": 0

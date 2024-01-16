@@ -83,6 +83,10 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface ColoredPoint {
+  public Object get__c();
+
+  public Object set__c(Object toAssign);
+
   public int getX();
 }
 
@@ -100,6 +104,14 @@ public class ColoredPoint_v1 extends Point_v1 implements ColoredPoint {
 
   public int getX() {
     return -super.getX();
+  }
+
+  public Object get__c() {
+    return this.c;
+  }
+
+  public Object set__c(Object toAssign) {
+    return this.c = toAssign;
   }
 }
 

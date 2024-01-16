@@ -1,5 +1,12 @@
 
 public interface Point {
+  public int get__x();
+
+  public int set__x(int toAssign);
+
+  public int get__y();
+
+  public int set__y(int toAssign);
 }
 
 public interface Point_Factory {
@@ -14,6 +21,22 @@ public class Point_v1 implements Point {
   public Point_v1(int x, int y) {
     this.x = x;
     this.y = y;
+  }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
   }
 }
 
@@ -31,6 +54,22 @@ public class Point_v2 implements Point {
   public Point_v2(int x, int y) {
     this.x = x;
     this.y = y;
+  }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
   }
 }
 

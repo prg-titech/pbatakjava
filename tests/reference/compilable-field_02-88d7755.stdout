@@ -8,8 +8,6 @@ public interface Point {
 
   public int set__y(int toAssign);
 
-  public int getX();
-
   public float get__x__float();
 
   public float set__x(float toAssign);
@@ -17,16 +15,10 @@ public interface Point {
   public float get__y__float();
 
   public float set__y(float toAssign);
-
-  public int getX(int z);
-
-  public float getX__float();
-
-  public float useGetX();
 }
 
 public interface Point_Factory {
-  public Point make(int x, int y);
+  public Point make();
 }
 
 public class Point_v1 implements Point {
@@ -34,13 +26,7 @@ public class Point_v1 implements Point {
 
   public int y;
 
-  public Point_v1(int x, int y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  public int getX() {
-    return this.x;
+  public Point_v1() {
   }
 
   public int get__x() {
@@ -74,23 +60,11 @@ public class Point_v1 implements Point {
   public float set__y(float toAssign) {
     return 0;
   }
-
-  public int getX(int z) {
-    return 0;
-  }
-
-  public float getX__float() {
-    return 0;
-  }
-
-  public float useGetX() {
-    return 0;
-  }
 }
 
 public class Point_v1_Factory implements Point_Factory {
-  public Point make(int x, int y) {
-    return new Point_v1(x, y);
+  public Point make() {
+    return new Point_v1();
   }
 }
 
@@ -99,21 +73,7 @@ public class Point_v2 implements Point {
 
   public float y;
 
-  public Point_v2(int x, int y) {
-    this.x = x;
-    this.y = y;
-  }
-
-  public int getX(int z) {
-    return z;
-  }
-
-  public float getX__float() {
-    return this.x;
-  }
-
-  public float useGetX() {
-    return this.getX__float();
+  public Point_v2() {
   }
 
   public float get__x__float() {
@@ -147,14 +107,17 @@ public class Point_v2 implements Point {
   public int set__y(int toAssign) {
     return 0;
   }
-
-  public int getX() {
-    return 0;
-  }
 }
 
 public class Point_v2_Factory implements Point_Factory {
-  public Point make(int x, int y) {
-    return new Point_v2(x, y);
+  public Point make() {
+    return new Point_v2();
+  }
+}
+
+public class Test {
+  public static void main(String[] args) {
+    Point p = new Point_v2();
+    float pX = p.get__x__float();
   }
 }

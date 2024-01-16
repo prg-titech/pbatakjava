@@ -1,5 +1,13 @@
 
 public interface Point {
+  public int get__x();
+
+  public int set__x(int toAssign);
+
+  public int get__y();
+
+  public int set__y(int toAssign);
+
   public void m();
 }
 
@@ -20,6 +28,22 @@ public class Point_v1 implements Point {
   public void m() {
     return;
   }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
+  }
 }
 
 public class Point_v1_Factory implements Point_Factory {
@@ -38,6 +62,22 @@ public class Point_v2 implements Point {
     this.y = y;
   }
 
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
+  }
+
   public void m() {
     return;
   }
@@ -50,6 +90,13 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface Line {
+  public Point get__p1();
+
+  public Point set__p1(Point toAssign);
+
+  public Point get__p2();
+
+  public Point set__p2(Point toAssign);
 }
 
 public interface Line_Factory {
@@ -70,6 +117,22 @@ public class Line_v1 implements Line {
     this.W = W;
     this.p1 = p1;
     this.p2 = p2;
+  }
+
+  public Point get__p1() {
+    return this.p1;
+  }
+
+  public Point set__p1(Point toAssign) {
+    return this.p1 = toAssign;
+  }
+
+  public Point get__p2() {
+    return this.p2;
+  }
+
+  public Point set__p2(Point toAssign) {
+    return this.p2 = toAssign;
   }
 }
 

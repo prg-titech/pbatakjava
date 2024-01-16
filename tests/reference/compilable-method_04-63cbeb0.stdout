@@ -1,5 +1,13 @@
 
 public interface Point {
+  public int get__x();
+
+  public int set__x(int toAssign);
+
+  public int get__y();
+
+  public int set__y(int toAssign);
+
   public Point inverse(Point_Factory V);
 
   public Point mirror(Point_Factory V);
@@ -21,6 +29,22 @@ public class Point_v2 implements Point {
 
   public Point inverse(Point_Factory V) {
     return V.make(y, x);
+  }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
   }
 
   public Point mirror(Point_Factory V) {
@@ -46,6 +70,22 @@ public class Point_v1 implements Point {
 
   public Point mirror(Point_Factory V) {
     return V.make(y, x);
+  }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
   }
 
   public Point inverse(Point_Factory V) {

@@ -4,7 +4,7 @@
     "infile": "tests/instance_04/build.sh",
     "infile_hash": "09977858e1dc340ad8e47fdee8a723605a99977e6468e5898531aafa",
     "stdout": "compilable-instance_04-a4572a3.stdout",
-    "stdout_hash": "2687e1d549f307e2dac613dcac824575ef1e37975cb411c70cf1c78c",
+    "stdout_hash": "0bed911b81e5f01ce507b23ae86bb43b8f6229f1ac6b2fb35cf0131d",
     "stderr": null,
     "stderr_hash": null,
     "returncode": 0

@@ -3,61 +3,39 @@ public interface Point {
 }
 
 public interface Point_Factory {
-  public Point make(int x, int y);
+  public Point make();
 }
 
 public class Point_v1 implements Point {
-  public int x;
-
-  public int y;
-
-  public Point_v1(int x, int y) {
-    this.x = x;
-    this.y = y;
+  public Point_v1() {
   }
 }
 
 public class Point_v1_Factory implements Point_Factory {
-  public Point make(int x, int y) {
-    return new Point_v1(x, y);
+  public Point make() {
+    return new Point_v1();
   }
 }
 
 public class Point_v2 implements Point {
-  public int x;
-
-  public int y;
-
-  public Point_v2(int x, int y) {
-    this.x = x;
-    this.y = y;
+  public Point_v2() {
   }
 }
 
 public class Point_v2_Factory implements Point_Factory {
-  public Point make(int x, int y) {
-    return new Point_v2(x, y);
-  }
-}
-
-public class Point_v3 implements Point {
-  public int x;
-
-  public int y;
-
-  public Point_v3(int x, int y) {
-    this.x = x;
-    this.y = y;
-  }
-}
-
-public class Point_v3_Factory implements Point_Factory {
-  public Point make(int x, int y) {
-    return new Point_v3(x, y);
+  public Point make() {
+    return new Point_v2();
   }
 }
 
 public interface Line {
+  public Point get__p1();
+
+  public Point set__p1(Point toAssign);
+
+  public Point get__p2();
+
+  public Point set__p2(Point toAssign);
 }
 
 public interface Line_Factory {
@@ -79,6 +57,22 @@ public class Line_v1 implements Line {
     this.p1 = p1;
     this.p2 = p2;
   }
+
+  public Point get__p1() {
+    return this.p1;
+  }
+
+  public Point set__p1(Point toAssign) {
+    return this.p1 = toAssign;
+  }
+
+  public Point get__p2() {
+    return this.p2;
+  }
+
+  public Point set__p2(Point toAssign) {
+    return this.p2 = toAssign;
+  }
 }
 
 public class Line_v1_Factory implements Line_Factory {
@@ -89,6 +83,8 @@ public class Line_v1_Factory implements Line_Factory {
 
 public class Test {
   public static void main(String[] args) {
-    Line l1 = new Line_v1(new Point_v2_Factory(), new Point_v2_Factory(), new Point_v2(3, 2), new Point_v2(2, 2));
+    Line l1 = new Line_v1(new Point_v1_Factory(), new Point_v1_Factory(), new Point_v1(), new Point_v1());
+    Point p = l1.get__p1();
+    l1.set__p2(new Point_v1());
   }
 }

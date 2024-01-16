@@ -35,7 +35,12 @@
 /tests/hash_02/class
 /tests/hash_03/class
 /tests/exp_01/class
+/tests/exp_03/class
+/tests/exp_04/class
 /tests/inherit_01/class
+/tests/field_01/class
+/tests/field_02/class
+/tests/field_03
 
 /tests/output
 

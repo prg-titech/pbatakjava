@@ -77,6 +77,14 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface Line {
+  public Point get__p1();
+
+  public Point set__p1(Point toAssign);
+
+  public Point get__p2();
+
+  public Point set__p2(Point toAssign);
+
   public Line update(Point_Factory Y, Point p);
 
   public void update(Color_Factory Y);
@@ -108,6 +116,22 @@ class Line_v1 implements Line {
 
   public void update(Color_Factory Y) {
     this.p1 = V.make(Y, new Color_v1());
+  }
+
+  public Point get__p1() {
+    return this.p1;
+  }
+
+  public Point set__p1(Point toAssign) {
+    return this.p1 = toAssign;
+  }
+
+  public Point get__p2() {
+    return this.p2;
+  }
+
+  public Point set__p2(Point toAssign) {
+    return this.p2 = toAssign;
   }
 }
 
