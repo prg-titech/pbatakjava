@@ -454,7 +454,7 @@ aspect Generation {
 
     if (getModifiers().isPublic() && hostType().isVersioned()) {
       for (FieldDeclarator decl: getDeclaratorList()) {
-        String getterName = decl.getID();
+        String getterName = "get__" + decl.getID();
         if (this.rename) {
           getterName = getterName + "__" + type().name();
         }
@@ -464,7 +464,7 @@ aspect Generation {
         BodyDecl newGetter = new MethodDecl(
           getModifiers(),
           getTypeAccess().compileAccess(),
-          getterName, //"get__" + decl.getID(),
+          getterName,
           new List(),
           new List(),
           new Opt(new Block(getStmt)));
@@ -647,14 +647,6 @@ aspect Generation {
       // TODO: define applicable post constraint generation
       // NOTE: for the time being just reuse the one from constraint generation
       if (verApplicableAndAccessible(method, qualifierType).isPresent()) {
-        /*
-        if (method.interfaceMethod != null) {
-          MethodDecl interfaceMethod = method.interfaceMethod;
-          if (interfaceMethod.needsReplacing) {
-            name = interfaceMethod.name();
-          }
-        }
-        */
         if (method.rename) {
           name = method.name() + "__" + method.type().name();
         }
@@ -670,12 +662,32 @@ aspect Generation {
   }
 
   eq VarAccess.compileAccess() {
+    // TODO: rename getter for renamed fields
     if (isQualified() && !(qualifier() instanceof ThisAccess)
         && qualifier().type().isVersioned()) {
-      return new MethodAccess("get__" + getID(), new List());
+      TypeDecl qualifierType = qualifier().compileType();
+      Map<TypeDecl,SimpleSet<Variable>> variableMap = verLookupVariable(name());
+      SimpleSet<Variable> variables = emptySet();
+      for (TypeDecl keyType: variableMap.keySet()) {
+        if (keyType == qualifierType) {
+          variables = variableMap.get(keyType);
+        }
+      }
+
+      String name = "get__" + getID();
+
+      for (Variable variable: variables) {
+        if (variable.isField()) {
+          FieldDecl field = variable.fieldDecl();
+          if (field.rename) {
+            name = "get__" + getID() + "__" + type().name();
+          }
+        }
+      }
+      return new MethodAccess(name, new List());
     }
     return treeCopy();
-  }
+  } 
 
   eq SuperConstructorAccess.compileAccess() {
     List<Expr> varList = new List();
