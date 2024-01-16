@@ -475,12 +475,13 @@ aspect Generation {
           getTypeAccess().compileAccess(),
           "toAssign");
         List<Stmt> setStmt = new List();
-        setStmt = setStmt.add(new ExprStmt(new AssignSimpleExpr(
-          new Dot(new ThisAccess(), new VarAccess(decl.getID())),
-          new VarAccess("toAssign"))));
+        setStmt = setStmt.add(new ReturnStmt(
+          new AssignSimpleExpr(
+            new Dot(new ThisAccess(), new VarAccess(decl.getID())),
+            new VarAccess("toAssign"))));
         BodyDecl newSetter = new MethodDecl(
           getModifiers(),
-          new PrimitiveTypeAccess("@primitive", "void"),
+          getTypeAccess().compileAccess(),
           "set__" + decl.getID(),
           new List().add(param),
           new List(),
@@ -515,7 +516,7 @@ aspect Generation {
           "toAssign");
         MethodDecl newSetter = new MethodDecl(
           getModifiers(),
-          new PrimitiveTypeAccess("@primitive", "void"),
+          getTypeAccess().compileAccess(),
           "set__" + d.getID(),
           new List().add(param),
           new List(),
