@@ -1,5 +1,12 @@
 
 public interface Point {
+  public int get__x();
+
+  public int set__x(int toAssign);
+
+  public int get__y();
+
+  public int set__y(int toAssign);
 }
 
 public interface Point_Factory {
@@ -14,6 +21,22 @@ public class Point_v1 implements Point {
   public Point_v1(int x, int y) {
     this.x = x;
     this.y = y;
+  }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
   }
 }
 
@@ -32,6 +55,22 @@ public class Point_v2 implements Point {
     this.x = x;
     this.y = y;
   }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
+  }
 }
 
 public class Point_v2_Factory implements Point_Factory {
@@ -41,6 +80,17 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface ColoredPoint {
+  public int get__red();
+
+  public int set__red(int toAssign);
+
+  public int get__green();
+
+  public int set__green(int toAssign);
+
+  public int get__blue();
+
+  public int set__blue(int toAssign);
 }
 
 public interface ColoredPoint_Factory {
@@ -59,6 +109,30 @@ public class ColoredPoint_v1 extends Point_v1 implements ColoredPoint {
     this.red = red;
     this.green = green;
     this.blue = blue;
+  }
+
+  public int get__red() {
+    return this.red;
+  }
+
+  public int set__red(int toAssign) {
+    return this.red = toAssign;
+  }
+
+  public int get__green() {
+    return this.green;
+  }
+
+  public int set__green(int toAssign) {
+    return this.green = toAssign;
+  }
+
+  public int get__blue() {
+    return this.blue;
+  }
+
+  public int set__blue(int toAssign) {
+    return this.blue = toAssign;
   }
 }
 

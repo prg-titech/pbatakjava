@@ -1,6 +1,21 @@
 aspect VersionVariableScope {  
 
-  // TODO: different version of superclass
+  syn lazy SimpleSet<Variable> TypeDecl.verMemberFields(String name) = localFields(name);
+
+  eq ClassDecl.verMemberFields(String name) = memberFields(name);
+
+  eq VersionClassDecl.verMemberFields(String name) {
+    SimpleSet<Variable> fields = localFields(name);
+    for (TypeDecl superClass: superclassSet()) {
+      for (Variable decl: superClass.verMemberFields(name)) {
+        if (!decl.isPrivate() && decl.accessibleFrom(this)) {
+          fields = fields.add(decl);
+        }
+      }
+    }
+    return fields;
+  }
+
   inh Map<TypeDecl,SimpleSet<Variable>> Expr.verLookupVariable(String name);
 
   eq Program.getChild().verLookupVariable(String name) = new HashMap();

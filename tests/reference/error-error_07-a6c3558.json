@@ -3,9 +3,9 @@
     "cmd": "{infile}",
     "infile": "tests/error_07/build.sh",
     "infile_hash": "a82c1b8cda61005b283ddf820907ff015533e0e672f4656ca33f0ccb",
-    "stdout": "error-error_07-a6c3558.stdout",
-    "stdout_hash": "0885bb880120972033565c04e1b8d918879bab7fbf0089d1a971c3d6",
-    "stderr": null,
-    "stderr_hash": null,
-    "returncode": 0
+    "stdout": null,
+    "stdout_hash": null,
+    "stderr": "error-error_07-a6c3558.stderr",
+    "stderr_hash": "f8f06c0c02ac57cdb080ad7b0078c3217acbebd5e741afc34b773ce4",
+    "returncode": 4
 }

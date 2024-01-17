@@ -2,11 +2,13 @@ aspect Generation {
 
   public Program Program.generated;
 
+  public java.util.Set<String> Program.names;
+
   public Program Program.compile() {
     generated = new Program();
     generated.state().reset();
 
-    java.util.Set<String> names = new HashSet();
+    names = new HashSet();
 
     for (int i = 0; i < numComponent(); i++) {
       for (TypeDecl t: getComponent(i)) {
@@ -24,7 +26,6 @@ aspect Generation {
             TypeDecl oldInterface = generated.findInterface(newInterface.packageName(), newInterface.name());
             for (BodyDecl newMethod: newInterface.getBodyDeclList()) {
               oldInterface.addNewMethod(newMethod);
-              //oldInterface.addBodyDecl(newMethod.treeCopy());
             }
 
             TypeDecl newFactory = ifs.iterator().next();
@@ -233,6 +234,10 @@ aspect Generation {
       bodyList = bodyList.add(body.compile());
     }
 
+    for (BodyDecl body: getBodyDeclList()) {
+      bodyList = bodyList.addAll(body.compileGetterAndSetter());
+    }
+
     Opt<Access> superAccess = hasSuperClass() 
       ? new Opt(getSuperClass().compileInstanceAccess()) : new Opt();
 
@@ -379,14 +384,7 @@ aspect Generation {
       params = params.add(newParam);
     }
 
-    String name = getID();
-
-    if (this.interfaceMethod != null) {
-      MethodDecl interfaceMethod = this.interfaceMethod;
-      if (interfaceMethod.needsReplacing) {
-        name = interfaceMethod.name();
-      }
-    } 
+    String name = this.rename ? getID() + "__" + type().name() : getID();
 
     return new MethodDecl(
       getModifiers(),
@@ -426,17 +424,109 @@ aspect Generation {
   }
 
   eq FieldDecl.compile() {
+    List<BodyDecl> result = new List();
+
     List<FieldDeclarator> decls = new List();
     for (FieldDeclarator decl: getDeclaratorList()) {
       decls = decls.add(decl.compileDeclarator());
     }
+
     return new FieldDecl(
       getModifiers(),
       getTypeAccess().compileAccess(),
       decls);
   }
 
+  syn nta List<BodyDecl> BodyDecl.compileGetterAndSetter() = new List();
+
+  eq FieldDecl.compileGetterAndSetter() {
+    List<BodyDecl> result = new List();
+
+    if (getModifiers().isPublic() && hostType().isVersioned()) {
+      for (FieldDeclarator decl: getDeclaratorList()) {
+        String getterName = "get__" + decl.getID();
+        if (this.rename) {
+          getterName = getterName + "__" + type().name();
+        }
+
+        List<Stmt> getStmt = new List();
+        getStmt = getStmt.add(new ReturnStmt(new Dot(new ThisAccess(), new VarAccess(decl.getID()))));
+        BodyDecl newGetter = new MethodDecl(
+          getModifiers(),
+          getTypeAccess().compileAccess(),
+          getterName,
+          new List(),
+          new List(),
+          new Opt(new Block(getStmt)));
+        result = result.add(newGetter);
+
+        ParameterDeclaration param = new ParameterDeclaration(
+          new Modifiers(),
+          getTypeAccess().compileAccess(),
+          "toAssign");
+        List<Stmt> setStmt = new List();
+        setStmt = setStmt.add(new ReturnStmt(
+          new AssignSimpleExpr(
+            new Dot(new ThisAccess(), new VarAccess(decl.getID())),
+            new VarAccess("toAssign"))));
+        BodyDecl newSetter = new MethodDecl(
+          getModifiers(),
+          getTypeAccess().compileAccess(),
+          "set__" + decl.getID(),
+          new List().add(param),
+          new List(),
+          new Opt(new Block(setStmt)));
+        result = result.add(newSetter);
+      }
+    }
+
+    return result;
+  }
+
   syn nta List<BodyDecl> BodyDecl.compileInterface() = new List();
+
+  eq FieldDecl.compileInterface() {
+    List<BodyDecl> result = new List();
+
+    if (getModifiers().isPublic() && hostType().isVersioned()) {
+      for (FieldDeclarator d: getDeclaratorList()) {
+        String getterName = "get__" + d.getID();
+        for (Variable f: hostType().verMemberFields(d.getID())) {
+          FieldDeclarator otherD = (FieldDeclarator) f;
+          if (otherD != d) {
+            this.rename = true;
+            getterName += "__" + type().name();
+            break;
+          }
+        }
+
+        MethodDecl newGetter = new MethodDecl(
+          getModifiers(),
+          getTypeAccess().compileAccess(),
+          getterName,
+          new List(),
+          new List(),
+          new Opt());
+        newGetter.source = this;
+        result = result.add(newGetter);
+
+        ParameterDeclaration param = new ParameterDeclaration(
+          new Modifiers(),
+          getTypeAccess().compileAccess(),
+          "toAssign");
+        MethodDecl newSetter = new MethodDecl(
+          getModifiers(),
+          getTypeAccess().compileAccess(),
+          "set__" + d.getID(),
+          new List().add(param),
+          new List(),
+          new Opt());
+        newSetter.source = this;
+        result = result.add(newSetter);
+      }
+    }
+    return result;
+  }
 
   eq MethodDecl.compileInterface() {
     if (getID().equals("main")) {
@@ -458,8 +548,7 @@ aspect Generation {
       ps,
       new List(),
       new Opt());
-
-    newMethod.sourceMethod = this;
+    newMethod.source = this;
 
     return new List().add(newMethod);
   }
@@ -490,8 +579,8 @@ aspect Generation {
       new List(),
       new Opt());
 
-    newMethod.sourceMethod = this;
-  
+    //newMethod.methodSource = this;
+
     return new List().add(newMethod);
   }
 
@@ -559,11 +648,8 @@ aspect Generation {
       // TODO: define applicable post constraint generation
       // NOTE: for the time being just reuse the one from constraint generation
       if (verApplicableAndAccessible(method, qualifierType).isPresent()) {
-        if (method.interfaceMethod != null) {
-          MethodDecl interfaceMethod = method.interfaceMethod;
-          if (interfaceMethod.needsReplacing) {
-            name = interfaceMethod.name();
-          }
+        if (method.rename) {
+          name = method.name() + "__" + method.type().name();
         }
         break;
       }
@@ -575,6 +661,34 @@ aspect Generation {
     }
     return new MethodAccess(name, argList);
   }
+
+  eq VarAccess.compileAccess() {
+    // TODO: rename getter for renamed fields
+    if (isQualified() && !(qualifier() instanceof ThisAccess)
+        && qualifier().type().isVersioned()) {
+      TypeDecl qualifierType = qualifier().compileType();
+      Map<TypeDecl,SimpleSet<Variable>> variableMap = verLookupVariable(name());
+      SimpleSet<Variable> variables = emptySet();
+      for (TypeDecl keyType: variableMap.keySet()) {
+        if (keyType == qualifierType) {
+          variables = variableMap.get(keyType);
+        }
+      }
+
+      String name = "get__" + getID();
+
+      for (Variable variable: variables) {
+        if (variable.isField()) {
+          FieldDecl field = variable.fieldDecl();
+          if (field.rename) {
+            name = "get__" + getID() + "__" + type().name();
+          }
+        }
+      }
+      return new MethodAccess(name, new List());
+    }
+    return treeCopy();
+  } 
 
   eq SuperConstructorAccess.compileAccess() {
     List<Expr> varList = new List();
@@ -706,9 +820,20 @@ aspect Generation {
     return new ClassInstanceExpr(access, argList); 
   }
 
-  eq AssignSimpleExpr.compileExpr()
-    =  new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
-
+  eq AssignSimpleExpr.compileExpr() {
+    if (getDest() instanceof Dot) {
+      Dot dest = (Dot) getDest();
+      if (!(dest.getLeft() instanceof ThisAccess)
+          && dest.getLeft().type().isVersioned()
+          && dest.getRight() instanceof VarAccess) {
+        VarAccess var = (VarAccess) dest.getRight();
+        return new Dot(dest.getLeft(),
+          new MethodAccess("set__" + var.getID(), new List().add(getSource().compileExpr())));
+      }
+    }
+    return new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
+  }
+  
   syn String TypeDecl.compileName() = name();
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();
@@ -808,14 +933,15 @@ aspect Generation {
     }
 
     Stmt returnStmt;
+    TypeDecl returnType = getTypeAccess().typeSet().iterator().next();
 
-    if (type().isVoid()) {
+    if (returnType.isVoid()) {
       returnStmt = new ReturnStmt();
-    } else if (type().isNumericType()) {
+    } else if (returnType.isNumericType()) {
       returnStmt = new ReturnStmt(new IntegerLiteral("0"));
-    } else if (type().isBoolean()) {
+    } else if (returnType.isBoolean()) {
       returnStmt = new ReturnStmt(new BooleanLiteral("false"));
-    } else if (type().isChar()) {
+    } else if (returnType.isChar()) {
       returnStmt = new ReturnStmt(new CharacterLiteral(""));
     } else {
       returnStmt = new ReturnStmt(new NullLiteral("null"));

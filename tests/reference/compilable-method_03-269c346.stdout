@@ -1,5 +1,13 @@
 
 public interface Point {
+  public int get__x();
+
+  public int set__x(int toAssign);
+
+  public int get__y();
+
+  public int set__y(int toAssign);
+
   public Point inverse(Point_Factory V);
 }
 
@@ -15,6 +23,22 @@ public class Point_v1 implements Point {
   public Point_v1(int x, int y) {
     this.x = x;
     this.y = y;
+  }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
   }
 
   public Point inverse(Point_Factory V) {
@@ -41,6 +65,22 @@ public class Point_v2 implements Point {
   public Point inverse(Point_Factory V) {
     return V.make(y, x);
   }
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
+  }
 }
 
 public class Point_v2_Factory implements Point_Factory {
@@ -50,6 +90,14 @@ public class Point_v2_Factory implements Point_Factory {
 }
 
 public interface Line {
+  public Point get__p1();
+
+  public Point set__p1(Point toAssign);
+
+  public Point get__p2();
+
+  public Point set__p2(Point toAssign);
+
   public Line rotate(Point_Factory Y);
 }
 
@@ -71,6 +119,22 @@ public class Line_v1 implements Line {
     this.W = W;
     this.p1 = p1;
     this.p2 = p2;
+  }
+
+  public Point get__p1() {
+    return this.p1;
+  }
+
+  public Point set__p1(Point toAssign) {
+    return this.p1 = toAssign;
+  }
+
+  public Point get__p2() {
+    return this.p2;
+  }
+
+  public Point set__p2(Point toAssign) {
+    return this.p2 = toAssign;
   }
 
   public Line rotate(Point_Factory Y) {
@@ -102,6 +166,22 @@ public class Line_v2 implements Line {
 
   public Line rotate(Point_Factory Y) {
     return new Line_v1(V, Y, p1, p2.inverse(Y));
+  }
+
+  public Point get__p1() {
+    return this.p1;
+  }
+
+  public Point set__p1(Point toAssign) {
+    return this.p1 = toAssign;
+  }
+
+  public Point get__p2() {
+    return this.p2;
+  }
+
+  public Point set__p2(Point toAssign) {
+    return this.p2 = toAssign;
   }
 }
 

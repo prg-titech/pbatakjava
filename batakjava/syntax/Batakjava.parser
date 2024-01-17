@@ -31,7 +31,7 @@ Access method_invocation =
                             new ParVersionMethodAccess(IDENTIFIER, l, v));  :}
   ;
 
-Access class_or_interface_type =
+Access name =
     name.n LGUI version_arguments.v RGUI
       {: return new ParVersionTypeAccess(n, v); :}
   | name.n SHARP version_argument.v SHARP

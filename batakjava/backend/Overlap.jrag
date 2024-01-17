@@ -1,9 +1,7 @@
 aspect Overlap {
 
-  public boolean MethodDecl.needsReplacing = false;
-
-  public MethodDecl MethodDecl.interfaceMethod = null;
-  public MethodDecl MethodDecl.sourceMethod = null;
+  public BodyDecl BodyDecl.source = null;
+  public boolean BodyDecl.rename = false;
 
   public void TypeDecl.addNewMethod(BodyDecl body) {
     return;
@@ -23,11 +21,20 @@ aspect Overlap {
     boolean hasOverlappingMethod = false;
 
     Iterator<MethodDecl> membersIterator = members.iterator();
+    // TODO: clean this part up
     while (membersIterator.hasNext() && !hasOverlappingMethod) {
       MethodDecl member_i = membersIterator.next();
+      TypeDecl member_i_returnType = member_i.type();
+      if (member_i.source != null) {
+        if (member_i.source instanceof FieldDecl) {
+          member_i_returnType = ((FieldDecl) member_i.source).getTypeAccess().typeSet().iterator().next();
+        } else if (member_i.source instanceof MethodDecl) {
+          member_i_returnType = ((MethodDecl) member_i.source).getTypeAccess().typeSet().iterator().next();
+        }
+      }
       if (member_i.signature().equals(signature)
-          && !member_i.type().fullName().equals(type().fullName())) {
-            hasOverlappingMethod = true;
+          && !member_i_returnType.fullName().equals(type().fullName())) {
+        hasOverlappingMethod = true;
       }
     }
 
@@ -46,11 +53,11 @@ aspect Overlap {
         ps,
         new List(),
         new Opt());
-      newMethod.needsReplacing = true;
+      if (source != null) {
+        source.rename = true;
+      }
     }
 
-    MethodDecl sourceMethod = this.sourceMethod;
-    sourceMethod.interfaceMethod = newMethod;
     i.addBodyDecl(newMethod);
   }
 

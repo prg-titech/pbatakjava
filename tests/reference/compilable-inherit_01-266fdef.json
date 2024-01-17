@@ -4,7 +4,7 @@
     "infile": "tests/inherit_01/build.sh",
     "infile_hash": "8e38c6cb1c722d21306c9e6925d192767c42075e5324a41962b3ec34",
     "stdout": "compilable-inherit_01-266fdef.stdout",
-    "stdout_hash": "380b98895721cbb8013b66ae391d961b0a529cded73539f70c77fb6b",
+    "stdout_hash": "cafd31bdf58f91766766a01247aa34f53992e2405babfe8d27690d7d",
     "stderr": null,
     "stderr_hash": null,
     "returncode": 0

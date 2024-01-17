@@ -1,5 +1,9 @@
 
 public interface Env {
+  public java.util.Map<String, Integer> get__env();
+
+  public java.util.Map<String, Integer> set__env(java.util.Map<String, Integer> toAssign);
+
   public void set(String var, Integer val);
 
   public int get(String var);
@@ -29,6 +33,14 @@ public class Env_v1 implements Env {
   public boolean has(String var) {
     return this.env.containsKey(var);
   }
+
+  public java.util.Map<String, Integer> get__env() {
+    return this.env;
+  }
+
+  public java.util.Map<String, Integer> set__env(java.util.Map<String, Integer> toAssign) {
+    return this.env = toAssign;
+  }
 }
 
 public class Env_v1_Factory implements Env_Factory {
@@ -54,6 +66,14 @@ public class Env_v2 implements Env {
 
   public boolean has(String var) {
     return this.env.containsKey(var);
+  }
+
+  public java.util.Map<String, Integer> get__env() {
+    return this.env;
+  }
+
+  public java.util.Map<String, Integer> set__env(java.util.Map<String, Integer> toAssign) {
+    return this.env = toAssign;
   }
 }
 
@@ -85,6 +105,14 @@ public class Exp_v2_Factory implements Exp_Factory {
 }
 
 public interface Add {
+  public Exp get__left();
+
+  public Exp set__left(Exp toAssign);
+
+  public Exp get__right();
+
+  public Exp set__right(Exp toAssign);
+
   public Integer eval(Env env);
 }
 
@@ -111,6 +139,22 @@ public class Add_v1 implements Add, Exp_v1 {
   public Integer eval(Env env) {
     return this.left.eval(env) + this.right.eval(env);
   }
+
+  public Exp get__left() {
+    return this.left;
+  }
+
+  public Exp set__left(Exp toAssign) {
+    return this.left = toAssign;
+  }
+
+  public Exp get__right() {
+    return this.right;
+  }
+
+  public Exp set__right(Exp toAssign) {
+    return this.right = toAssign;
+  }
 }
 
 public class Add_v1_Factory implements Add_Factory {
@@ -134,6 +178,10 @@ public class Stmt_v2_Factory implements Stmt_Factory {
 }
 
 public interface Var {
+  public String get__var();
+
+  public String set__var(String toAssign);
+
   public String get();
 
   public Integer eval(Env env);
@@ -159,6 +207,14 @@ public class Var_v2 implements Var, Exp_v2 {
       env.set(this.var, new Integer(0));
     }
     return env.get(this.var);
+  }
+
+  public String get__var() {
+    return this.var;
+  }
+
+  public String set__var(String toAssign) {
+    return this.var = toAssign;
   }
 }
 
@@ -192,6 +248,14 @@ public class Var_v1 implements Var, Exp_v1 {
     }
     return env.get(this.var);
   }
+
+  public String get__var() {
+    return this.var;
+  }
+
+  public String set__var(String toAssign) {
+    return this.var = toAssign;
+  }
 }
 
 public class Var_v1_Factory implements Var_Factory {
@@ -201,6 +265,14 @@ public class Var_v1_Factory implements Var_Factory {
 }
 
 public interface Assign {
+  public Var get__dest();
+
+  public Var set__dest(Var toAssign);
+
+  public Exp get__source();
+
+  public Exp set__source(Exp toAssign);
+
   public void interp(Env env);
 }
 
@@ -224,6 +296,22 @@ public class Assign_v1 implements Assign, Stmt_v1 {
   public void interp(Env env) {
     env.set(this.dest.get(), this.source.eval(env));
   }
+
+  public Var get__dest() {
+    return this.dest;
+  }
+
+  public Var set__dest(Var toAssign) {
+    return this.dest = toAssign;
+  }
+
+  public Exp get__source() {
+    return this.source;
+  }
+
+  public Exp set__source(Exp toAssign) {
+    return this.source = toAssign;
+  }
 }
 
 public class Assign_v1_Factory implements Assign_Factory {
@@ -233,6 +321,18 @@ public class Assign_v1_Factory implements Assign_Factory {
 }
 
 public interface For {
+  public Integer get__start();
+
+  public Integer set__start(Integer toAssign);
+
+  public Integer get__end();
+
+  public Integer set__end(Integer toAssign);
+
+  public Stmt get__body();
+
+  public Stmt set__body(Stmt toAssign);
+
   public void interp(Env env);
 }
 
@@ -261,6 +361,30 @@ public class For_v1 implements For, Stmt_v1 {
       this.body.interp(env);
     }
   }
+
+  public Integer get__start() {
+    return this.start;
+  }
+
+  public Integer set__start(Integer toAssign) {
+    return this.start = toAssign;
+  }
+
+  public Integer get__end() {
+    return this.end;
+  }
+
+  public Integer set__end(Integer toAssign) {
+    return this.end = toAssign;
+  }
+
+  public Stmt get__body() {
+    return this.body;
+  }
+
+  public Stmt set__body(Stmt toAssign) {
+    return this.body = toAssign;
+  }
 }
 
 public class For_v1_Factory implements For_Factory {
@@ -270,6 +394,10 @@ public class For_v1_Factory implements For_Factory {
 }
 
 public interface Lit {
+  public Integer get__value();
+
+  public Integer set__value(Integer toAssign);
+
   public Integer eval(Env env);
 }
 
@@ -286,6 +414,14 @@ public class Lit_v1 implements Lit, Exp_v1 {
 
   public Integer eval(Env env) {
     return this.value;
+  }
+
+  public Integer get__value() {
+    return this.value;
+  }
+
+  public Integer set__value(Integer toAssign) {
+    return this.value = toAssign;
   }
 }
 
@@ -314,6 +450,22 @@ public class Add_v2 implements Add, Exp_v2 {
   public Integer eval(Env env) {
     return this.left.eval(env) + this.right.eval(env);
   }
+
+  public Exp get__left() {
+    return this.left;
+  }
+
+  public Exp set__left(Exp toAssign) {
+    return this.left = toAssign;
+  }
+
+  public Exp get__right() {
+    return this.right;
+  }
+
+  public Exp set__right(Exp toAssign) {
+    return this.right = toAssign;
+  }
 }
 
 public class Add_v2_Factory implements Add_Factory {
@@ -337,6 +489,22 @@ public class Assign_v2 implements Assign, Stmt_v2 {
 
   public void interp(Env env) {
     env.set(this.dest.get(), this.source.eval(env));
+  }
+
+  public Var get__dest() {
+    return this.dest;
+  }
+
+  public Var set__dest(Var toAssign) {
+    return this.dest = toAssign;
+  }
+
+  public Exp get__source() {
+    return this.source;
+  }
+
+  public Exp set__source(Exp toAssign) {
+    return this.source = toAssign;
   }
 }
 
@@ -367,6 +535,30 @@ public class For_v2 implements For, Stmt_v2 {
       this.body.interp(env);
     }
   }
+
+  public Integer get__start() {
+    return this.start;
+  }
+
+  public Integer set__start(Integer toAssign) {
+    return this.start = toAssign;
+  }
+
+  public Integer get__end() {
+    return this.end;
+  }
+
+  public Integer set__end(Integer toAssign) {
+    return this.end = toAssign;
+  }
+
+  public Stmt get__body() {
+    return this.body;
+  }
+
+  public Stmt set__body(Stmt toAssign) {
+    return this.body = toAssign;
+  }
 }
 
 public class For_v2_Factory implements For_Factory {
@@ -376,6 +568,18 @@ public class For_v2_Factory implements For_Factory {
 }
 
 public interface IfStmt {
+  public Exp get__ifCond();
+
+  public Exp set__ifCond(Exp toAssign);
+
+  public Stmt get__thenStmt();
+
+  public Stmt set__thenStmt(Stmt toAssign);
+
+  public Stmt get__elseStmt();
+
+  public Stmt set__elseStmt(Stmt toAssign);
+
   public void interp(Env env);
 }
 
@@ -412,6 +616,30 @@ public class IfStmt_v2 implements IfStmt, Stmt_v2 {
       this.elseStmt.interp(env);
     }
   }
+
+  public Exp get__ifCond() {
+    return this.ifCond;
+  }
+
+  public Exp set__ifCond(Exp toAssign) {
+    return this.ifCond = toAssign;
+  }
+
+  public Stmt get__thenStmt() {
+    return this.thenStmt;
+  }
+
+  public Stmt set__thenStmt(Stmt toAssign) {
+    return this.thenStmt = toAssign;
+  }
+
+  public Stmt get__elseStmt() {
+    return this.elseStmt;
+  }
+
+  public Stmt set__elseStmt(Stmt toAssign) {
+    return this.elseStmt = toAssign;
+  }
 }
 
 public class IfStmt_v2_Factory implements IfStmt_Factory {
@@ -429,6 +657,14 @@ public class Lit_v2 implements Lit, Exp_v2 {
 
   public Integer eval(Env env) {
     return this.value;
+  }
+
+  public Integer get__value() {
+    return this.value;
+  }
+
+  public Integer set__value(Integer toAssign) {
+    return this.value = toAssign;
   }
 }
 

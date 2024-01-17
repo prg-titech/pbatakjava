@@ -1,10 +1,26 @@
 
 public interface Point {
+  public int get__x();
+
+  public int set__x(int toAssign);
+
+  public int get__y();
+
+  public int set__y(int toAssign);
+
   public int getX();
 
   public boolean testBoolean();
 
   public char testChar();
+
+  public float get__x__float();
+
+  public float set__x(float toAssign);
+
+  public float get__y__float();
+
+  public float set__y(float toAssign);
 
   public float getY();
 }
@@ -35,6 +51,38 @@ public class Point_v1 implements Point {
     return 'k';
   }
 
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+
+  public int get__y() {
+    return this.y;
+  }
+
+  public int set__y(int toAssign) {
+    return this.y = toAssign;
+  }
+
+  public float get__x__float() {
+    return 0;
+  }
+
+  public float set__x(float toAssign) {
+    return 0;
+  }
+
+  public float get__y__float() {
+    return 0;
+  }
+
+  public float set__y(float toAssign) {
+    return 0;
+  }
+
   public float getY() {
     return 0;
   }
@@ -58,6 +106,38 @@ public class Point_v2 implements Point {
 
   public float getY() {
     return this.y;
+  }
+
+  public float get__x__float() {
+    return this.x;
+  }
+
+  public float set__x(float toAssign) {
+    return this.x = toAssign;
+  }
+
+  public float get__y__float() {
+    return this.y;
+  }
+
+  public float set__y(float toAssign) {
+    return this.y = toAssign;
+  }
+
+  public int get__x() {
+    return 0;
+  }
+
+  public int set__x(int toAssign) {
+    return 0;
+  }
+
+  public int get__y() {
+    return 0;
+  }
+
+  public int set__y(int toAssign) {
+    return 0;
   }
 
   public int getX() {

@@ -4,7 +4,7 @@
     "infile": "tests/constructor_01/build.sh",
     "infile_hash": "035418d5e91eec172eb7ff1246c1f004621ab5d54c99b281752146a2",
     "stdout": "compilable-constructor_01-0eeac75.stdout",
-    "stdout_hash": "a679a72787e27d34a1af01379e1d630bd8f965688fe534dd2dce6aa6",
+    "stdout_hash": "c6391d166188cd2cb21ba7d0d46e21e1871690006e1f52069a562153",
     "stderr": null,
     "stderr_hash": null,
     "returncode": 0
