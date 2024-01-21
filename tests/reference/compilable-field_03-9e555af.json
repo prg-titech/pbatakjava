@@ -1,0 +1,11 @@
+{
+    "basename": "compilable-field_03-9e555af",
+    "cmd": "{infile}",
+    "infile": "tests/field_03/build.sh",
+    "infile_hash": "7e2ac6a407268835af55c8490e5fbd0e9e5d6c92a2a381cd98bf27e7",
+    "stdout": "compilable-field_03-9e555af.stdout",
+    "stdout_hash": "1733c0bacec01fd8daf69013a519c57fe78712b91dd64ea1124f45ca",
+    "stderr": null,
+    "stderr_hash": null,
+    "returncode": 0
+}

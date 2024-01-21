@@ -87,6 +87,10 @@ filename = "tests/field_02/build.sh"
 compilable = true
 
 [[test]]
+filename = "tests/field_03/build.sh"
+compilable = true
+
+[[test]]
 filename = "tests/exp_01/build.sh"
 compilable = true
 

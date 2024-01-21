@@ -24,6 +24,10 @@ aspect ConstraintVariable {
 
   eq ParVersionTypeAccess.varNum() = getTypeAccess().varNum();
 
+  eq CastExpr.varNum() = getTypeAccess().varNum();
+
+  eq ParExpr.varNum() = getExpr().varNum();
+
   syn lazy Integer Variable.varNum();
 
   eq ParameterDeclaration.varNum() = getTypeAccess().varNum();
@@ -293,7 +297,8 @@ aspect ConstraintGeneration {
   syn Collection<Formula> Stmt.constraintList() = constraint().toList();
 
   syn lazy Formula Stmt.constraint() = new Formula();
-
+  
+  // TODO: handle cast expression
   eq ReturnStmt.constraint() {
     if (hasResult()) {
       Optional<Formula> f = getResult().subtype(returnTypeAccess());

@@ -1,0 +1,54 @@
+
+public interface C {
+  public int get__x();
+
+  public int set__x(int toAssign);
+}
+
+public interface C_Factory {
+}
+
+public class C_v1 implements C {
+  public int x;
+
+  public int get__x() {
+    return this.x;
+  }
+
+  public int set__x(int toAssign) {
+    return this.x = toAssign;
+  }
+}
+
+public class C_v1_Factory implements C_Factory {
+}
+
+public interface D {
+  public float get__x__float();
+
+  public float set__x(float toAssign);
+
+  public C m();
+}
+
+public interface D_Factory {
+}
+
+public class D_v1 extends C_v1 implements D {
+  public float x;
+
+  public C m() {
+    return (C_v1) this;
+  }
+
+  public float get__x__float() {
+    return this.x;
+  }
+
+  public float set__x(float toAssign) {
+    return this.x = toAssign;
+  }
+}
+
+public class D_v1_Factory implements D_Factory {
+}

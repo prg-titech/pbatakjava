@@ -129,6 +129,10 @@ aspect TypeSet {
     return typeSet;
   }
 
+  eq CastExpr.typeSet() = getTypeAccess().typeSet();
+
+  eq ParExpr.typeSet() = getExpr().typeSet();
+
   syn lazy SimpleSet<TypeDecl> Variable.typeSet();
 
   eq ParameterDeclaration.typeSet() = getTypeAccess().typeSet();
