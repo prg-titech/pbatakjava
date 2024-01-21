@@ -834,6 +834,8 @@ aspect Generation {
     return new AssignSimpleExpr(getDest().compileExpr(), getSource().compileExpr());
   }
   
+  eq CastExpr.compileExpr() = new CastExpr(getTypeAccess().compileInstanceAccess(), getExpr().compileExpr());
+
   syn String TypeDecl.compileName() = name();
 
   eq VersionClassDecl.compileName() = getID() + "_v" + version();

@@ -11,6 +11,10 @@ aspect Constraint {
     return new Clause(new TypeLit(getTypeAccess().solverConst, type.typeNum()));
   }
 
+  public Clause CastExpr.clause(TypeDecl type) {
+    return new Clause(new TypeLit(getTypeAccess().solverConst, type.typeNum()));
+  }
+
   public Clause Variable.clause(TypeDecl type) {
     return new Clause();
   }
