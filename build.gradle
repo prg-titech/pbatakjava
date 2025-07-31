@@ -3,11 +3,11 @@ plugins {
   id 'org.jastadd' version '1.13.3'
 }
 
-java {
-    toolchain {
-        languageVersion.set(JavaLanguageVersion.of(8))
-    }
-}
+// java {
+//     toolchain {
+//         languageVersion.set(JavaLanguageVersion.of(8))
+//     }
+// }
 
 defaultTasks 'jar'
 
