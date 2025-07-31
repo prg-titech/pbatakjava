@@ -30,12 +30,14 @@ jobs:
         git submodule update
 
     - name: Build BatakJava
-      run: ./gradlew build
+      run: |
+        ./gradlew wrapper --gradle-version=8.10.1
+        ./gradlew build
 
     - name: Set up Python
       uses: actions/setup-python@v4
       with:
-        python-version: "3.7"
+        python-version: "3.12.11"
 
     - name: Install Python dependencies
       run: |
