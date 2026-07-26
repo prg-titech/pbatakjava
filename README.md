@@ -8,7 +8,7 @@
 poetry install
 ```
 
-1. Run tests
+2. Run tests
 
 ```bash
 poetry run python run_tests.py
