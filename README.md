@@ -30,3 +30,17 @@ brew install gradle
 ```
 
 Reference: https://stackoverflow.com/questions/60403775/how-to-setup-a-java-development-environment-for-z3 
+
+## Running tests
+
+1. Install poetry
+
+```bash
+poetry install
+```
+
+2. Run tests
+
+```bash
+poetry run python run_tests.py
+```
