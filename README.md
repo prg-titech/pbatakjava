@@ -4,7 +4,7 @@
 
 - Gradle (8.10.1)
 - Apache Maven (3.9.6)
-- > Java 8
+- Java 8
 - [Z3 Solver](https://github.com/Z3Prover/z3) version 4.8.10
 
 ### Gradle installation
@@ -31,13 +31,24 @@ brew install gradle
 
 Reference: https://stackoverflow.com/questions/60403775/how-to-setup-a-java-development-environment-for-z3 
 
-### Compiling pbatakjava
+## Compiling pbatakjava
+
+From the root:
 
 ```bash
 gradle jar
 ```
 
-### Running tests
+## Running tests
 
+1. Install poetry
 
-<!-- Create a shell that run all the tests -->
+```bash
+poetry install
+```
+
+2. Run tests
+
+```bash
+poetry run python run_tests.py
+```
