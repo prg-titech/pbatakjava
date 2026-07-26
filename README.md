@@ -30,3 +30,14 @@ brew install gradle
 ```
 
 Reference: https://stackoverflow.com/questions/60403775/how-to-setup-a-java-development-environment-for-z3 
+
+### Compiling pbatakjava
+
+```bash
+gradle jar
+```
+
+### Running tests
+
+
+<!-- Create a shell that run all the tests -->
